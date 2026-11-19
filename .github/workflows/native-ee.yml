@@ -23,7 +23,12 @@ jobs:
             -v "$GITHUB_WORKSPACE:/workspace" \
             -w /workspace \
             ps2dev/ps2dev:latest \
-            sh -lc 'apk add --no-cache make && make -C src clean && make -C src'
+            sh -c 'export PS2DEV=/usr/local/ps2dev; \
+                   export PS2SDK=/usr/local/ps2dev/ps2sdk; \
+                   export PATH="$PS2DEV/bin:$PS2DEV/ee/bin:$PS2SDK/bin:$PATH"; \
+                   apk add --no-cache make; \
+                   command -v mips64r5900el-ps2-elf-gcc; \
+                   make -C src clean && make -C src'
       - name: Upload NEXUS.ELF
         uses: actions/upload-artifact@v4
         with:
