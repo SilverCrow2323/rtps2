@@ -1,5 +1,14 @@
 # NEXUS — verified status snapshot
 
+## M6.13 embedded NXA1 boot asset
+- Six original section PNGs are packed during the native build into `assets/build/NEXUS-ICONS.NXA`; `src/nexus_asset_blob.S` embeds the verified blob in the ELF read-only section.
+- `nexus_renderer_init()` uploads the embedded atlas during startup. EE validation checks the NXA1 structure, reserved bytes and SHA-256 payload digest before allocating texture VRAM.
+- No storage mount is required for the section icons. If the upload fails, the procedural glyph fallback remains available.
+- Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) and PS2DEV native build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed. Artifact `NEXUS-ELF`: 553,030 bytes; ZIP SHA-256 `1c7a2ac9be049987f8a379c60dbf6244b916c4cb2a60919ca62f08673022cc81`.
+- This validates asset generation and linking, not visible rendering on a real console. PCSX2 and physical-console visual checks remain open.
+- Details: [M6.13 embedded atlas](M6.13-embedded-atlas.md).
+
+
 ## M6.13 embedded boot-time atlas
 - Six source PNGs are versioned in assets/icons/ and packed by CI to NXA1 before the native build.
 - The generated pack is linked into NEXUS.ELF through a 16-byte-aligned .rodata blob; nexus_renderer_init() calls the GS uploader after framebuffer and GIF DMA setup.
