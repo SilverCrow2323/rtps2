@@ -32,10 +32,10 @@ int main(void)
 
         if (input != NEXUS_KEY_NONE) {
             nexus_actions_apply(&navigation, &actions, input);
-            nexus_ui_render(&navigation, input_ready, connected);
+            nexus_ui_render(&navigation, input_ready, connected, &actions);
         } else if (connected != previous_connected) {
             /* Refresh the status row when a pad connects or disconnects. */
-            nexus_ui_render(&navigation, input_ready, connected);
+            nexus_ui_render(&navigation, input_ready, connected, &actions);
         }
 
         previous_connected = connected;
