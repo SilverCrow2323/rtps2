@@ -19,7 +19,7 @@
 - The generated pack is linked into NEXUS.ELF through a 16-byte-aligned .rodata blob; nexus_renderer_init() calls the GS uploader after framebuffer and GIF DMA setup.
 - EE-side structure and SHA-256 checks run before VRAM allocation. If upload fails, procedural 5×5 glyphs remain active and renderer startup continues.
 - Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) and native EE build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed.
-- Extracted ELF: 1,724,400 bytes; SHA-256: 51ad1a8c2799aee05452369c60dbf6244b916c4cb2a60919ca62f08673022cc81.
+- Extracted ELF: 1,724,400 bytes; SHA-256: 51ad1a8c2799aee05452369b8b73fe1141ffcf187737227086c66882b4908d1b.
 - Actual texture display, PAL/NTSC appearance and startup timing still need a physical PS2 test.
 - Details: [M6.13 embedded icon atlas](M6.13-embedded-icon-atlas.md).
 
