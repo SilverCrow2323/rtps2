@@ -100,6 +100,9 @@ NexusKey nexus_input_poll(void)
     if ((pressed & PAD_L1) != 0) return NEXUS_KEY_PREVIOUS;
     if ((pressed & PAD_R1) != 0) return NEXUS_KEY_NEXT;
     if ((pressed & PAD_TRIANGLE) != 0) return NEXUS_KEY_ACTION;
+    if ((pressed & PAD_SQUARE) != 0) return NEXUS_KEY_FAVORITE;
+    if ((pressed & PAD_L2) != 0) return NEXUS_KEY_FILTER_SOURCE;
+    if ((pressed & PAD_R2) != 0) return NEXUS_KEY_FILTER_PLATFORM;
 
     return NEXUS_KEY_NONE;
 }
