@@ -29,4 +29,5 @@ jobs:
           cc -std=c11 -Wall -Wextra -Werror -fsyntax-only \
             -Itests/native/stubs -Isrc/include \
             src/nexus_main.c src/nexus_input.c src/nexus_ui.c src/nexus_renderer.c \
+            src/nexus_atlas.c \
             src/nexus_devices.c src/nexus_navigation.c
