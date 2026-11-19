@@ -28,6 +28,10 @@ jobs:
         run: |
           cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c tests/native/test_navigation.c -o /tmp/nexus_navigation_test
           /tmp/nexus_navigation_test
+      - name: Native cover-cache LRU policy test
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_cover_cache_policy.c tests/native/test_cover_cache_policy.c -o /tmp/nexus_cover_cache_policy_test
+          /tmp/nexus_cover_cache_policy_test
       - name: Native atlas format and digest regression test
         run: |
           cc -std=c11 -Wall -Wextra -Werror -ffunction-sections -fdata-sections -Itests/native/stubs -Isrc/include src/nexus_atlas.c src/nexus_sha256.c tests/native/test_atlas.c -Wl,--gc-sections -o /tmp/nexus_atlas_test
@@ -38,4 +42,4 @@ jobs:
           /tmp/nexus_sha256_test
       - name: Native shell C syntax check (PS2SDK API stubs)
         run: |
-          cc -std=c11 -Wall -Wextra -Werror -fsyntax-only -Itests/native/stubs -Isrc/include src/nexus_main.c src/nexus_input.c src/nexus_ui.c src/nexus_renderer.c src/nexus_atlas.c src/nexus_sha256.c src/nexus_devices.c src/nexus_navigation.c
+          cc -std=c11 -Wall -Wextra -Werror -fsyntax-only -Itests/native/stubs -Isrc/include src/nexus_main.c src/nexus_input.c src/nexus_ui.c src/nexus_renderer.c src/nexus_atlas.c src/nexus_cover_cache.c src/nexus_cover_cache_policy.c src/nexus_sha256.c src/nexus_devices.c src/nexus_navigation.c
