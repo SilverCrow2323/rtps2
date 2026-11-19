@@ -213,9 +213,7 @@ static int stage_entry(const NexusScanConfig *config,
         return 0;
     ++report->supported_files;
 
-    if (dir_entry->size_bytes == 0U ||
-        join_path(entry.path, sizeof(entry.path), config->root,
-                  folder, dir_entry->name) != 0) {
+    if (dir_entry->size_bytes == 0U) {
         ++report->rejected;
         return 0;
     }
@@ -238,6 +236,10 @@ static int stage_entry(const NexusScanConfig *config,
                         ? NEXUS_LIBRARY_BACKEND_POPS
                         : NEXUS_LIBRARY_BACKEND_AUTO;
     make_title(entry.title, dir_entry->name);
+    if (entry.title[0] == '\\0') {
+        ++report->rejected;
+        return 0;
+    }
     staged_entries[staged_count++] = entry;
     return 0;
 }
