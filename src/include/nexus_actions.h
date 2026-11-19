@@ -15,6 +15,8 @@ typedef struct {
     uint8_t scan_root_index;
     int last_scan_result;
     NexusScanReport last_scan_report;
+    NexusLibraryView library_view;
+    uint8_t game_detail_open;
 } NexusActionStatus;
 
 void nexus_actions_init(NexusActionStatus *status);
