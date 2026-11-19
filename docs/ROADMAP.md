@@ -33,7 +33,9 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.17 | Bounded read-only directory scanner core for OPL CD/DVD ISO/ZSO and POPS VCD roots; 64-bit file sizes and staged reads | Host CI #289 and native PS2DEV build #63 passed |
 | M6.18 | Explicit PS2SDK IOMANX/FileXio IRX integration and read-only Dopen/Dread/Dclose adapter, no IOP reset or mount | Host CI #307 and native PS2DEV build #70 passed |
 | M6.19 | Two-step System UI action for explicit FileXio activation: Triangle prompt, Cross confirm, Circle cancel; no automatic scan/mount | Host CI #332 and native PS2DEV build #84 passed |
-| M6.20 | Files root allowlist for mass:/, mmce0:/ and mmce1:/ plus two-step read-only scan dispatch and result panel | Host CI #344 and native PS2DEV build #88 passed; live device availability and PCSX2/console smoke test pending |
+| M6.20 | Files root allowlist for mass:/, mmce0:/ and mmce1:/ plus two-step read-only scan dispatch and result panel | Host CI #344 and native PS2DEV build #88 passed |
+| M6.21 | Games catalog navigation, four view modes, favorites, source/platform filters and metadata-only detail | Host CI #367 and native PS2DEV build #101 passed |
+| M6.22 | Home navigation rail, contextual hero, status metrics, consistent module panels and cover-style Games placeholders | Host CI #367 and native PS2DEV build #101 passed; PCSX2 visual feedback and real artwork pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -46,6 +48,19 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - NXA1 format: 64-byte little-endian header, 256×128 PSMCT32 RGBA atlas, 131,072-byte pixel payload and SHA-256 validation.
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
+
+## M6.22 verification
+- Home was redesigned into a persistent six-module navigation rail, selected-module hero and three status metrics. PAL/NTSC geometry is calculated from the active region.
+- Module pages share an overview panel, three status cards and a context-aware controller footer. Games uses distinct cover-style cards and title metadata across Grid/Carousel/Coverflow/List; labels are width-aware.
+- The artwork region currently uses section icons plus ARTWORK NOT CACHED placeholders. The VRAM cache is reserved but real cover image ingestion/decoding has not been implemented.
+- Host CI [#367](https://github.com/SilverCrow2323/rtps2/actions/runs/44598741640) passed. Native PS2DEV build [#101](https://github.com/SilverCrow2323/rtps2/actions/runs/44598741740) passed and uploaded a 661,824-byte ELF artifact ZIP (SHA-256 398ff56052ed70be3471bc87e4b32b3fb96fcf530182fc7e9529a253769ad525). Extracted ELF: 2,047,340 bytes; SHA-256 a84f7acf833bc53536f3f081cd00020094fc10fdc6f37f7037c67a6a29653922.
+- The user has confirmed the previous NEXUS build runs in PCSX2. The M6.22 redesign still needs a PCSX2 screenshot review; no physical-PS2 test is claimed.
+- Details: [M6.22 visual redesign](M6.22-visual-redesign.md).
+
+## M6.21 verification
+- Games uses the M6.16 catalog and exposes Grid, Carousel, Coverflow and List; Up/Down selection, Triangle view cycling, Square favorites, L2 source filter, R2 platform filter and Cross metadata details.
+- Launch is intentionally not wired; detail screens do not falsely claim an OPL/Neutrino/POPS handoff.
+- Host CI [#367](https://github.com/SilverCrow2323/rtps2/actions/runs/44598741640) and native PS2DEV build [#101](https://github.com/SilverCrow2323/rtps2/actions/runs/44598741740) pass with the M6.22 renderer.
 
 ## M6.20 verification
 - Files offers three fixed roots (`mass:/`, `mmce0:/`, `mmce1:/`) with Up/Down selection. Triangle opens the scan warning; Cross confirms, Circle cancels and Start returns Home.
@@ -119,20 +134,18 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - Extracted NEXUS.ELF: 1,724,400 bytes; SHA-256 `51ad1a8c2799aee05452369b8b73fe1141ffcf187737227086c66882b4908d1b`.
 - No real-console boot or visual output is claimed.
 
-## M6.10 design boundary
-The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icons are now embedded in the native ELF and handed to the GS uploader during renderer initialization. Cover-art cache, multi-slot streaming and animated page backgrounds are still pending.
+## M6.22 visual boundary
+The old 3×2 dashboard/device strip has been replaced by the navigation rail + module hero + status metrics. Module pages share a more structured two-column layout, and Games uses cover-style placeholders across all four views. This is a major first redesign, not the final animated skin: the real artwork decoder/cache feed, subtle transitions, screenshot review and physical PAL/NTSC calibration remain open.
 
 ## Next priorities
-1. Run the M6.20 ELF in PCSX2 and on PAL/NTSC hardware; verify FileXio activation, root selector, scan confirmation/results, NXA1 atlas, cache reservation, controller mapping and frame pacing.
-2. Add an availability/status probe for the three configured roots so unavailable volumes are clearly distinguished before scan; keep this probe read-only.
-3. Implement an explicitly enabled USB mass provider and an MMCEMAN adapter only after verifying their installed IRX/version contracts; never auto-load or mount them at boot.
-4. Add an APA/PFS-specific read-only provider for traditional internal HDD partitions; this must not be confused with the file-based CD/DVD scanner.
-5. Connect catalog entries to Games Grid/Carousel/Coverflow/List, then add cover-art decoding/cache population and atomic stale-entry reconciliation.
-6. Add a bounded cover-image decoder/resizer that feeds verified assets into the four cache slots; then connect Grid/Carousel/Coverflow/List UI to real entries.
-4. Add documented, version-aware OPL/Neutrino/POPS launch handoff without inventing private commands.
-5. Add native PS2 Store networking only after transport and crypto architecture are proven.
-6. Recover M1–M5 original source snapshots, especially M5 Bridge API contract.
-7. Implement and test genuine PSU/SAS readers.
+1. Review M6.22 in PCSX2 using screenshots of Home, Games Grid/Carousel/Coverflow/List, Files and System; fix any observed clipping, scale or spacing issues.
+2. Implement a bounded image decoder/resizer and source-to-title artwork mapping that populates the four-slot GS cache; replace ARTWORK NOT CACHED placeholders with actual covers.
+3. Add a read-only availability/status probe for mass:/, mmce0:/ and mmce1:/, while keeping device drivers and mounts explicit.
+4. Implement explicitly enabled USB mass and MMCEMAN adapters only after checking their installed IRX/version contracts; do not auto-load or mount them at boot.
+5. Add a separate read-only APA/PFS provider for traditional internal HDD partitions.
+6. Connect documented, version-aware OPL/Neutrino/POPS launch handoff; do not invent private commands.
+7. Add subtle animation only after PCSX2/console frame pacing is measured.
+8. Add native PS2 Store networking after transport/crypto architecture is proven; recover original M1–M5 source snapshots and genuine PSU/SAS readers.
 
 ## Non-goals
 No automatic bootloader/OSDSYS/FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN replacement. No implicit mount, IOP reset, device formatting or filesystem repair. Bluetooth HID compatibility does not imply Wi-Fi support.
