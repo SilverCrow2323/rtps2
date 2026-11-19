@@ -87,7 +87,7 @@ static void render_fallback_page(const NexusNavState *state, int input_ready, in
                        connected ? "CONNECTED" : "WAITING");
             if (actions != 0 && actions->filexio_confirm_pending) {
                 scr_printf("Activate missing IOMANX/FileXio modules?\n");
-                scr_printf("No IOP reset, mount or scan. CROSS confirm / CIRCLE cancel.\n");
+                scr_printf("May apply SBV hooks; no IOP reset, mount or scan. CROSS confirm / CIRCLE cancel.\n");
             } else if (actions != 0 && actions->filexio_ready) {
                 scr_printf("FileXio RPC: READY (no volumes mounted)\n");
             } else if (actions != 0 && actions->filexio_attempted) {
