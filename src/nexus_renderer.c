@@ -218,7 +218,8 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
 }
 
 static qword_t *render_page(qword_t *q, const NexusNavState *state,
-                            int input_ready, int connected)
+                            int input_ready, int connected,
+                            const NexusActionStatus *actions)
 {
     const char *title = nexus_page_name(state->page);
     const char *eyebrow = "NEXUS MODULE";
@@ -269,22 +270,46 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
             next = "Read-only volume discovery";
             break;
         case NEXUS_PAGE_SYSTEM:
-            body1 = input_ready ? "DualShock input backend initialized." : "DualShock input backend unavailable.";
-            if (screen_height == NEXUS_PAL_HEIGHT) {
-                body2 = nexus_atlas_ready()
-                    ? "GS: PAL 640x512 | NXA1 ICON ATLAS READY."
-                    : "GS: PAL 640x512 | PROCEDURAL ICON FALLBACK.";
+            if (actions != 0 && actions->filexio_confirm_pending) {
+                body1 = "ACTIVATE FILEXIO / IOMANX SERVICES?";
+                body2 = "Loads missing RPC modules; no IOP reset or mount.";
+                body3 = "CROSS CONFIRMS. CIRCLE CANCELS.";
+                tag2 = "CONFIRM REQUIRED";
+                next = "No device scan or filesystem write will run.";
+            } else if (actions != 0 && actions->filexio_ready) {
+                body1 = "FILEXIO RPC READY - NO VOLUMES MOUNTED.";
+                body2 = "Only existing registered roots can be scanned.";
+                body3 = "USB/MMCE drivers are not started by this action.";
+                tag2 = "FILEXIO READY";
+                next = "Root selection and read-only scan are next.";
+            } else if (actions != 0 && actions->filexio_attempted) {
+                body1 = actions->last_filexio_result == 0
+                    ? "FILEXIO ACTIVATION COMPLETED."
+                    : "FILEXIO ACTIVATION FAILED.";
+                body2 = "No mount, scan, format or storage write was run.";
+                body3 = "Review the module/IOP environment before retrying.";
+                tag2 = actions->last_filexio_result == 0 ? "READY" : "ERROR";
+                next = actions->last_filexio_result == 0
+                    ? "Triangle opens System activation options."
+                    : "Triangle retries after another confirmation.";
             } else {
-                body2 = nexus_atlas_ready()
-                    ? "GS: NTSC 640x448 | NXA1 ICON ATLAS READY."
-                    : "GS: NTSC 640x448 | PROCEDURAL ICON FALLBACK.";
+                body1 = input_ready ? "DualShock input backend initialized." : "DualShock input backend unavailable.";
+                if (screen_height == NEXUS_PAL_HEIGHT) {
+                    body2 = nexus_atlas_ready()
+                        ? "GS: PAL 640x512 | NXA1 ICON ATLAS READY."
+                        : "GS: PAL 640x512 | PROCEDURAL ICON FALLBACK.";
+                } else {
+                    body2 = nexus_atlas_ready()
+                        ? "GS: NTSC 640x448 | NXA1 ICON ATLAS READY."
+                        : "GS: NTSC 640x448 | PROCEDURAL ICON FALLBACK.";
+                }
+                body3 = nexus_cover_cache_ready()
+                    ? "Four 128x128 artwork slots reserved; storage probes pending."
+                    : "Artwork cache unavailable; storage probes pending.";
+                tag2 = nexus_atlas_ready() ? "ATLAS READY" : "ICON FALLBACK";
+                next = connected ? "Triangle: explicit FileXio activation"
+                                 : "Controller waiting; Triangle: FileXio";
             }
-            body3 = nexus_cover_cache_ready()
-                ? "Four 128x128 artwork slots reserved; storage probes pending."
-                : "Artwork cache unavailable; storage probes pending.";
-            tag2 = nexus_atlas_ready() ? "ATLAS READY" : "ICON FALLBACK";
-            next = connected ? "Controller ready / read-only device registry"
-                             : "Controller waiting / read-only device registry";
             break;
         default:
             break;
@@ -310,9 +335,20 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
     q = print_text(q, next, 20, 373, C_TEXT);
 
     q = fill_rect(q, 18, screen_height - 42, 604, 26, C_HEADER);
-    q = print_text(q, "L1 / R1  PREVIOUS / NEXT", 28, screen_height - 36, C_TEXT);
-    q = print_text(q, "CIRCLE  BACK", 280, screen_height - 36, C_ACCENT);
-    q = print_text(q, "START  HOME", 442, screen_height - 36, C_MUTED);
+    if (state->page == NEXUS_PAGE_SYSTEM && state->in_section &&
+        actions != 0 && actions->filexio_confirm_pending) {
+        q = print_text(q, "CROSS  CONFIRM", 28, screen_height - 36, C_ACCENT);
+        q = print_text(q, "CIRCLE  CANCEL", 220, screen_height - 36, C_WARN);
+        q = print_text(q, "START  HOME", 458, screen_height - 36, C_MUTED);
+    } else if (state->page == NEXUS_PAGE_SYSTEM && state->in_section) {
+        q = print_text(q, "TRIANGLE  FILEXIO", 28, screen_height - 36, C_ACCENT);
+        q = print_text(q, "L1 / R1  MODULES", 250, screen_height - 36, C_TEXT);
+        q = print_text(q, "CIRCLE  BACK", 472, screen_height - 36, C_MUTED);
+    } else {
+        q = print_text(q, "L1 / R1  PREVIOUS / NEXT", 28, screen_height - 36, C_TEXT);
+        q = print_text(q, "CIRCLE  BACK", 280, screen_height - 36, C_ACCENT);
+        q = print_text(q, "START  HOME", 442, screen_height - 36, C_MUTED);
+    }
     return q;
 }
 
@@ -395,7 +431,8 @@ int nexus_renderer_ready(void)
     return renderer_is_ready;
 }
 
-int nexus_renderer_render(const NexusNavState *state, int input_ready, int connected)
+int nexus_renderer_render(const NexusNavState *state, int input_ready, int connected,
+                          const NexusActionStatus *actions)
 {
     qword_t *q;
     int back_index;
@@ -416,7 +453,7 @@ int nexus_renderer_render(const NexusNavState *state, int input_ready, int conne
     if (!state->in_section || state->page == NEXUS_PAGE_HOME) {
         q = render_home(q, state, input_ready, connected);
     } else {
-        q = render_page(q, state, input_ready, connected);
+        q = render_page(q, state, input_ready, connected, actions);
     }
 
     q = draw_finish(q);
