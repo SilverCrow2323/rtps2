@@ -4,7 +4,7 @@
 - Added a deterministic PNG decoder/atlas packer with no third-party Python dependency.
 - Six 64×64 section icons map to a 256×128 PSMCT32 RGBA atlas; two 64×64 atlas cells remain reserved.
 - NXA1 uses a 64-byte little-endian header, 131,072-byte pixel payload and SHA-256 verification. PNG alpha is scaled to the GS 0..128 range.
-- Eight focused host tests passed locally, including malformed CRC, payload corruption, non-power-of-two dimensions and missing/wrong-size assets.
+- Eight focused asset tests passed in the full GitHub Actions host suite [#129](https://github.com/SilverCrow2323/rtps2/actions/runs/44574962515); the workflow passed all 120 Python tests, Python compile, C navigation and native C syntax checks.
 - Native GS upload, VRAM allocation/LRU and visual console validation are not implemented in this milestone.
 - Details: [M6.11 asset pipeline](M6.11-asset-pipeline.md).
 
