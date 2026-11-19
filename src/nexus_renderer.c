@@ -1,6 +1,7 @@
 #include <tamtypes.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <packet.h>
 #include <dma.h>
@@ -539,21 +540,61 @@ static qword_t *render_games_page(qword_t *q, const NexusActionStatus *actions)
     return q;
 }
 
+static qword_t *print_text_fit(qword_t *q, const char *value,
+                               int x, int y, int max_width,
+                               u8 r, u8 g, u8 b)
+{
+    char buffer[96];
+    size_t max_chars = max_width > 0 ? (size_t)(max_width / 9) : 0U;
+    size_t length;
+
+    if (max_chars > sizeof(buffer) - 1U)
+        max_chars = sizeof(buffer) - 1U;
+    if (value == 0)
+        value = "";
+    length = strlen(value);
+    if (length <= max_chars)
+        return print_text(q, value, x, y, r, g, b);
+    if (max_chars < 4U)
+        max_chars = 4U;
+    if (max_chars > sizeof(buffer) - 1U)
+        max_chars = sizeof(buffer) - 1U;
+    memcpy(buffer, value, max_chars - 3U);
+    buffer[max_chars - 3U] = '.';
+    buffer[max_chars - 2U] = '.';
+    buffer[max_chars - 1U] = '.';
+    buffer[max_chars] = '\0';
+    return print_text(q, buffer, x, y, r, g, b);
+}
+
+static qword_t *draw_info_card(qword_t *q, int x, int y, int width,
+                               const char *label, const char *value,
+                               u8 value_r, u8 value_g, u8 value_b)
+{
+    q = fill_rect(q, x, y, width, 74, C_SOFT);
+    q = fill_rect(q, x, y, 3, 74, C_ACCENT);
+    q = print_text(q, label, x + 12, y + 10, C_MUTED);
+    q = print_text_fit(q, value, x + 12, y + 35, width - 24,
+                       value_r, value_g, value_b);
+    return q;
+}
+
 static qword_t *render_page(qword_t *q, const NexusNavState *state,
                             int input_ready, int connected,
                             const NexusActionStatus *actions)
 {
     const char *title = nexus_page_name(state->page);
-    const char *eyebrow = "NEXUS MODULE";
     const char *body1 = "This module is part of the NEXUS shell.";
     const char *body2 = "The native provider is not connected yet.";
     const char *body3 = "No storage scan or device modification has been run.";
-    const char *tag1 = "STATUS";
     const char *tag2 = "NOT CONNECTED";
-    const char *tag3 = "NEXT STEP";
     const char *next = "Provider integration";
     char scan_summary[64];
     char scan_detail[64];
+    char session[48];
+    int icon_index = (int)state->page - 1;
+    int main_height = screen_height - 184;
+    int footer_y = screen_height - 35;
 
     scan_summary[0] = '\0';
     scan_detail[0] = '\0';
@@ -566,28 +607,28 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
             body2 = "Scanner core: CD/DVD ISO/ZSO + POPS VCD (read-only).";
             body3 = "Waiting for an explicitly configured mounted-volume adapter.";
             tag2 = nexus_library_count() == 0U ? "INDEX EMPTY" : "CATALOG READY";
-            next = "Connect fileXio and mounted-volume adapters";
+            next = "Open the Games library";
             break;
         case NEXUS_PAGE_PS1:
             body1 = "A dedicated collection for PlayStation 1 titles.";
             body2 = "POPS discovery and title metadata are not wired yet.";
             body3 = "Existing POPS installations will not be modified.";
             tag2 = "POPS PENDING";
-            next = "POPS library provider";
+            next = "Connect the POPS library provider";
             break;
         case NEXUS_PAGE_HOMEBREW:
             body1 = "Keep launchers, utilities and emulators in one place.";
             body2 = "Local ELF discovery and categories are not wired yet.";
             body3 = "Existing homebrew installations are left untouched.";
             tag2 = "DISCOVERY PENDING";
-            next = "Local ELF index";
+            next = "Build the local ELF index";
             break;
         case NEXUS_PAGE_STORE:
             body1 = "The host Companion has signed-catalog and ZIP staging support.";
             body2 = "The native PS2 network client is not implemented yet.";
             body3 = "No package can be installed from this screen.";
             tag2 = "HOST PIPELINE ONLY";
-            next = "Native network provider";
+            next = "Connect the native network provider";
             break;
         case NEXUS_PAGE_FILES:
             if (actions != 0 && actions->scan_confirm_pending) {
@@ -613,7 +654,7 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                 tag2 = actions->last_scan_result == 0
                     ? "SCAN COMPLETE" : "SCAN ERROR";
                 next = actions->last_scan_result == 0
-                    ? "Read-only scan finished; no title was launched."
+                    ? "Read-only scan finished; no title launched."
                     : "Check that the selected root is already accessible.";
             } else if (actions != 0 && actions->filexio_ready) {
                 (void)snprintf(scan_summary, sizeof(scan_summary),
@@ -623,13 +664,13 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                 body2 = scan_summary;
                 body3 = "UP/DOWN select root; TRIANGLE requests scan.";
                 tag2 = "READY - NOT SCANNED";
-                next = "Only already-accessible folders will be read.";
+                next = "Choose a root and request a scan";
             } else {
                 body1 = "FILEXIO IS NOT ACTIVE.";
                 body2 = "System: Triangle warning, Cross confirmation.";
                 body3 = "No device driver or volume is mounted here.";
                 tag2 = "ACTIVATE IN SYSTEM";
-                next = "Return here after FileXio is ready.";
+                next = "Activate FileXio from System";
             }
             break;
         case NEXUS_PAGE_SYSTEM:
@@ -644,7 +685,7 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                 body2 = "Only existing registered roots can be scanned.";
                 body3 = "USB/MMCE drivers are not started by this action.";
                 tag2 = "FILEXIO READY";
-                next = "FileXio ready; root selection is the next step.";
+                next = "Open Files to select an accessible root";
             } else if (actions != 0 && actions->filexio_attempted) {
                 body1 = actions->last_filexio_result == 0
                     ? "FILEXIO ACTIVATION COMPLETED."
@@ -653,25 +694,22 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                 body3 = "Review the module/IOP environment before retrying.";
                 tag2 = actions->last_filexio_result == 0 ? "READY" : "ERROR";
                 next = actions->last_filexio_result == 0
-                    ? "Triangle opens System activation options."
-                    : "Triangle retries after another confirmation.";
+                    ? "FileXio is ready for a selected root"
+                    : "Triangle retries after another confirmation";
             } else {
-                body1 = input_ready ? "DualShock input backend initialized." : "DualShock input backend unavailable.";
-                if (screen_height == NEXUS_PAL_HEIGHT) {
-                    body2 = nexus_atlas_ready()
-                        ? "GS: PAL 640x512 | NXA1 ICON ATLAS READY."
-                        : "GS: PAL 640x512 | PROCEDURAL ICON FALLBACK.";
-                } else {
-                    body2 = nexus_atlas_ready()
-                        ? "GS: NTSC 640x448 | NXA1 ICON ATLAS READY."
-                        : "GS: NTSC 640x448 | PROCEDURAL ICON FALLBACK.";
-                }
+                body1 = input_ready ? "DUALSHOCK INPUT BACKEND INITIALIZED."
+                                    : "DUALSHOCK INPUT BACKEND UNAVAILABLE.";
+                body2 = screen_height == NEXUS_PAL_HEIGHT
+                    ? (nexus_atlas_ready() ? "GS VIDEO: PAL 640x512 / ATLAS READY."
+                                           : "GS VIDEO: PAL 640x512 / ICON FALLBACK.")
+                    : (nexus_atlas_ready() ? "GS VIDEO: NTSC 640x448 / ATLAS READY."
+                                           : "GS VIDEO: NTSC 640x448 / ICON FALLBACK.");
                 body3 = nexus_cover_cache_ready()
-                    ? "Four 128x128 artwork slots reserved; storage probes pending."
-                    : "Artwork cache unavailable; storage probes pending.";
+                    ? "FOUR 128x128 COVER SLOTS RESERVED."
+                    : "ARTWORK CACHE UNAVAILABLE.";
                 tag2 = nexus_atlas_ready() ? "ATLAS READY" : "ICON FALLBACK";
                 next = connected ? "Triangle: explicit FileXio activation"
-                                 : "Controller waiting; Triangle: FileXio";
+                                 : "Connect a controller to continue";
             }
             break;
         default:
@@ -680,58 +718,77 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
 
     q = fill_rect(q, 0, 0, NEXUS_WIDTH, screen_height, C_BG);
     q = draw_topbar(q, title);
-    q = print_text(q, eyebrow, 20, 73, C_ACCENT);
-    q = print_text(q, title, 20, 101, C_TEXT);
-    q = fill_rect(q, 18, 142, 604, 196, C_PANEL);
-    q = fill_rect(q, 18, 142, 4, 196, C_ACCENT);
+    q = print_text(q, "NEXUS MODULE", 20, 67, C_ACCENT);
+    q = print_text(q, title, 20, 86, C_TEXT);
 
-    q = print_text(q, body1, 42, 170, C_TEXT);
-    q = print_text(q, body2, 42, 204, C_MUTED);
-    q = print_text(q, body3, 42, 238, C_MUTED);
+    q = fill_rect(q, 18, 116, 374, main_height, C_PANEL);
+    q = fill_rect(q, 18, 116, 374, 3, C_ACCENT);
+    q = fill_rect(q, 19, 119, 1, main_height - 3, C_LINE);
+    q = print_text(q, "OVERVIEW", 38, 136, C_ACCENT);
+    q = draw_large_icon(q, icon_index, 302, 138, 66);
+    q = print_text_fit(q, body1, 38, 184, 330, C_TEXT);
+    q = print_text_fit(q, body2, 38, 220, 330, C_MUTED);
+    q = print_text_fit(q, body3, 38, 256, 330, C_MUTED);
+    q = fill_rect(q, 38, 292, 330, 1, C_LINE);
+    q = print_text(q, "NEXT ACTION", 38, 311, C_MUTED);
+    q = print_text_fit(q, next, 38, 336, 330, C_TEXT);
 
-    q = fill_rect(q, 42, 282, 170, 37, C_HEADER);
-    q = fill_rect(q, 224, 282, 374, 37, C_HEADER);
-    q = print_text(q, tag1, 54, 291, C_MUTED);
-    q = print_text(q, tag2, 236, 291, C_WARN);
+    q = draw_info_card(q, 406, 116, 216, "CURRENT STATUS",
+                       tag2,
+                       state->page == NEXUS_PAGE_FILES &&
+                       actions != 0 && actions->scan_attempted &&
+                       actions->last_scan_result != 0
+                           ? C_AMBER : C_ACCENT[0],
+                       218, 235);
+    q = draw_info_card(q, 406, 198, 216, "SESSION INPUT",
+                       connected ? "CONTROLLER CONNECTED" : "CONTROLLER WAITING",
+                       input_ready && connected ? 91 : 238,
+                       input_ready && connected ? 210 : 181,
+                       input_ready && connected ? 153 : 98);
+    (void)snprintf(session, sizeof(session), "%s / %s",
+                   screen_height == NEXUS_PAL_HEIGHT ? "PAL" : "NTSC",
+                   nexus_cover_cache_ready() ? "GS CACHE READY" : "GS CACHE LIMITED");
+    q = draw_info_card(q, 406, 280, 216, "VIDEO / GRAPHICS",
+                       session, C_TEXT, C_ACCENT, C_TEXT);
 
-    q = print_text(q, tag3, 20, 350, C_ACCENT);
-    q = print_text(q, next, 20, 373, C_TEXT);
-
-    q = fill_rect(q, 18, screen_height - 42, 604, 26, C_HEADER);
+    q = fill_rect(q, 18, footer_y, 604, 27, C_HEADER);
+    q = fill_rect(q, 18, footer_y, 604, 1, C_LINE);
     if (state->page == NEXUS_PAGE_FILES && state->in_section &&
         actions != 0 && actions->scan_confirm_pending) {
-        q = print_text(q, "CROSS  SCAN", 28, screen_height - 36, C_ACCENT);
-        q = print_text(q, "CIRCLE  CANCEL", 220, screen_height - 36, C_WARN);
-        q = print_text(q, "START  HOME", 458, screen_height - 36, C_MUTED);
+        q = print_text(q, "CROSS  SCAN", 28, footer_y + 7, C_ACCENT);
+        q = print_text(q, "CIRCLE  CANCEL", 220, footer_y + 7, C_AMBER);
+        q = print_text(q, "START  HOME", 490, footer_y + 7, C_MUTED);
     } else if (state->page == NEXUS_PAGE_FILES && state->in_section &&
                actions != 0 && actions->filexio_ready) {
-        q = print_text(q, "UP/DOWN  ROOT", 28, screen_height - 36, C_TEXT);
-        q = print_text(q, "TRIANGLE  SCAN", 250, screen_height - 36, C_ACCENT);
-        q = print_text(q, "CIRCLE  BACK", 472, screen_height - 36, C_MUTED);
+        q = print_text(q, "UP/DOWN  ROOT", 28, footer_y + 7, C_TEXT);
+        q = print_text(q, "TRIANGLE  SCAN", 250, footer_y + 7, C_ACCENT);
+        q = print_text(q, "CIRCLE  BACK", 490, footer_y + 7, C_MUTED);
     } else if (state->page == NEXUS_PAGE_FILES && state->in_section) {
-        q = print_text(q, "GO TO SYSTEM FIRST", 28, screen_height - 36, C_WARN);
-        q = print_text(q, "CIRCLE  BACK", 472, screen_height - 36, C_MUTED);
+        q = print_text(q, "GO TO SYSTEM FIRST", 28, footer_y + 7, C_AMBER);
+        q = print_text(q, "CIRCLE  BACK", 490, footer_y + 7, C_MUTED);
     } else if (state->page == NEXUS_PAGE_SYSTEM && state->in_section &&
         actions != 0 && actions->filexio_confirm_pending) {
-        q = print_text(q, "CROSS  CONFIRM", 28, screen_height - 36, C_ACCENT);
-        q = print_text(q, "CIRCLE  CANCEL", 220, screen_height - 36, C_WARN);
-        q = print_text(q, "START  HOME", 458, screen_height - 36, C_MUTED);
+        q = print_text(q, "CROSS  CONFIRM", 28, footer_y + 7, C_ACCENT);
+        q = print_text(q, "CIRCLE  CANCEL", 220, footer_y + 7, C_AMBER);
+        q = print_text(q, "START  HOME", 490, footer_y + 7, C_MUTED);
     } else if (state->page == NEXUS_PAGE_SYSTEM && state->in_section &&
                actions != 0 && actions->filexio_ready) {
-        q = print_text(q, "FILEXIO  READY", 28, screen_height - 36, C_ACCENT);
-        q = print_text(q, "L1 / R1  MODULES", 250, screen_height - 36, C_TEXT);
-        q = print_text(q, "CIRCLE  BACK", 472, screen_height - 36, C_MUTED);
+        q = print_text(q, "FILEXIO  READY", 28, footer_y + 7, C_ACCENT);
+        q = print_text(q, "L1 / R1  MODULES", 250, footer_y + 7, C_TEXT);
+        q = print_text(q, "CIRCLE  BACK", 490, footer_y + 7, C_MUTED);
     } else if (state->page == NEXUS_PAGE_SYSTEM && state->in_section) {
-        q = print_text(q, "TRIANGLE  FILEXIO", 28, screen_height - 36, C_ACCENT);
-        q = print_text(q, "L1 / R1  MODULES", 250, screen_height - 36, C_TEXT);
-        q = print_text(q, "CIRCLE  BACK", 472, screen_height - 36, C_MUTED);
+        q = print_text(q, "TRIANGLE  FILEXIO", 28, footer_y + 7, C_ACCENT);
+        q = print_text(q, "L1 / R1  MODULES", 250, footer_y + 7, C_TEXT);
+        q = print_text(q, "CIRCLE  BACK", 490, footer_y + 7, C_MUTED);
     } else {
-        q = print_text(q, "L1 / R1  PREVIOUS / NEXT", 28, screen_height - 36, C_TEXT);
-        q = print_text(q, "CIRCLE  BACK", 280, screen_height - 36, C_ACCENT);
-        q = print_text(q, "START  HOME", 442, screen_height - 36, C_MUTED);
+        q = print_text(q, "L1 / R1  PREVIOUS / NEXT", 28, footer_y + 7, C_TEXT);
+        q = print_text(q, "CIRCLE  BACK", 310, footer_y + 7, C_ACCENT);
+        q = print_text(q, "START  HOME", 490, footer_y + 7, C_MUTED);
     }
+    (void)tag2;
     return q;
 }
+
 
 int nexus_renderer_init(void)
 {
