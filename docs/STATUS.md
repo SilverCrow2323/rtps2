@@ -5,7 +5,7 @@
 - Dashboard card renderer selects atlas icons when a caller has loaded an atlas; procedural 5×5 glyphs remain the fallback.
 - The shell does not yet mount/read an NXA file at boot. Native caller must verify payload SHA-256 before upload; the EE helper currently validates structure, exact size, reserved bytes and alignment, not the digest.
 - One atlas VRAM slot only; no cover-art LRU or safe multi-slot allocator yet.
-- PS2DEV cross-build passed: [native build #25](https://github.com/SilverCrow2323/rtps2/actions/runs/44576221925). Host CI passed 120 Python tests, compile check, navigation regression, NXA1 regression and native C syntax checks: [run #160](https://github.com/SilverCrow2323/rtps2/actions/runs/44576528281), including reserved-header-byte rejection.
+- PS2DEV cross-build passed: [native build #27](https://github.com/SilverCrow2323/rtps2/actions/runs/44576527634). Host CI passed 120 Python tests, compile check, navigation regression, NXA1 regression and native C syntax checks: [run #160](https://github.com/SilverCrow2323/rtps2/actions/runs/44576528281), including reserved-header-byte rejection.
 - Console visual validation remains pending.
 - Details: [M6.12 native GS atlas](M6.12-native-gs-atlas.md).
 
