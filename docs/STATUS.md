@@ -3,8 +3,9 @@
 ## M6.12 native GS atlas upload path
 - Added `nexus_atlas.c`: strict NXA1 header/size checks, aligned PSMCT32 texture upload through GIF DMA, texture flush, nearest sampling and six-cell atlas draw helper.
 - Dashboard card renderer selects atlas icons when a caller has loaded an atlas; procedural 5×5 glyphs remain the fallback.
-- The shell does not yet mount/read an NXA file at boot. Native caller must verify payload SHA-256 before upload; the EE helper currently validates structure and alignment, not the digest.
+- The shell does not yet mount/read an NXA file at boot. Native caller must verify payload SHA-256 before upload; the EE helper currently validates structure, exact size, reserved bytes and alignment, not the digest.
 - One atlas VRAM slot only; no cover-art LRU or safe multi-slot allocator yet.
+- PS2DEV cross-build passed: [native build #25](https://github.com/SilverCrow2323/rtps2/actions/runs/44576221925). Host CI passed 120 Python tests, compile check, navigation regression, NXA1 regression and native C syntax checks: [run #159](https://github.com/SilverCrow2323/rtps2/actions/runs/44576417207). A follow-up reserved-byte regression is running separately.
 - Console visual validation remains pending.
 - Details: [M6.12 native GS atlas](M6.12-native-gs-atlas.md).
 
