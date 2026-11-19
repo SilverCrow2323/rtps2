@@ -1,9 +1,10 @@
 #include <debug.h>
 
 #include "nexus_devices.h"
+#include "nexus_renderer.h"
 #include "nexus_ui.h"
 
-static const char *const home_labels[] = {
+static const char *const home_sections[] = {
     "GAMES",
     "PS1 LIBRARY",
     "HOMEBREW",
@@ -12,25 +13,31 @@ static const char *const home_labels[] = {
     "SYSTEM"
 };
 
+static int gs_renderer_ready;
+
 void nexus_ui_init(void)
 {
     init_scr();
     scr_setbgcolor(0x00131d);
     scr_setfontcolor(0x00d9ff);
     scr_clear();
+
+    gs_renderer_ready = (nexus_renderer_init() == 0);
+    if (!gs_renderer_ready) {
+        scr_printf("NEXUS GS renderer unavailable.\n");
+        scr_printf("Using PS2SDK debug renderer fallback.\n");
+    }
 }
 
-static void render_home(const NexusNavState *state, int input_ready, int connected)
+static void render_fallback_home(const NexusNavState *state, int input_ready, int connected)
 {
     NexusDeviceSnapshot devices;
     unsigned int i;
 
     nexus_devices_snapshot(&devices);
-
     scr_printf("SPDW FACTORY  /  PS2BBN NEXUS\n");
     scr_printf("==============================================\n");
-    scr_printf("A new shell for your PlayStation 2\n\n");
-    scr_printf("SYSTEM STATUS\n");
+    scr_printf("SYSTEM STATUS - READ ONLY\n");
     scr_printf("DISC   %-14s  MC0    %-14s\n",
                nexus_device_state_name(devices.disc),
                nexus_device_state_name(devices.mc0));
@@ -42,70 +49,48 @@ static void render_home(const NexusNavState *state, int input_ready, int connect
                nexus_device_state_name(devices.usb));
 
     scr_printf("YOUR LIBRARY\n");
-    for (i = 0; i < sizeof(home_labels) / sizeof(home_labels[0]); ++i) {
-        scr_printf("%s %s\n",
-                   (state->selected == i) ? ">" : " ",
-                   home_labels[i]);
+    for (i = 0; i < sizeof(home_sections) / sizeof(home_sections[0]); ++i) {
+        scr_printf("%s %s\n", (state->selected == i) ? ">" : " ", home_sections[i]);
     }
-
-    scr_printf("\n----------------------------------------------\n");
-    scr_printf("PAD: %s   CONTROLLER: %s\n",
-               input_ready ? "LIBPAD READY" : "UNAVAILABLE",
+    scr_printf("\nPAD: %s  CONTROLLER: %s\n",
+               input_ready ? "READY" : "UNAVAILABLE",
                connected ? "CONNECTED" : "WAITING");
-    scr_printf("UP/DOWN: SELECT   CROSS: OPEN   L1/R1: MOVE\n");
-    scr_printf("START: HOME   CIRCLE: BACK\n");
+    scr_printf("UP/DOWN SELECT  CROSS OPEN  L1/R1 MOVE\n");
+    scr_printf("START HOME  CIRCLE BACK\n");
 }
 
-static void render_section(const NexusNavState *state, int input_ready, int connected)
+static void render_fallback_page(const NexusNavState *state, int input_ready, int connected)
 {
     scr_printf("SPDW FACTORY  /  NEXUS  /  %s\n", nexus_page_name(state->page));
     scr_printf("==============================================\n\n");
 
     switch (state->page) {
         case NEXUS_PAGE_GAMES:
-            scr_printf("GAME LIBRARY\n\n");
-            scr_printf("Storage providers: not connected yet\n");
-            scr_printf("Planned sources: HDD / MMCE / USB\n");
-            scr_printf("Views: GRID / CAROUSEL / COVERFLOW / LIST\n");
-            scr_printf("Launch adapters: OPL / NEUTRINO (pending)\n");
+            scr_printf("GAME LIBRARY\nStorage providers: not connected yet\n");
             break;
         case NEXUS_PAGE_PS1:
-            scr_printf("PLAYSTATION 1 LIBRARY\n\n");
-            scr_printf("POPS discovery and title database: pending\n");
-            scr_printf("No storage scan has been performed.\n");
+            scr_printf("PLAYSTATION 1 LIBRARY\nPOPS discovery: pending\n");
             break;
         case NEXUS_PAGE_HOMEBREW:
-            scr_printf("HOMEBREW HUB\n\n");
-            scr_printf("Local ELF discovery: pending\n");
-            scr_printf("Categories and metadata provider: pending\n");
+            scr_printf("HOMEBREW HUB\nLocal ELF discovery: pending\n");
             break;
         case NEXUS_PAGE_STORE:
-            scr_printf("NEXUS STORE\n\n");
-            scr_printf("Signed catalog and package pipeline exist on host.\n");
-            scr_printf("Native PS2 network transport: not connected\n");
-            scr_printf("Native installer: not implemented\n");
+            scr_printf("NEXUS STORE\nHost signed catalog exists; native transport pending.\n");
             break;
         case NEXUS_PAGE_FILES:
-            scr_printf("FILE EXPLORER\n\n");
-            scr_printf("Mounted-volume provider: not connected\n");
-            scr_printf("No filesystem is mounted or modified.\n");
+            scr_printf("FILE EXPLORER\nNo filesystem is mounted or modified.\n");
             break;
         case NEXUS_PAGE_SYSTEM:
-            scr_printf("SYSTEM\n\n");
-            scr_printf("DualShock input: %s\n", input_ready ? "initialized" : "unavailable");
-            scr_printf("Controller: %s\n", connected ? "connected" : "waiting");
-            scr_printf("Device probing: not implemented\n");
-            scr_printf("Renderer: PS2SDK debug text (bootstrap)\n");
-            scr_printf("Graphics UI: next native milestone\n");
+            scr_printf("SYSTEM\nInput: %s\nController: %s\nDevice probing: pending\n",
+                       input_ready ? "READY" : "UNAVAILABLE",
+                       connected ? "CONNECTED" : "WAITING");
             break;
         default:
             scr_printf("Unknown page.\n");
             break;
     }
 
-    scr_printf("\n----------------------------------------------\n");
-    scr_printf("L1/R1: PREVIOUS/NEXT SECTION   CIRCLE: BACK\n");
-    scr_printf("START: HOME\n");
+    scr_printf("\nL1/R1 PREVIOUS/NEXT  CIRCLE BACK  START HOME\n");
 }
 
 void nexus_ui_render(const NexusNavState *state, int input_ready, int controller_connected)
@@ -114,10 +99,15 @@ void nexus_ui_render(const NexusNavState *state, int input_ready, int controller
         return;
     }
 
+    if (gs_renderer_ready &&
+        nexus_renderer_render(state, input_ready, controller_connected) == 0) {
+        return;
+    }
+
     scr_clear();
     if (!state->in_section || state->page == NEXUS_PAGE_HOME) {
-        render_home(state, input_ready, controller_connected);
+        render_fallback_home(state, input_ready, controller_connected);
     } else {
-        render_section(state, input_ready, controller_connected);
+        render_fallback_page(state, input_ready, controller_connected);
     }
 }
