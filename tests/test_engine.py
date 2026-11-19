@@ -24,6 +24,9 @@ class TxTests(unittest.TestCase):
  def test_traversal(self):
   self.manifest['files'][0]['path']='../../BOOT.ELF'
   with self.assertRaises(TransactionError): Transaction(self.root,self.state).install(self.manifest,self.payload)
+ def test_backslash_path_rejected(self):
+  self.manifest['files'][0]['path']='apps\\\\demo\\\\app.bin'
+  with self.assertRaises(TransactionError): Transaction(self.root,self.state).install(self.manifest,self.payload)
  def test_hash(self):
   self.manifest['files'][0]['sha256']='0'*64
   with self.assertRaises(TransactionError): Transaction(self.root,self.state).install(self.manifest,self.payload)
