@@ -3,25 +3,29 @@
 **The PS2, rebuilt as a navigable console experience.**  
 A native PlayStation 2 frontend and system shell inspired by PSBBN, developed under SPDW Factory.
 
-> This repository is the canonical home for NEXUS. Recoverable source includes host-side transactions, dependency planning, Store, recipes, Bridge trust, ZIP inspection/staging and a new native EE shell bootstrap. Earlier M1–M5 history is documented where original source snapshots are not available; missing code is not fabricated or represented as merged.
+> This repository is the canonical home for NEXUS. Recoverable source includes host-side transactions, dependency planning, Store, recipes, Bridge trust, ZIP inspection/staging and a native EE shell with a PS2SDK GS renderer. Earlier M1–M5 history is documented where original source snapshots are not available; missing code is not fabricated or represented as merged.
 
 ## Project map
 | Area | Purpose | Current status |
 |---|---|---|
-| Native shell | EE entry point, DualShock input, navigation and bootstrap pages | PS2DEV cross-build passed; ELF artifact published |
+| Native shell | EE entry point, DualShock input, navigation and GS dashboard | PS2DEV cross-build passed; NEXUS.ELF artifact published |
+| Graphics | libgraph/libdraw/libfont, double framebuffer and KROM font | Initial renderer present; final art/animation pending |
 | Devices & library | Mounted-volume providers, game catalog and metadata | Not yet implemented natively |
-| Artwork | NXA1 texture pipeline and GS upload path | Historical M4 description only; source recovery pending |
-| Store & packages | Signed host catalog, dependencies, recipes, ZIP inspection and host staging | Host-side code present; no PS2 installer |
+| Store & packages | Signed host catalog, dependency planning, recipes, ZIP inspection and host staging | Host-side code present; no PS2 installer |
 | Transactions | Journal, backup, verification, rollback and recovery | Host-side sandbox reference |
 | Network | Provider-neutral PS2 contract and host Bridge client | Contracts/client only; no native PS2 transport |
 
-## Native bootstrap
+## Native build and binary
 
-The initial NEXUS.ELF has been cross-compiled using the PS2DEV container/PS2SDK. The native shell currently uses a debug text renderer and DualShock navigation; it is a bootstrapped shell, not the final graphical frontend.
+The native NEXUS.ELF is compiled using the PS2DEV Docker image and the PS2SDK EE toolchain.
 
-- Native build workflow: [run #44486831714](https://github.com/SilverCrow2323/rtps2/actions/runs/44486831714)
-- Host verification: [run #44486842812](https://github.com/SilverCrow2323/rtps2/actions/runs/44486842812)
-- Build instructions: [native shell notes](docs/M6.9-native-shell.md)
+- GS renderer build: [Actions run #44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616)
+- Host verification: [Actions run #44488236424](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236424)
+- Renderer notes: [M6.10 GS renderer](docs/M6.10-gs-renderer.md)
+
+Extracted ELF: **1,564,624 bytes**, ELF32 little-endian MIPS, N32 ABI, statically linked, R5900/MIPS III flags. SHA-256: c313bc7ca7e00cb1c49d30d784d78ab59921132f31f7b55223c59207d49ebf27.
+
+Build success proves compilation/linking and target format, not that the binary has been tested on a physical PS2.
 
 ## Host validation
 
@@ -33,7 +37,7 @@ cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c tests/nat
 /tmp/nexus_navigation_test
 ~~~
 
-The host test suite passes 112 Python cases plus C navigation and C syntax checks. The PS2DEV EE cross-build is verified separately. A passing build does not replace a physical-console test.
+The host suite passes 112 Python cases plus C navigation and native C syntax checks. The PS2DEV EE cross-build is verified separately.
 
 ## Safety line
 NEXUS must not silently replace boot-critical assets or rewrite FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN/OSDSYS installations. The host transaction engine is sandboxed. No PS2 storage is mounted or written. Native device status remains NOT PROBED until real probes exist. ZIP staging writes only to an explicit host cache. PSU/SAS remain unsupported. The synthetic signing key is not a production key.
@@ -46,6 +50,6 @@ NEXUS must not silently replace boot-critical assets or rewrite FMCB/FHDB/OpenTu
 These are user-reported observations, not CI or independently repeated hardware tests.
 
 ## Known native limitations
-No GS graphical renderer, final UI design system, live device discovery, filesystem providers, OPL/Neutrino handoff, PS2-side HTTP/TLS/Ed25519 or native Store installer is included yet. The current source is a bootstrapped native shell, not the finished frontend.
+The current graphical renderer is an initial GS shell, not the final animated frontend. It has no original icon atlas, cover-art texture cache, animated section scenes, live device discovery, filesystem providers, OPL/Neutrino launch handoff, PS2-side HTTP/TLS/Ed25519 or native Store installer.
 
-See [roadmap](docs/ROADMAP.md), [verified status](docs/STATUS.md), [safety rules](docs/SAFETY.md), [M6.8 host staging](docs/M6.8-host-staging.md), [M6.7 signed catalog trust](docs/M6.7-signed-catalog.md) and [M6.9 native shell](docs/M6.9-native-shell.md).
+See [roadmap](docs/ROADMAP.md), [verified status](docs/STATUS.md), [safety rules](docs/SAFETY.md), [M6.8 host staging](docs/M6.8-host-staging.md), [M6.7 signed catalog trust](docs/M6.7-signed-catalog.md), [M6.9 native shell](docs/M6.9-native-shell.md) and [M6.10 GS renderer](docs/M6.10-gs-renderer.md).
