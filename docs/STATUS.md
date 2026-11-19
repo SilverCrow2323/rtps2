@@ -4,7 +4,7 @@
 - Added a four-slot LRU texture cache: 128×128 RGBA32 per slot, 256 KiB total. One contiguous 512×128 PSMCT32 allocation avoids arbitrary frees against PS2SDK's FIFO bump allocator.
 - Renderer reserves the cache after the two framebuffers and embedded icon atlas; allocation is optional and non-fatal. System diagnostics report whether the four artwork slots were reserved.
 - Store API accepts 16-byte-aligned 128×128 RGBA pixels and publishes a slot only after successful GIF DMA. LRU replacement reuses fixed addresses; it never allocates/frees per cover.
-- Host CI [#242](https://github.com/SilverCrow2323/rtps2/actions/runs/44581408402) passed the LRU policy test and native C syntax checks. PS2DEV EE build [#50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927) passed and uploaded NEXUS-ELF.
+- Host CI [#251](https://github.com/SilverCrow2323/rtps2/actions/runs/44581918935) passed LRU policy, PCSX2 launcher and native C syntax checks. PS2DEV EE build [#52](https://github.com/SilverCrow2323/rtps2/actions/runs/44581909557) passed; both the embedded atlas and cover pixel REF sources now receive explicit SyncDCache before GIF DMA.
 - Artifact ZIP: 558,304 bytes; SHA-256 e2f5d9b6e17017941b95e020c4a437735283ddb0e0cefc58ba1d7c08be1e7417. Extracted ELF: 1,737,732 bytes; SHA-256 93006b873561f6007f52c3b572281a3b8efcd57d0ecf477677adf3e67beb8deb.
 - No game scanner, cover-image decoder or catalog-to-cache integration yet; PCSX2 and physical-console visual checks remain pending.
 - Details: [M6.15 cover cache](M6.15-cover-cache.md).
