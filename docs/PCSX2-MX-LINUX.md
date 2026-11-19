@@ -19,7 +19,7 @@ Complete the first-run wizard and select a BIOS dumped from your own PS2. PCSX2 
 
 ## 3. Download the NEXUS build
 
-The current known-good build is Native EE workflow #88. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
+The current M6.22 visual build is Native EE workflow #101. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
 
 Install GitHub CLI and authenticate:
 
@@ -29,7 +29,7 @@ Install GitHub CLI and authenticate:
 Download and extract the artifact:
 
     mkdir -p "$HOME/PS2/NEXUS"
-    gh run download 44587509595 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
+    gh run download 44598741740 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
 
 The resulting file is:
 
@@ -41,9 +41,9 @@ Verify that it matches the build tested by CI:
 
 Expected SHA-256:
 
-    960f22530ebfae80691bb1ffd611cc0ea834444f4b9df0255a1596365d3db3b5
+    a84f7acf833bc53536f3f081cd00020094fc10fdc6f37f7037c67a6a29653922
 
-The ELF is 1,981,436 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache, native catalog, read-only scanner and FileXio adapter. In System, Triangle → warning → Cross activates FileXio. In Files, Up/Down selects mass:/, mmce0:/ or mmce1:/; Triangle → warning → Cross scans only direct CD/DVD/POPS folders. No USB/MMCEMAN driver is started and no volume is mounted; only already-accessible roots can scan. PCSX2 visual validation remains pending.
+The ELF is 2,047,340 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache, native catalog/scanner, FileXio adapter, Files scan flow and M6.22 visual redesign. Home now uses a left module rail and a contextual hero panel; module pages use a two-column layout; Games has cover-style placeholders in all four views. Artwork is not real box art yet. The previous build's PCSX2 boot/run is user-confirmed; review this M6.22 visual build and compare the layout.
 
 ## 4. Boot NEXUS directly
 
@@ -70,7 +70,7 @@ Or pass an explicit ELF path:
 - Check whether it reports `NXA1 ICON ATLAS READY`; otherwise the dashboard should use procedural fallback icons.
 - Test the DualShock mapping/navigation.
 
-This is an emulator smoke test. It does not replace validation on an actual PS2, especially for controller timing, video output and GS texture appearance.
+This is an emulator visual review. It does not replace validation on an actual PS2, especially for controller timing, PAL/NTSC output and GS texture appearance.
 
 ## Official references
 
