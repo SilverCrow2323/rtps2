@@ -196,8 +196,6 @@ int main(void)
     /* A successful scan feeds the same catalog rendered by Games. */
     assert(nexus_library_count() == 2U);
     nexus_nav_init(&navigation);
-    for (unsigned int i = 0; i < 0U; ++i)
-        nexus_actions_apply(&navigation, &status, NEXUS_KEY_DOWN);
     nexus_actions_apply(&navigation, &status, NEXUS_KEY_CONFIRM);
     assert(navigation.page == NEXUS_PAGE_GAMES);
     assert(nexus_library_visible_count(&status.library_view) == 2U);
