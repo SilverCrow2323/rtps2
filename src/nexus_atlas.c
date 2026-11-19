@@ -55,6 +55,13 @@ int nexus_atlas_validate_pack(const void *pack, size_t size)
         read_le16(data + 14) != 0U ||
         read_le32(data + 16) != NXA_PAYLOAD_SIZE)
         return -4;
+    {
+        unsigned int i;
+        for (i = 52U; i < NXA_HEADER_SIZE; ++i) {
+            if (data[i] != 0U)
+                return -4;
+        }
+    }
     return 0;
 }
 
