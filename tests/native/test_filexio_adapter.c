@@ -131,7 +131,7 @@ int main(void)
     /* The IOP-facing services start only after this explicit activation. */
     assert(nexus_filexio_activate() == 0);
     assert(nexus_filexio_ready() == 1);
-    assert(sif_init_calls == 1);
+    assert(sif_init_calls == 0); /* Bootstrap owns SIF RPC initialization. */
     assert(exec_calls == 2);
     assert(patch_lmb_calls == 1);
     assert(patch_prefix_calls == 1);
