@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "nexus_actions.h"
+#include "nexus_library.h"
 
 static int adapter_ready;
 static int activation_calls;
@@ -32,8 +33,30 @@ int nexus_filexio_scan_root(const NexusScanConfig *config,
         report->root_available = 1U;
         report->directories_opened = 3U;
         report->entries_seen = 5U;
-        report->supported_files = 3U;
-        report->indexed = 3U;
+        report->supported_files = 2U;
+        report->indexed = 2U;
+    }
+    {
+        NexusLibraryEntry entry;
+        memset(&entry, 0, sizeof(entry));
+        entry.key = 0x1001U;
+        entry.source = config->source;
+        entry.platform = NEXUS_LIBRARY_PLATFORM_PS2;
+        entry.backend = NEXUS_LIBRARY_BACKEND_AUTO;
+        entry.size_bytes = 734003200U;
+        strcpy(entry.title, "NEXUS RACER");
+        strcpy(entry.path, "mmce0:/CD/NEXUS_RACER.iso");
+        assert(nexus_library_upsert(&entry) == 0);
+
+        memset(&entry, 0, sizeof(entry));
+        entry.key = 0x1002U;
+        entry.source = config->source;
+        entry.platform = NEXUS_LIBRARY_PLATFORM_PS1;
+        entry.backend = NEXUS_LIBRARY_BACKEND_POPS;
+        entry.size_bytes = 400000000U;
+        strcpy(entry.title, "PS1 DEMO");
+        strcpy(entry.path, "mmce0:/POPS/PS1_DEMO.VCD");
+        assert(nexus_library_upsert(&entry) == 0);
     }
     return scan_result;
 }
@@ -115,6 +138,7 @@ int main(void)
     assert(navigation.page == NEXUS_PAGE_HOME);
 
     /* Files root selection is harmless until FileXio is explicitly ready. */
+    nexus_library_clear();
     adapter_ready = 0;
     scan_calls = 0;
     scan_result = 0;
@@ -168,5 +192,49 @@ int main(void)
     assert(status.scan_confirm_pending == 0U);
     assert(navigation.page == NEXUS_PAGE_HOME);
     assert(scan_calls == 1);
+
+    /* A successful scan feeds the same catalog rendered by Games. */
+    assert(nexus_library_count() == 2U);
+    nexus_nav_init(&navigation);
+    for (unsigned int i = 0; i < 0U; ++i)
+        nexus_actions_apply(&navigation, &status, NEXUS_KEY_DOWN);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_CONFIRM);
+    assert(navigation.page == NEXUS_PAGE_GAMES);
+    assert(nexus_library_visible_count(&status.library_view) == 2U);
+
+    /* Triangle cycles presentation without changing the indexed data. */
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_ACTION);
+    assert(status.library_view.view_mode == NEXUS_LIBRARY_VIEW_CAROUSEL);
+    assert(nexus_library_count() == 2U);
+
+    /* Square toggles favorite for the selected title. */
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FAVORITE);
+    assert(nexus_library_selected(&status.library_view)->favorite == 1U);
+
+    /* L2/R2 cycle source and platform filters. */
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FILTER_SOURCE);
+    assert(status.library_view.source_filter == NEXUS_LIBRARY_SOURCE_HDD);
+    assert(nexus_library_visible_count(&status.library_view) == 0U);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FILTER_SOURCE);
+    assert(status.library_view.source_filter == NEXUS_LIBRARY_SOURCE_MMCE);
+    assert(nexus_library_visible_count(&status.library_view) == 2U);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FILTER_PLATFORM);
+    assert(status.library_view.platform_filter == NEXUS_LIBRARY_PLATFORM_PS2);
+    assert(nexus_library_visible_count(&status.library_view) == 1U);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FILTER_PLATFORM);
+    assert(status.library_view.platform_filter == NEXUS_LIBRARY_PLATFORM_PS1);
+    assert(nexus_library_visible_count(&status.library_view) == 1U);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FILTER_PLATFORM);
+    assert(status.library_view.platform_filter == NEXUS_LIBRARY_FILTER_ANY);
+    assert(nexus_library_visible_count(&status.library_view) == 2U);
+
+    /* Cross opens a metadata panel; it does not launch OPL/Neutrino/POPS. */
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_CONFIRM);
+    assert(status.game_detail_open == 1U);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_DOWN);
+    assert(status.library_view.selected_index == 0U);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_BACK);
+    assert(status.game_detail_open == 0U);
+    assert(nexus_library_count() == 2U);
     return 0;
 }
