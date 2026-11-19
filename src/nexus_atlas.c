@@ -154,10 +154,10 @@ qword_t *nexus_atlas_draw(qword_t *q, int context, unsigned int icon,
     cell_x = (icon % 4U) * NXA_ICON_SIZE;
     cell_y = (icon / 4U) * NXA_ICON_SIZE;
 
-    rect.v0.x = (float)(x - 320);
-    rect.v0.y = (float)(y);
+    rect.v0.x = (float)x;
+    rect.v0.y = (float)y;
     rect.v0.z = 0;
-    rect.v1.x = (float)(x + size - 320);
+    rect.v1.x = (float)(x + size);
     rect.v1.y = (float)(y + size);
     rect.v1.z = 0;
 
