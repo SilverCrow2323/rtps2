@@ -1,4 +1,4 @@
-"""Fail-closed Bridge download → archive inspection → Store readiness pipeline."""
+"""Fail-closed Bridge download → inspection → host staging Store pipeline."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +6,7 @@ from typing import Any
 
 from .inspectors import ArchiveInspectionError, inspect_archive, match_recipe
 from .recipes import RecipeError, validate_recipe
+from .staging import StagingError, stage_zip_package
 from .store_flow import StoreFlow, StoreFlowError
 
 
@@ -19,11 +20,7 @@ def inspect_download_for_store(
     recipe: dict[str, Any],
     **inspection_limits: Any,
 ) -> dict[str, Any]:
-    """Inspect a verified download and gate READY_TO_INSTALL on recipe matching.
-
-    This is inspection-only: it never extracts the archive or writes a device.
-    PSU/SAS return an explicit unsupported result and force the flow to FAILED.
-    """
+    """Inspect a verified download and gate staging on recipe matching."""
     if not isinstance(flow, StoreFlow) or flow.stage != "INSPECT" or not flow.verified:
         raise StorePipelineError("Store flow must be in verified INSPECT stage")
 
@@ -50,6 +47,36 @@ def inspect_download_for_store(
             "store_ready": False,
             "extraction_performed": False,
             "device_write_performed": False,
+        }
+    except StoreFlowError:
+        raise
+
+
+def stage_download_for_store(
+    flow: StoreFlow,
+    archive_path: str | Path,
+    recipe: dict[str, Any],
+    staging_root: str | Path,
+) -> dict[str, Any]:
+    """Stage only recipe-mapped files in a host cache and gate readiness."""
+    if not isinstance(flow, StoreFlow) or flow.stage != "STAGE" or not flow.inspected:
+        raise StorePipelineError("Store flow must be in inspected STAGE stage")
+    try:
+        report = stage_zip_package(archive_path, recipe, staging_root)
+        flow.mark_staged(True)
+        report["store_ready"] = True
+        report["device_write_performed"] = False
+        report["installer_execution_enabled"] = False
+        return report
+    except StagingError as exc:
+        flow.mark_staged(False)
+        return {
+            "status": "failed",
+            "reason": str(exc),
+            "store_ready": False,
+            "extraction_performed": False,
+            "device_write_performed": False,
+            "installer_execution_enabled": False,
         }
     except StoreFlowError:
         raise
