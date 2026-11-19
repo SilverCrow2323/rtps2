@@ -1,29 +1,34 @@
 # NEXUS — verified status snapshot
 
+## M6.8 source
+- Recipe-scoped ZIP staging in an explicit host cache directory.
+- The archive is re-inspected and matched against the validated recipe at staging time; every mapped member is streamed and SHA-256 hashed again while copied.
+- Only recipe-mapped members are staged. Unmapped extras are omitted. No extractall(), archive permission restoration or special-file creation.
+- A staging manifest maps validated recipe destinations to staged source files and is consumed by the existing host transaction engine in an isolated test sandbox.
+- Store flow now requires VERIFY → INSPECT → STAGE → READY_TO_INSTALL. A file mutation between inspection and staging causes failure and blocks readiness.
+- Safe cleanup is limited to a direct NEXUS staging child under the caller-supplied staging root.
+
 ## M6.7 source
-- Signed catalog envelope v1 uses Ed25519. The signature covers the exact payload bytes; JSON is not re-serialized before verification.
-- Verification requires a locally pinned 32-byte public key selected by key_id. Unknown keys, unsigned catalog responses, modified payloads, malformed signatures and unsupported algorithms are rejected.
-- Signed catalog payloads require issued_at and expires_at. Expired, future-issued, overlong-validity, oversized and duplicate-field JSON is rejected.
-- BridgeClient.catalog() now requires an explicit trust policy. Package downloads must match metadata from the most recently verified signed catalog; hand-crafted or modified records are rejected.
-- Host verifier dependency is declared in requirements-host.txt and installed in CI.
+- Signed catalog envelope v1 uses Ed25519. Signature covers exact payload bytes; the verifier does not re-serialize JSON.
+- Verification requires a locally pinned raw 32-byte public key selected by key_id. Unknown keys, unsigned JSON, modified payloads, malformed signatures, duplicate JSON fields and unsupported algorithms are rejected.
+- Signed payloads require issued_at and expires_at. Expired, future-issued, overlong-validity and oversized payloads are rejected.
+- BridgeClient.catalog() requires an explicit trust policy. Package downloads must match metadata from the most recently verified signed catalog.
+- Host cryptography dependency is declared in requirements-host.txt and installed in CI.
 
 ## M6.6 source
-- Read-only ZIP inspector: path traversal, absolute paths, backslashes, control/reserved characters, protected boot/system targets, case collisions, symlinks, special entries and encrypted entries are rejected.
-- Archive limits: 64 MiB compressed archive, 4,096 entries, 128 MiB per member, 512 MiB total expanded data and 200:1 compression ratio by default; all are configurable.
-- Every ZIP file is streamed and SHA-256 hashed without extraction. Actual expanded sizes are checked against ZIP metadata.
-- Recipe matching verifies declared source paths and SHA-256 values. Unmapped archive entries are reported and are never implicitly installed.
-- PSU and SAS are recognized as distinct formats but remain explicitly unsupported; they are not passed to the ZIP reader.
-- Store flow requires VERIFY → INSPECT → READY_TO_INSTALL. Invalid, mismatched or unsupported archives end in FAILED.
+- Read-only ZIP inspector rejects traversal, absolute paths, backslashes, control/reserved characters, protected system paths, case collisions, symlinks, special entries and encrypted entries.
+- Configurable limits cover compressed archive size, entry count, member size, total expanded size and compression ratio.
+- Every ZIP file is streamed and SHA-256 hashed without extraction. Recipe matching checks source paths and expected hashes.
+- PSU and SAS are recognized as distinct formats but remain explicitly unsupported; they are never treated as ZIP.
 
 ## M6.5 source
-- Bridge client core: injected transport, bearer authentication, catalog validation, explicit archive size vs installed size, ranged downloads, resumable PC .part cache and final size/SHA-256 verification.
-- Bridge-to-Store adapter requires a separately declared installed size; compressed download size is never treated as installed storage requirement.
-- Bridge route compatibility with original M5 remains unverified; route paths and transport are injectable.
+- Injected Bridge client, bearer authentication, validated catalog metadata, explicit download vs installed size, resumable ranged PC downloads and final size/SHA-256 checks.
+- Original M5 Bridge route compatibility is still unverified; route paths and transport remain injectable.
 
 ## Verification boundary
-- M6.7 code passed GitHub Actions on commit 80017d5351da6d46badab3d041761a5cfdc2f1b8 ([run #44484611611](https://github.com/SilverCrow2323/rtps2/actions/runs/44484611611)).
-- Both **Unit tests** and **Compile check** passed after installing the host cryptography dependency. The suite contains **100 tests**.
-- Host-side Python only. No PS2SDK build or console test is claimed.
+- Latest M6.8 source snapshot passed GitHub Actions [run #44484998507](https://github.com/SilverCrow2323/rtps2/actions/runs/44484998507): host unit tests and Python compile check both succeeded.
+- The current test tree contains **112 test cases**.
+- Host-side Python only. No PS2SDK build, on-console test or device write is claimed.
 
 ## Not implemented
 - Actual M5 Companion/Bridge route compatibility (original M5 source is still unavailable).
