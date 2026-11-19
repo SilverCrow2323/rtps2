@@ -21,7 +21,7 @@ The native NEXUS.ELF is compiled using the PS2DEV Docker image and the PS2SDK EE
 
 - Latest native EE build with embedded icon atlas: [Actions run #42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621)
 - Host verification including native digest and NXA1 checks: [Actions run #195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542)
-- Renderer notes: [M6.10 GS renderer](docs/M6.10-gs-renderer.md), [M6.12 native GS atlas](docs/M6.12-native-gs-atlas.md), [M6.13 embedded icon atlas](docs/M6.13-embedded-icon-atlas.md)
+- Renderer notes: [M6.10 GS renderer](docs/M6.10-gs-renderer.md), [M6.12 native GS atlas](docs/M6.12-native-gs-atlas.md), [M6.13 embedded icon atlas](docs/M6.13-embedded-icon-atlas.md), [M6.14 renderer diagnostics](docs/M6.14-renderer-diagnostics.md)
 
 Extracted ELF: **1,724,400 bytes**, ELF32 little-endian MIPS, N32 ABI, statically linked, R5900/MIPS III flags. SHA-256: 51ad1a8c2799aee05452369b8b73fe1141ffcf187737227086c66882b4908d1b. The binary includes the six-icon NXA1 atlas in aligned read-only data.
 
