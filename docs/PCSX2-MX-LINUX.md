@@ -19,7 +19,7 @@ Complete the first-run wizard and select a BIOS dumped from your own PS2. PCSX2 
 
 ## 3. Download the NEXUS build
 
-The current known-good build is Native EE workflow #43. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
+The current known-good build is Native EE workflow #50. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
 
 Install GitHub CLI and authenticate:
 
@@ -29,7 +29,7 @@ Install GitHub CLI and authenticate:
 Download and extract the artifact:
 
     mkdir -p "$HOME/PS2/NEXUS"
-    gh run download 44580353828 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
+    gh run download 44581387927 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
 
 The resulting file is:
 
@@ -41,9 +41,9 @@ Verify that it matches the build tested by CI:
 
 Expected SHA-256:
 
-    56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29
+    93006b873561f6007f52c3b572281a3b8efcd57d0ecf477677adf3e67beb8deb
 
-The ELF is 1,724,512 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III).
+The ELF is 1,737,732 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the fixed four-slot GS artwork cache reservation; cover art is not populated until a game-library provider is implemented.
 
 ## 4. Boot NEXUS directly
 
