@@ -27,7 +27,7 @@ A native PlayStation 2 frontend and system shell inspired by PSBBN, developed un
 PYTHONPATH=. python3 -m unittest discover -s tests -v
 python3 -m compileall -q nexus_txn tools tests
 ```
-The current local suite contains **41 passing host tests**. GitHub Actions is configured to run the same checks on pushes and pull requests.
+The current host suite contains **63 passing tests**. GitHub Actions run [#44463407162](https://github.com/SilverCrow2323/rtps2/actions/runs/44463407162) passed both the unit tests and Python compile check for the M6.5 code snapshot.
 
 ## Safety line
 NEXUS must not silently replace boot-critical assets or rewrite FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN/OSDSYS installations. The transaction engine is host-only and sandboxed. No PS2 storage is mounted or written by this code. Unknown free space is not treated as sufficient. Package metadata is not a substitute for a validated install recipe.
