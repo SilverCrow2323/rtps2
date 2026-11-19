@@ -99,6 +99,7 @@ NexusKey nexus_input_poll(void)
     if ((pressed & PAD_RIGHT) != 0) return NEXUS_KEY_RIGHT;
     if ((pressed & PAD_L1) != 0) return NEXUS_KEY_PREVIOUS;
     if ((pressed & PAD_R1) != 0) return NEXUS_KEY_NEXT;
+    if ((pressed & PAD_TRIANGLE) != 0) return NEXUS_KEY_ACTION;
 
     return NEXUS_KEY_NONE;
 }
