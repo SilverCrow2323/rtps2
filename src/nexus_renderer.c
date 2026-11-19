@@ -146,10 +146,13 @@ static qword_t *draw_nav_item(qword_t *q, int index, int selected,
         q = fill_rect(q, x, y + height - 1, width, 1, C_LINE);
     }
     q = draw_icon(q, index, x + 10, y + (height - 28) / 2, selected);
-    q = print_text(q, title, x + 48, y + 10,
-                   selected ? C_TEXT : C_MUTED);
-    q = print_text(q, subtitle, x + 48, y + 27,
-                   selected ? C_ACCENT : C_MUTED);
+    if (selected) {
+        q = print_text(q, title, x + 48, y + 10, C_TEXT);
+        q = print_text(q, subtitle, x + 48, y + 27, C_ACCENT);
+    } else {
+        q = print_text(q, title, x + 48, y + 10, C_MUTED);
+        q = print_text(q, subtitle, x + 48, y + 27, C_MUTED);
+    }
     return q;
 }
 
@@ -181,11 +184,15 @@ static qword_t *draw_metric_card(qword_t *q, int x, int y, int width,
                                  int ready)
 {
     q = fill_rect(q, x, y, width, 1, C_LINE);
-    q = fill_rect(q, x, y + 1, width, 1, ready ? C_ACCENT : C_AMBER);
     q = fill_rect(q, x, y + 2, width, 70, C_SOFT);
     q = print_text(q, label, x + 10, y + 12, C_MUTED);
-    q = print_text(q, value, x + 10, y + 34,
-                   ready ? C_TEXT : C_AMBER);
+    if (ready) {
+        q = fill_rect(q, x, y + 1, width, 1, C_ACCENT);
+        q = print_text(q, value, x + 10, y + 34, C_TEXT);
+    } else {
+        q = fill_rect(q, x, y + 1, width, 1, C_AMBER);
+        q = print_text(q, value, x + 10, y + 34, C_AMBER);
+    }
     return q;
 }
 
@@ -370,11 +377,15 @@ static qword_t *draw_game_card(qword_t *q, const NexusLibraryEntry *entry,
     if (entry == 0 || w < 48 || h < 60)
         return q;
 
-    q = fill_rect(q, x, y, w, h, selected ? C_SELECTED : C_PANEL);
-    q = fill_rect(q, x, y, w, selected ? 3 : 1,
-                  selected ? C_ACCENT : C_LINE);
-    q = fill_rect(q, x, y, selected ? 3 : 1, h,
-                  selected ? C_ACCENT : C_LINE);
+    if (selected) {
+        q = fill_rect(q, x, y, w, h, C_SELECTED);
+        q = fill_rect(q, x, y, w, 3, C_ACCENT);
+        q = fill_rect(q, x, y, 3, h, C_ACCENT);
+    } else {
+        q = fill_rect(q, x, y, w, h, C_PANEL);
+        q = fill_rect(q, x, y, w, 1, C_LINE);
+        q = fill_rect(q, x, y, 1, h, C_LINE);
+    }
 
     cover_h = h - 38;
     if (cover_h < 30)
@@ -418,8 +429,10 @@ static qword_t *draw_game_card(qword_t *q, const NexusLibraryEntry *entry,
 
     q = fill_rect(q, x + 5, y + cover_h + 10, w - 10, h - cover_h - 15,
                   C_HEADER);
-    q = print_text(q, title, x + 10, y + h - 24,
-                   selected ? C_TEXT : C_ACCENT);
+    if (selected)
+        q = print_text(q, title, x + 10, y + h - 24, C_TEXT);
+    else
+        q = print_text(q, title, x + 10, y + h - 24, C_ACCENT);
     if (h >= 175)
         q = print_text(q, meta, x + 10, y + h - 10, C_MUTED);
     return q;
