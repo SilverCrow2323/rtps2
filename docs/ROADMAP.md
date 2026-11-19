@@ -24,6 +24,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.8 | Recipe-scoped host staging, repeated hash checks and transaction-manifest handoff | Source committed |
 | M6.9 | Native EE shell, libpad DualShock input, dashboard/pages | PS2DEV build passed |
 | M6.10 | PS2SDK GS renderer: double buffering, KROM font, dashboard cards and module panels | PS2DEV build and host checks passed; console visual validation pending |
+| M6.11 | Original section icon set, deterministic PNG-to-NXA1 PSMCT32 atlas packer, manifest and SHA-256 verifier | Source and eight unit tests committed; native GS upload/cache pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -31,12 +32,18 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - ELF inspection: ELF32 little-endian MIPS, N32 ABI, static, R5900/MIPS III flags.
 - No physical-console boot or visual test yet.
 
+## M6.11 verification
+- Host packer and eight focused tests added in `tools/nexus_asset_pack.py` and `tests/test_asset_pack.py`; local test run passed 8/8.
+- NXA1 format: 64-byte little-endian header, 256×128 PSMCT32 RGBA atlas, 131,072-byte pixel payload and SHA-256 validation.
+- Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
+- No native ELF rebuild or physical-console test is claimed for M6.11.
+
 ## M6.10 design boundary
-The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface and has no original icons, cover artwork, texture cache, or animated page backgrounds.
+The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icon artwork now has a host-side packing path, but no native GS texture upload, cover-art cache or animated page backgrounds are active yet.
 
 ## Next priorities
-1. Add reliable GS texture upload/cache and original NEXUS icon/brand assets.
-2. Build the final dashboard backgrounds and distinct animated section scenes only after frame pacing and memory budgets are measured.
+1. Implement M6.12: native GS texture upload, atlas sampling and a bounded VRAM cache; visually validate on a PS2 before claiming the artwork is displayed.
+2. Build the final dashboard backgrounds and distinct animated section scenes only after the M6.12 frame pacing and memory budgets are measured.
 3. Add read-only device and mounted-volume providers incrementally.
 4. Add game discovery, metadata/artwork integration and documented OPL/Neutrino launch handoff.
 5. Add native PS2 Store networking only after transport and crypto architecture are proven.
