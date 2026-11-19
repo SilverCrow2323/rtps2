@@ -45,8 +45,9 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 ## M6.15 verification
 - Added four fixed 128×128 RGBA32 slots (256 KiB total) allocated as one contiguous 512×128 PSMCT32 block, respecting PS2SDK's FIFO bump allocator behavior.
 - The renderer reserves the cache after the framebuffers and embedded NXA1 atlas; failure is non-fatal. System status exposes cache-reservation state.
-- Host CI [#242](https://github.com/SilverCrow2323/rtps2/actions/runs/44581408402) passed the LRU policy test, SHA/atlas/navigation regressions and native C syntax checks.
-- Native PS2DEV build [#50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927) passed and uploaded a 558,304-byte NEXUS-ELF artifact ZIP (SHA-256 e2f5d9b6e17017941b95e020c4a437735283ddb0e0cefc58ba1d7c08be1e7417). Extracted ELF: 1,737,732 bytes; SHA-256 93006b873561f6007f52c3b572281a3b8efcd57d0ecf477677adf3e67beb8deb.
+- Host CI [#251](https://github.com/SilverCrow2323/rtps2/actions/runs/44581918935) passed the LRU policy test, launcher tests, SHA/atlas/navigation regressions and native C syntax checks.
+- Native PS2DEV build [#52](https://github.com/SilverCrow2323/rtps2/actions/runs/44581909557) passed and uploaded a 558,322-byte NEXUS-ELF artifact ZIP (SHA-256 8308f8d60fcadf3a1f634421bbde7e5b5eb346ac43224a4596969daf2a3aaa80). Extracted ELF: 1,738,060 bytes; SHA-256 43f6038be6372d91034ec33760182c079716dbb816bc7061d7f49477f9e6d992.
+- NXA1 and cover-art REF payloads receive explicit SyncDCache write-back before GIF DMA; the DMA chain flush alone only covers the chain/tag buffer.
 - The cache is prepared but no game scanner/decoder populates it yet. No PCSX2 or physical-console visual validation is claimed.
 
 ## M6.14 verification
