@@ -25,7 +25,8 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.9 | Native EE shell, libpad DualShock input, dashboard/pages | PS2DEV build passed |
 | M6.10 | PS2SDK GS renderer: double buffering, KROM font, dashboard cards and module panels | PS2DEV build and host checks passed; console visual validation pending |
 | M6.11 | Original section icon set, deterministic PNG-to-NXA1 PSMCT32 atlas packer, manifest and SHA-256 verifier | Source and eight unit tests committed |
-| M6.12 | Native EE NXA1 structural + SHA-256 validation, GIF DMA upload, GS texture binding and six-cell icon sampling | PS2DEV build and host regressions passed; runtime asset loading and console visual test pending |
+| M6.12 | Native EE NXA1 structural + SHA-256 validation, GIF DMA upload, GS texture binding and six-cell icon sampling | PS2DEV build and host regressions passed |
+| M6.13 | Versioned original PNGs, deterministic CI packing and 16-byte-aligned NXA1 embedding in ELF; boot-time GS upload | Host CI #195 and native PS2DEV build #42 passed; physical-console visual test pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -46,12 +47,20 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - Host CI [#178](https://github.com/SilverCrow2323/rtps2/actions/runs/44577288782) passed 120 Python tests plus native SHA/atlas/navigation tests and syntax checks.
 - No boot-time pack loader or physical-console visual validation is claimed.
 
+## M6.13 verification
+- The six PNG sources are versioned in assets/icons/; CI regenerates assets/build/NEXUS-ICONS.NXA before the EE cross-build.
+- src/nexus_asset_blob.S embeds the pack in .rodata at 16-byte alignment. nexus_renderer_init() uploads it after GS/DMA initialization; the existing procedural glyph path remains the fallback if upload fails.
+- Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) passed the full 120-test Python suite, native SHA-256 vectors, NXA1 integrity regression, C navigation and C syntax checks.
+- Native EE build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed NXA generation, PS2DEV compile/link and ELF artifact upload.
+- Extracted NEXUS.ELF: 1,724,400 bytes; SHA-256 `51ad1a8c2799aee05452369c60dbf6244b916c4cb2a60919ca62f08673022cc81`.
+- No real-console boot or visual output is claimed.
+
 ## M6.10 design boundary
-The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icon artwork now has a host-side packing path, but no native GS texture upload, cover-art cache or animated page backgrounds are active yet.
+The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icons are now embedded in the native ELF and handed to the GS uploader during renderer initialization. Cover-art cache, multi-slot streaming and animated page backgrounds are still pending.
 
 ## Next priorities
-1. Implement M6.13: safe read-only loading or ELF embedding of the verified NXA1 asset, then initialize the dashboard atlas; design a bounded VRAM cache only after measuring coexistence with the framebuffers.
-2. Build the final dashboard backgrounds and distinct animated section scenes only after the M6.12 frame pacing and memory budgets are measured.
+1. Implement M6.14: measure the embedded atlas on real PAL/NTSC consoles, then add a strictly bounded cover-art texture cache without disturbing the framebuffers.
+2. Build the final dashboard backgrounds and distinct animated section scenes only after M6.14 measures frame pacing and memory budgets.
 3. Add read-only device and mounted-volume providers incrementally.
 4. Add game discovery, metadata/artwork integration and documented OPL/Neutrino launch handoff.
 5. Add native PS2 Store networking only after transport and crypto architecture are proven.
