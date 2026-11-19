@@ -27,7 +27,7 @@ jobs:
       - name: Native atlas format regression test
         run: |
           cc -std=c11 -Wall -Wextra -Werror -ffunction-sections -fdata-sections \
-            -Itests/native/stubs -Isrc/include src/nexus_atlas.c tests/native/test_atlas.c \\
+            -Itests/native/stubs -Isrc/include src/nexus_atlas.c tests/native/test_atlas.c \
             -Wl,--gc-sections -o /tmp/nexus_atlas_test
           /tmp/nexus_atlas_test
       - name: Native shell C syntax check (PS2SDK API stubs)
