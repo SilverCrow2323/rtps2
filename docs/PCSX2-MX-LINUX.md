@@ -19,7 +19,7 @@ Complete the first-run wizard and select a BIOS dumped from your own PS2. PCSX2 
 
 ## 3. Download the NEXUS build
 
-The current known-good build is Native EE workflow #56. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
+The current known-good build is Native EE workflow #63. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
 
 Install GitHub CLI and authenticate:
 
@@ -29,7 +29,7 @@ Install GitHub CLI and authenticate:
 Download and extract the artifact:
 
     mkdir -p "$HOME/PS2/NEXUS"
-    gh run download 44582409082 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
+    gh run download 44583873664 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
 
 The resulting file is:
 
@@ -41,9 +41,9 @@ Verify that it matches the build tested by CI:
 
 Expected SHA-256:
 
-    792f8abbd1d773598f0fbb429cc77c5276a82bcd6eee48772246a5aa8d235e53
+    83ad74bdcb35714a52cbeb04db64971cf970793a9ea00b5f91e70752043b281f
 
-The ELF is 1,754,284 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache and M6.16 game-catalog model. The catalog starts empty; read-only storage providers are the next integration step.
+The ELF is 1,774,060 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache, M6.16 catalog and M6.17 read-only scan core. The catalog starts empty because the real fileXio/MMCEMAN filesystem adapters are not loaded yet.
 
 ## 4. Boot NEXUS directly
 
