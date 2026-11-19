@@ -36,8 +36,8 @@ int main(void)
 
         previous_connected = connected;
 
-        /* Avoid a tight polling loop while keeping input responsive. */
-        DelayThread(10000);
+        /* PS2SDK EE kernel.h provides nopdelay(); DelayThread is IOP-side. */
+        nopdelay();
     }
 
     return 0;
