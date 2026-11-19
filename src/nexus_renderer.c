@@ -363,38 +363,68 @@ static qword_t *draw_game_card(qword_t *q, const NexusLibraryEntry *entry,
 {
     char title[28];
     char meta[32];
-    if (entry == 0)
+    int cover_h;
+    int icon_size;
+    int precision;
+
+    if (entry == 0 || w < 48 || h < 60)
         return q;
-    if (selected) {
-        q = fill_rect(q, x, y, w, h, C_SELECTED);
-        q = fill_rect(q, x, y, w, 3, C_ACCENT);
-    } else {
-        q = fill_rect(q, x, y, w, h, C_PANEL);
-        q = fill_rect(q, x, y, w, 2, C_PANEL_2);
-    }
-    (void)snprintf(title, sizeof(title), "%s", entry->title);
-    q = print_text(q, title, x + 9, y + 10,
-                   selected ? C_TEXT : C_ACCENT);
+
+    q = fill_rect(q, x, y, w, h, selected ? C_SELECTED : C_PANEL);
+    q = fill_rect(q, x, y, w, selected ? 3 : 1,
+                  selected ? C_ACCENT : C_LINE);
+    q = fill_rect(q, x, y, selected ? 3 : 1, h,
+                  selected ? C_ACCENT : C_LINE);
+
+    cover_h = h - 38;
+    if (cover_h < 30)
+        cover_h = 30;
+    q = fill_rect(q, x + 5, y + 5, w - 10, cover_h, C_SOFT);
+    q = fill_rect(q, x + 5, y + 5, w - 10, 2, C_LINE);
+    q = fill_rect(q, x + 5, y + 5, 3, cover_h, C_ACCENT);
+    q = fill_rect(q, x + 12, y + cover_h - 9, w - 24, 1, C_LINE);
+
+    if (w >= 170)
+        icon_size = cover_h > 95 ? 72 : 52;
+    else if (w >= 120)
+        icon_size = 44;
+    else
+        icon_size = 30;
+    if (icon_size > cover_h - 16)
+        icon_size = cover_h - 16;
+    if (icon_size < 18)
+        icon_size = 18;
+
+    q = draw_large_icon(q,
+                        entry->platform == NEXUS_LIBRARY_PLATFORM_PS1 ? 1 : 0,
+                        x + (w - icon_size) / 2,
+                        y + 12 + (cover_h - icon_size) / 2,
+                        icon_size);
+
+    q = print_text(q,
+                   entry->platform == NEXUS_LIBRARY_PLATFORM_PS1 ? "PS1" : "PS2",
+                   x + 12, y + 9, C_TEXT);
+    if (entry->favorite)
+        q = print_text(q, "FAV", x + w - 38, y + 9, C_AMBER);
+
+    q = print_text(q, "ARTWORK NOT CACHED",
+                   x + 12, y + cover_h - 5, C_MUTED);
+
+    precision = w >= 180 ? 20 : (w >= 130 ? 14 : 9);
+    (void)snprintf(title, sizeof(title), "%.*s", precision, entry->title);
     (void)snprintf(meta, sizeof(meta), "%s / %s",
                    games_platform_label(entry->platform),
                    games_source_label(entry->source));
-    if (w >= 140) {
-        q = draw_icon(q, entry->platform == NEXUS_LIBRARY_PLATFORM_PS1 ? 1 : 0,
-                      x + 9, y + 38, selected);
-        q = print_text(q, meta, x + 45, y + 42, C_MUTED);
-        q = print_text(q, entry->backend == NEXUS_LIBRARY_BACKEND_POPS ? "POPS" :
-                          entry->backend == NEXUS_LIBRARY_BACKEND_NEUTRINO ? "NEUTRINO" :
-                          entry->backend == NEXUS_LIBRARY_BACKEND_OPL ? "OPL" : "AUTO",
-                       x + 45, y + 61, C_TEXT);
-    } else {
-        q = print_text(q, games_platform_label(entry->platform), x + 9, y + 38, C_MUTED);
-    }
-    if (entry->favorite)
-        q = print_text(q, "FAV", x + w - 34, y + 10, C_WARN);
-    if (selected)
-        q = print_text(q, "SELECTED", x + 9, y + h - 17, C_WARN);
+
+    q = fill_rect(q, x + 5, y + cover_h + 10, w - 10, h - cover_h - 15,
+                  C_HEADER);
+    q = print_text(q, title, x + 10, y + h - 24,
+                   selected ? C_TEXT : C_ACCENT);
+    if (h >= 175)
+        q = print_text(q, meta, x + 10, y + h - 10, C_MUTED);
     return q;
 }
+
 
 static qword_t *render_games_page(qword_t *q, const NexusActionStatus *actions)
 {
@@ -416,9 +446,10 @@ static qword_t *render_games_page(qword_t *q, const NexusActionStatus *actions)
     q = fill_rect(q, 0, 0, NEXUS_WIDTH, screen_height, C_BG);
     q = draw_topbar(q, "GAME LIBRARY");
     q = print_text(q, "YOUR PLAYSTATION COLLECTION", 20, 65, C_TEXT);
-    (void)snprintf(summary, sizeof(summary), "%u VISIBLE / %u INDEXED  %s  %s",
-                   count, total, games_view_label(view.view_mode),
-                   games_source_label(view.source_filter));
+    (void)snprintf(summary, sizeof(summary), "%u TITLES  /  %s  /  %s  /  %s",
+                   count, games_view_label(view.view_mode),
+                   games_source_label(view.source_filter),
+                   games_platform_label(view.platform_filter));
     q = print_text(q, summary, 20, 88, C_MUTED);
 
     if (detail_open) {
@@ -448,8 +479,8 @@ static qword_t *render_games_page(qword_t *q, const NexusActionStatus *actions)
                            40, 337, C_TEXT);
         }
     } else if (count == 0U) {
-        q = fill_rect(q, 18, 122, 604, 220, C_PANEL);
-        q = fill_rect(q, 18, 122, 4, 220, C_ACCENT);
+        q = fill_rect(q, 18, 122, 604, screen_height - 200, C_PANEL);
+        q = fill_rect(q, 18, 122, 4, screen_height - 200, C_ACCENT);
         q = print_text(q, total == 0U ? "YOUR LIBRARY IS WAITING."
                                       : "NO TITLES MATCH THIS FILTER.",
                        42, 160, C_TEXT);
@@ -516,14 +547,15 @@ static qword_t *render_games_page(qword_t *q, const NexusActionStatus *actions)
         }
     } else {
         unsigned int visible = count < 6U ? count : 6U;
+        int card_height = (screen_height - 182) / 2;
         start = selected > visible / 2U ? selected - visible / 2U : 0U;
         if (start + visible > count) start = count - visible;
         for (i = 0; i < visible; ++i) {
             unsigned int slot = start + i;
             int x = 18 + (int)(i % 3U) * 205;
-            int y = 125 + (int)(i / 3U) * 112;
+            int y = 118 + (int)(i / 3U) * (card_height + 10);
             q = draw_game_card(q, nexus_library_visible_at(&view, slot),
-                               slot == selected, x, y, 194, 102);
+                               slot == selected, x, y, 194, card_height);
         }
     }
 
