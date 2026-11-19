@@ -13,7 +13,7 @@
 #define NEXUS_WIDTH 640
 #define NEXUS_NTSC_HEIGHT 448
 #define NEXUS_PAL_HEIGHT 512
-#define NEXUS_PACKET_QWORDS 65536
+#define NEXUS_PACKET_QWORDS 60000
 #define NEXUS_CONTEXT 0
 
 /* SPDW Factory / NEXUS palette. */
@@ -159,16 +159,16 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
                            labels[i], line1[i], line2[i]);
     }
 
-    q = fill_rect(q, 18, screen_height - 42, 604, 26, C_HEADER);
-    q = print_text(q, "UP / DOWN  SELECT", 28, screen_height - 36, C_TEXT);
-    q = print_text(q, "CROSS  OPEN", 190, screen_height - 36, C_ACCENT);
+    q = fill_rect(q, 18, screen_height - 45, 604, 40, C_HEADER);
+    q = print_text(q, "UP / DOWN  SELECT", 28, screen_height - 39, C_TEXT);
+    q = print_text(q, "CROSS  OPEN", 190, screen_height - 39, C_ACCENT);
     q = print_text(q, "L1 / R1  MOVE", 315, screen_height - 36, C_TEXT);
-    q = print_text(q, "START  HOME", 470, screen_height - 36, C_MUTED);
+    q = print_text(q, "START  HOME", 470, screen_height - 39, C_MUTED);
 
     q = print_text(q, input_ready ? "PAD READY" : "PAD OFFLINE",
-                   20, screen_height - 12, input_ready ? C_ACCENT : C_WARN);
+                   20, screen_height - 20, input_ready ? C_ACCENT : C_WARN);
     q = print_text(q, connected ? "CONTROLLER CONNECTED" : "WAITING FOR CONTROLLER",
-                   122, screen_height - 12, C_MUTED);
+                   122, screen_height - 20, C_MUTED);
     return q;
 }
 
@@ -248,8 +248,8 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
     q = print_text(q, tag1, 54, 291, C_MUTED);
     q = print_text(q, tag2, 236, 291, C_WARN);
 
-    q = print_text(q, tag3, 20, 368, C_ACCENT);
-    q = print_text(q, next, 20, 391, C_TEXT);
+    q = print_text(q, tag3, 20, 350, C_ACCENT);
+    q = print_text(q, next, 20, 373, C_TEXT);
 
     q = fill_rect(q, 18, screen_height - 42, 604, 26, C_HEADER);
     q = print_text(q, "L1 / R1  PREVIOUS / NEXT", 28, screen_height - 36, C_TEXT);
