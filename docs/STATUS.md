@@ -3,9 +3,9 @@
 ## M6.12 native GS atlas upload path
 - Added `nexus_atlas.c`: strict NXA1 header/size checks, aligned PSMCT32 texture upload through GIF DMA, texture flush, nearest sampling and six-cell atlas draw helper.
 - Dashboard card renderer selects atlas icons when a caller has loaded an atlas; procedural 5×5 glyphs remain the fallback.
-- The shell does not yet mount/read an NXA file at boot. Native caller must verify payload SHA-256 before upload; the EE helper currently validates structure, exact size, reserved bytes and alignment, not the digest.
+- The shell does not yet read or embed an NXA file at boot. The EE validator now computes SHA-256 over the full pixel payload and checks the digest in the NXA1 header before allocating VRAM.
 - One atlas VRAM slot only; no cover-art LRU or safe multi-slot allocator yet.
-- PS2DEV cross-build passed: [native build #27](https://github.com/SilverCrow2323/rtps2/actions/runs/44576527634). Host CI passed 120 Python tests, compile check, navigation regression, NXA1 regression and native C syntax checks: [run #160](https://github.com/SilverCrow2323/rtps2/actions/runs/44576528281), including reserved-header-byte rejection.
+- PS2DEV cross-build passed with the SHA-256 object linked: [native build #33](https://github.com/SilverCrow2323/rtps2/actions/runs/44577115974). Host CI [run #178](https://github.com/SilverCrow2323/rtps2/actions/runs/44577288782) passed all 120 Python tests, C navigation, NXA1 checksum regressions, SHA-256 standard/block-boundary vectors and native C syntax.
 - Console visual validation remains pending.
 - Details: [M6.12 native GS atlas](M6.12-native-gs-atlas.md).
 
@@ -56,7 +56,7 @@ The build confirms compilation/linking and ELF target format, not physical-conso
 - Injected transport, bearer token, range/resume downloads, explicit download vs installed sizes and SHA verification. Actual M5 route compatibility remains unverified.
 
 ## Not implemented
-- Final animated GS design system, native upload of the M6.11 icon atlas, cover-art cache / texture streaming.
+- Automatic boot-time loading of the NXA1 icon atlas, cover-art cache / texture streaming and final animated GS design system.
 - Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
 - Game catalog scanner and documented OPL/Neutrino handoff.
 - Native PS2 Store networking, PS2-side TLS/Ed25519 and installer.
