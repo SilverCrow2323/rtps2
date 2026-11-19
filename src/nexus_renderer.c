@@ -109,16 +109,20 @@ static qword_t *draw_home_card(qword_t *q, int index, int selected,
     int w = 194;
     int h = 100;
 
-    q = fill_rect(q, x, y, w, h, selected ? C_SELECTED : C_PANEL);
-    q = fill_rect(q, x, y, w, 3, selected ? C_ACCENT : C_PANEL_2);
-    q = fill_rect(q, x, y + 3, 4, h - 3, selected ? C_ACCENT : C_PANEL_2);
-    q = print_text(q, title, x + 15, y + 16,
-                   selected ? C_TEXT : C_ACCENT);
+    if (selected) {
+        q = fill_rect(q, x, y, w, h, 18, 80, 101);
+        q = fill_rect(q, x, y, w, 3, 60, 218, 235);
+        q = fill_rect(q, x, y + 3, 4, h - 3, 60, 218, 235);
+        q = print_text(q, title, x + 15, y + 16, 232, 243, 249);
+        q = print_text(q, "SELECTED", x + 130, y + 16, C_WARN);
+    } else {
+        q = fill_rect(q, x, y, w, h, C_PANEL);
+        q = fill_rect(q, x, y, w, 3, C_PANEL_2);
+        q = fill_rect(q, x, y + 3, 4, h - 3, C_PANEL_2);
+        q = print_text(q, title, x + 15, y + 16, C_ACCENT);
+    }
     q = print_text(q, line1, x + 15, y + 48, C_TEXT);
     q = print_text(q, line2, x + 15, y + 68, C_MUTED);
-    if (selected) {
-        q = print_text(q, "SELECTED", x + 130, y + 16, C_WARN);
-    }
     return q;
 }
 
@@ -165,8 +169,11 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
     q = print_text(q, "L1 / R1  MOVE", 315, screen_height - 36, C_TEXT);
     q = print_text(q, "START  HOME", 470, screen_height - 39, C_MUTED);
 
-    q = print_text(q, input_ready ? "PAD READY" : "PAD OFFLINE",
-                   20, screen_height - 20, input_ready ? C_ACCENT : C_WARN);
+    if (input_ready) {
+        q = print_text(q, "PAD READY", 20, screen_height - 20, C_ACCENT);
+    } else {
+        q = print_text(q, "PAD OFFLINE", 20, screen_height - 20, C_WARN);
+    }
     q = print_text(q, connected ? "CONTROLLER CONNECTED" : "WAITING FOR CONTROLLER",
                    122, screen_height - 20, C_MUTED);
     return q;
@@ -260,7 +267,6 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
 
 int nexus_renderer_init(void)
 {
-    packet_t *setup_packet;
     qword_t *q;
     zbuffer_t zbuffer;
     int i;
