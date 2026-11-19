@@ -163,11 +163,11 @@ qword_t *nexus_atlas_draw(qword_t *q, int context, unsigned int icon,
     rect.v1.y = (float)(y + size);
     rect.v1.z = 0;
 
-    /* UV registers use 12.4 fixed point; half-texel inset avoids edge bleed. */
-    rect.t0.u = (float)(cell_x * 16U + 8U);
-    rect.t0.v = (float)(cell_y * 16U + 8U);
-    rect.t1.u = (float)((cell_x + NXA_ICON_SIZE) * 16U - 8U);
-    rect.t1.v = (float)((cell_y + NXA_ICON_SIZE) * 16U - 8U);
+    /* draw_rect_textured converts pixel-space UVs to 12.4; inset half a texel. */
+    rect.t0.u = (float)cell_x + 0.5f;
+    rect.t0.v = (float)cell_y + 0.5f;
+    rect.t1.u = (float)(cell_x + NXA_ICON_SIZE) - 0.5f;
+    rect.t1.v = (float)(cell_y + NXA_ICON_SIZE) - 0.5f;
 
     rect.color.r = 0x80;
     rect.color.g = 0x80;
