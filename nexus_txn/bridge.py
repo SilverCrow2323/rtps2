@@ -24,6 +24,8 @@ def _safe_id(value, field="package id"):
 def _safe_api_path(value, field):
     if not isinstance(value, str) or not value.startswith("/") or value.startswith("//") or "\\\\" in value or "\x00" in value:
         raise BridgeError(f"invalid {field}")
+    if any(ch in value for ch in ("%", "?", "#", "\\r", "\\n")) or not re.fullmatch(r"/[A-Za-z0-9._~/{}/-]*", value):
+        raise BridgeError(f"invalid characters in {field}")
     parts = value.split("/")
     if any(p in {".", ".."} for p in parts):
         raise BridgeError(f"unsafe {field}")
