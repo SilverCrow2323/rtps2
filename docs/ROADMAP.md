@@ -19,17 +19,20 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.3 | Store profiles, install/update/keep planning, space preview, dependency-safe removal, TUI renderer | Source committed |
 | M6.4 | Strict non-executing install recipe validation, target/path/hash/dependency validation | Source committed |
 | M6.5 | Injected Bridge client, range/resume download cache, size/SHA verification, Store flow | Source committed; route compatibility awaits M5 recovery |
-| M6.6 | Read-only ZIP inspection, recipe SHA matching, PSU/SAS fail-closed handling, Store inspection gate | Source committed; 85 host tests and compile check pass ([CI run #44484276661](https://github.com/SilverCrow2323/rtps2/actions/runs/44484276661)) |
+| M6.6 | Read-only ZIP inspection, recipe SHA matching, PSU/SAS fail-closed handling, Store inspection gate | Source committed; host tests and compile check pass |
+| M6.7 | Pinned Ed25519 signed-catalog trust, expiry/key policy, Bridge download binding to trusted records | Source committed; 100 host tests and compile check pass ([CI run #44484611611](https://github.com/SilverCrow2323/rtps2/actions/runs/44484611611)) |
 
-## M6.6 safety boundary
-ZIP inspection streams content and checks paths, types, sizes, compression ratios and hashes without extraction. PSU and SAS remain unsupported and cannot reach READY_TO_INSTALL. A successful Store state is only a host-side pre-install gate; it does not execute an installer or write a device.
+## M6.7 safety boundary
+The host Bridge client rejects unsigned catalog responses and requires a locally pinned publisher key. The signature authenticates catalog bytes; SHA-256 then binds downloaded package bytes to the signed catalog record. Neither check proves that a package is harmless or that the publisher's build pipeline is uncompromised.
+
+No production SPDW Factory signing key has been created or provisioned. The test key is synthetic and must never be reused for releases. No PS2-side cryptography or installation is included.
 
 ## Recovery rule
 Do not recreate missing M1–M5 files from descriptions and label them original. Recover the real source snapshots or reimplement them as new, clearly versioned work with tests.
 
 ## Next priorities
 1. Recover and merge M1–M5 source snapshots, especially the M5 Companion/Bridge route contract and prior package-inspector implementation.
-2. Define a signed catalog trust policy with pinned publisher keys and a standard signature implementation; SHA-256 alone is not publisher authentication.
+2. Define SPDW Factory release-key custody, signing, key rotation and revocation; provision a production public key through a trusted release channel.
 3. Implement and independently test genuine PSU and SAS readers, retaining strict target/path protections.
 4. Implement a native PS2 network provider/Bridge client only after selecting a supported transport and validating the PS2SDK integration.
 5. Build the native PS2 Store screen as a separate full-screen terminal/TUI view with nonblocking progress and explicit confirmation.
