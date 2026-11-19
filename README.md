@@ -9,7 +9,7 @@ A native PlayStation 2 frontend and system shell inspired by PSBBN, developed un
 | Area | Purpose | Current status |
 |---|---|---|
 | Native shell | EE entry point, DualShock input, navigation and GS dashboard | PS2DEV cross-build passed; NEXUS.ELF artifact published |
-| Graphics | libgraph/libdraw/libfont, double framebuffer, KROM font, embedded NXA1 atlas, EE SHA-256 verification and GIF DMA upload | Boot-time atlas embedding, System diagnostics and four-slot VRAM artwork cache cross-compile; PCSX2/console visual validation and game-art population pending |
+| Graphics | PS2SDK GS renderer, KROM font, embedded NXA1 atlas, EE SHA-256 validation, GIF DMA and four-slot cover-art texture cache | Native EE build #50 passed; game-library artwork loading and PCSX2/console visual validation pending |
 | Devices & library | Mounted-volume providers, game catalog and metadata | Not yet implemented natively |
 | Store & packages | Signed host catalog, dependency planning, recipes, ZIP inspection and host staging | Host-side code present; no PS2 installer |
 | Transactions | Journal, backup, verification, rollback and recovery | Host-side sandbox reference |
@@ -19,8 +19,8 @@ A native PlayStation 2 frontend and system shell inspired by PSBBN, developed un
 
 The native NEXUS.ELF is compiled using the PS2DEV Docker image and the PS2SDK EE toolchain.
 
-- Latest native EE build with embedded icon atlas, System diagnostics and M6.15 cover cache: [Actions run #50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927)
-- Host verification for M6.15 source: [Actions run #242](https://github.com/SilverCrow2323/rtps2/actions/runs/44581408402)
+- Latest native EE build with embedded atlas and four-slot cover cache: [Actions run #50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927)
+- Latest host verification including cache-policy and PCSX2 launcher regressions: [Actions run #243](https://github.com/SilverCrow2323/rtps2/actions/runs/44581454864)
 - MX Linux / PCSX2 smoke-test guide: [PCSX2-MX-LINUX.md](docs/PCSX2-MX-LINUX.md); launcher: `tools/run_nexus_pcsx2.sh`
 - Renderer notes: [M6.10 GS renderer](docs/M6.10-gs-renderer.md), [M6.12 native GS atlas](docs/M6.12-native-gs-atlas.md), [M6.13 embedded icon atlas](docs/M6.13-embedded-icon-atlas.md), [M6.14 System diagnostics](docs/M6.14-system-diagnostics.md), [M6.15 cover-art cache](docs/M6.15-cover-cache.md), [M6.14 renderer diagnostics](docs/M6.14-renderer-diagnostics.md)
 
