@@ -1,26 +1,18 @@
 # NEXUS — verified status snapshot
 
-## Source present
-- `nexus_txn/engine.py`: host-only transactional reference engine with manifest/path/hash checks, lock, journal, backups, copy/read-back verification, rollback and constrained recovery.
-- `nexus_txn/dependencies.py`: deterministic dependency ordering and missing/cycle/conflict/duplicate checks.
-- `nexus_txn/store.py`: catalog validation, curated profiles, dependency-aware install/update/keep preview, conservative peak-space estimation and dependency-safe removal preview.
-- `nexus_txn/tui.py`: deterministic text renderers for plan and progress screens.
-- `nexus_txn/recipes.py`: strict non-executing recipe schema validation for ZIP/PSU/SAS metadata and approved target classes.
-- `src/include/nexus_network.h`: provider-neutral network contract and capability flags.
-- `tools/nexus_txn.py`: sandbox simulation CLI.
-- `.github/workflows/tests.yml`: host regression workflow for pushes and pull requests.
+## M6.5 source
+- Bridge client core: injected transport, bearer authentication, catalog validation, explicit archive size vs installed size, ranged downloads, resumable PC `.part` cache and final size/SHA-256 verification.
+- Bridge-to-Store adapter: requires a separately declared installed size; it never mistakes compressed download size for installed storage requirement.
+- Store workflow state machine: SELECT → DEPENDENCIES → SPACE → CONFIRM → DOWNLOAD → VERIFY → READY_TO_INSTALL. It blocks confirmation if capacity is unknown/insufficient, verification before 100%, and install-ready state before successful verification.
+- Previous M6.2 transaction reference engine, dependency resolver, M6.3 Store planning/TUI and M6.4 package recipe validation remain present.
+- GitHub Actions host test workflow configured for push/PR.
 
-## Verification
-The current local snapshot passes **41 host unit tests** and Python compile checks. The 41 tests include transaction rollback/recovery, dependency ordering, Store planning and recipe/path safety. These checks do not compile a PS2 ELF and do not validate hardware behavior. GitHub Actions has been configured but its first hosted run must complete before calling CI green.
+## Verification boundary
+M6.5 currently has fake-transport regression tests committed, but the hosted GitHub Actions run must be checked before marking CI green. The code is host-side Python; no PS2SDK build or console test is claimed.
 
-## Not present / not verified
-- M1–M5 complete source trees.
-- Native PS2 frontend integration of the M6 modules.
-- PS2SDK cross-compiled `NEXUS.ELF`.
-- PS2-side network transport, TLS, Companion client or real resumable download.
-- Native ZIP/PSU/SAS parsing and extraction.
-- Real install/remove operations on MC, MMCE, USB, APA/PFS or HDD.
-- Console launch tests for OPL/Neutrino or any other backend.
-
-## User-reported hardware observations
-FAT SCPH-30004: PSBBN, POPS and MMCE work with internal HDD/original Network Adapter. Slim SCPH-70004: MMCE unconfirmed. DS3 Bluetooth dongle works on FAT and Slim. These notes guide generic compatibility planning only.
+## Not implemented
+- Actual M5 Companion/Bridge route compatibility (the original M5 source is still unavailable).
+- TLS implementation, signed catalog trust, publisher authentication beyond the supplied bearer token.
+- ZIP/PSU/SAS archive inspection/extraction.
+- Native PS2 Store UI, network transport, native installer or device writes.
+- Bootloader/OSDSYS/FMCB/FHDB/PSBBN changes.
