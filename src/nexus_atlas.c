@@ -38,7 +38,7 @@ static unsigned int read_le32(const unsigned char *p)
            ((unsigned int)p[3] << 24);
 }
 
-static int validate_nxa1(const unsigned char *data, size_t size)
+int nexus_atlas_validate_pack(const void *pack, size_t size)
 {
     if (data == 0 || size != NXA_TOTAL_SIZE)
         return -1;
@@ -73,7 +73,7 @@ int nexus_atlas_upload(const void *pack, size_t pack_size)
     qword_t *q;
     int result;
 
-    result = validate_nxa1(bytes, pack_size);
+    result = nexus_atlas_validate_pack(bytes, pack_size);
     if (result != 0)
         return result;
 
