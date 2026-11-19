@@ -40,6 +40,12 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
 
+## M6.14 verification
+- System page reports PAL/NTSC geometry, NXA1 atlas ready/fallback state and controller status.
+- Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed; native EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and uploaded a 553,090-byte ELF artifact (ZIP SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`).
+- The new MX Linux guide covers Flatpak install, artifact download and direct ELF launch: [PCSX2 on MX Linux](PCSX2-MX-LINUX.md).
+- No PCSX2 or physical-console visual validation has been performed from CI.
+
 ## M6.13 verification
 - The build packs all six original PNGs into `assets/build/NEXUS-ICONS.NXA`, embeds the pack through `src/nexus_asset_blob.S`, and uploads it from `nexus_renderer_init()`.
 - The embedded NXA1 is verified on EE (header, payload geometry, reserved bytes and SHA-256) before texture VRAM allocation. Atlas failure remains non-fatal and leaves procedural fallback glyphs available.
