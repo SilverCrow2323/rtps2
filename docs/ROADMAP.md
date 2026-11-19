@@ -40,6 +40,12 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
 
+## M6.13 verification
+- The build packs all six original PNGs into `assets/build/NEXUS-ICONS.NXA`, embeds the pack through `src/nexus_asset_blob.S`, and uploads it from `nexus_renderer_init()`.
+- The embedded NXA1 is verified on EE (header, payload geometry, reserved bytes and SHA-256) before texture VRAM allocation. Atlas failure remains non-fatal and leaves procedural fallback glyphs available.
+- Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) passed; native EE build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed and published a 553,030-byte `NEXUS-ELF` artifact. ZIP SHA-256: `1c7a2ac9be049987f8a379c60dbf6244b916c4cb2a60919ca62f08673022cc81`.
+- No PCSX2 or physical-console visual validation is claimed yet.
+
 ## M6.12 verification
 - EE SHA-256 implementation is allocation-free and verifies the 32-byte digest stored at NXA1 header offset 20 against the complete 131,072-byte pixel payload before VRAM allocation.
 - Native tests cover empty and `abc` vectors, SHA padding lengths 55/56/63/64/65, the full NXA payload size, and a one-million-byte message; NXA tests reject corrupt payload and digest bytes.
