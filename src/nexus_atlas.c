@@ -1,5 +1,6 @@
 #include <tamtypes.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <packet.h>
@@ -77,7 +78,7 @@ int nexus_atlas_upload(const void *pack, size_t pack_size)
         return result;
 
     /* DMA source must be suitably aligned. The NXA1 payload starts at +64. */
-    if (((unsigned int)(bytes + NXA_HEADER_SIZE) & 15U) != 0U)
+    if (((uintptr_t)(bytes + NXA_HEADER_SIZE) & 15U) != 0U)
         return -5;
 
     nexus_atlas_release();
