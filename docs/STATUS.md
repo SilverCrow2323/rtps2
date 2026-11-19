@@ -1,5 +1,16 @@
 # NEXUS — verified status snapshot
 
+## M6.15 native cover cache
+- Added four fixed 128×128 PSMCT32 GS slots (256 KiB total) with free-slot/LRU replacement policy.
+- The cache is reserved at renderer initialization after the 128 KiB embedded icon atlas; the System page reports reservation status.
+- Host CI [#243](https://github.com/SilverCrow2323/rtps2/actions/runs/44581454864) passed the host suite, native SHA-256/NXA1 tests, cache LRU policy tests and PCSX2 launcher regressions.
+- Native PS2DEV build [#50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927) passed with both cache objects linked.
+- Extracted ELF: 1,737,732 bytes; SHA-256: 93006b873561f6007f52c3b572281a3b8efcd57d0ecf477677adf3e67beb8deb.
+- The cache primitives are ready, but game-library artwork discovery/decoding and automatic cover upload are not yet integrated. Emulator and physical-console visual validation remain pending.
+- Details: [M6.15 cover cache](M6.15-cover-cache.md).
+
+
+
 ## M6.15 fixed GS cover-art cache
 - Added a four-slot LRU texture cache: 128×128 RGBA32 per slot, 256 KiB total. One contiguous 512×128 PSMCT32 allocation avoids arbitrary frees against PS2SDK's FIFO bump allocator.
 - Renderer reserves the cache after the two framebuffers and embedded icon atlas; allocation is optional and non-fatal. System diagnostics report whether the four artwork slots were reserved.
