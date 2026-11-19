@@ -37,7 +37,7 @@ cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c tests/nat
 /tmp/nexus_navigation_test
 ~~~
 
-The M6.10 baseline passed 112 Python cases plus C navigation and native C syntax checks. M6.11 adds eight asset-pipeline regression tests; its new CI run is tracked separately from the already verified M6.10 build.
+M6.11 CI verification: [Host tests run #129](https://github.com/SilverCrow2323/rtps2/actions/runs/44574962515) passed 120 Python tests, Python compile, C navigation regression and native C syntax checks. The prior M6.10 PS2DEV EE cross-build remains the latest verified native ELF build.
 
 ## Safety line
 NEXUS must not silently replace boot-critical assets or rewrite FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN/OSDSYS installations. The host transaction engine is sandboxed. No PS2 storage is mounted or written. Native device status remains NOT PROBED until real probes exist. ZIP staging writes only to an explicit host cache. PSU/SAS remain unsupported. The synthetic signing key is not a production key.
