@@ -22,27 +22,26 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.6 | Read-only ZIP inspection, recipe SHA matching, PSU/SAS fail-closed handling | Source committed |
 | M6.7 | Pinned Ed25519 signed-catalog trust and Bridge download binding | Source committed |
 | M6.8 | Recipe-scoped host staging, repeated hash checks and transaction-manifest handoff | Source committed |
-| M6.9 | Native EE shell, libpad DualShock input, dashboard/pages and PS2DEV cross-build | EE build passed; NEXUS.ELF artifact uploaded |
+| M6.9 | Native EE shell, libpad DualShock input, dashboard/pages | PS2DEV build passed |
+| M6.10 | PS2SDK GS renderer: double buffering, KROM font, dashboard cards and module panels | PS2DEV build and host checks passed; console visual validation pending |
 
-## M6.9 verification
-- Native EE workflow: [run #44486831714](https://github.com/SilverCrow2323/rtps2/actions/runs/44486831714), successful PS2DEV cross-build and artifact upload.
-- Host tests and C checks: [run #44486842812](https://github.com/SilverCrow2323/rtps2/actions/runs/44486842812), successful 112 Python tests, compile check, navigation regression and native C syntax check.
-- The produced binary is an ELF32 little-endian MIPS executable with R5900/MIPS III flags.
-- Physical console execution has not yet been tested.
+## M6.10 verification
+- Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
+- Host test workflow [#44488236424](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236424), passed 112 Python tests, Python compile, C navigation regression and native C syntax checks.
+- ELF inspection: ELF32 little-endian MIPS, N32 ABI, static, R5900/MIPS III flags.
+- No physical-console boot or visual test yet.
 
-## M6.9 safety boundary
-M6.9 starts a new native source line under src/; it does not reconstruct or claim to merge missing M1–M5 snapshots. The initial renderer is debug text. Device slots remain NOT PROBED until live probes exist. No storage is mounted or written, and no boot manager is changed.
-
-## Recovery rule
-Do not recreate missing M1–M5 files from descriptions and label them original. Recover the real source snapshots or reimplement them as new, clearly versioned work with tests.
+## M6.10 design boundary
+The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface and has no original icons, cover artwork, texture cache, or animated page backgrounds.
 
 ## Next priorities
-1. Replace the debug text renderer with a GS rendering backend and establish resolution/layout/color/font primitives.
-2. Implement read-only device and mounted-volume discovery incrementally.
-3. Add library scanning and version-aware OPL/Neutrino launch handoffs.
-4. Implement PS2-native Store networking and package verification only after selecting and testing transport and cryptographic dependencies.
-5. Recover M5 Bridge route contract and M1–M5 source snapshots from original archives.
-6. Implement genuine PSU/SAS readers with format-specific regression fixtures.
+1. Add reliable GS texture upload/cache and original NEXUS icon/brand assets.
+2. Build the final dashboard backgrounds and distinct animated section scenes only after frame pacing and memory budgets are measured.
+3. Add read-only device and mounted-volume providers incrementally.
+4. Add game discovery, metadata/artwork integration and documented OPL/Neutrino launch handoff.
+5. Add native PS2 Store networking only after transport and crypto architecture are proven.
+6. Recover M1–M5 original source snapshots, especially M5 Bridge API contract.
+7. Implement and test genuine PSU/SAS readers.
 
 ## Non-goals
 No automatic bootloader/OSDSYS/FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN replacement. No implicit mount, IOP reset, device formatting or filesystem repair. Bluetooth HID compatibility does not imply Wi-Fi support.
