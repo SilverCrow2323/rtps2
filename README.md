@@ -9,7 +9,7 @@ A native PlayStation 2 frontend and system shell inspired by PSBBN, developed un
 | Area | Purpose | Current status |
 |---|---|---|
 | Native shell | EE entry point, DualShock input, navigation and GS dashboard | PS2DEV cross-build passed; NEXUS.ELF artifact published |
-| Graphics | libgraph/libdraw/libfont, double framebuffer and KROM font | Initial renderer present; final art/animation pending |
+| Graphics | libgraph/libdraw/libfont, double framebuffer, KROM font and NXA1 asset pipeline | Initial native renderer present; GS texture upload/cache still pending |
 | Devices & library | Mounted-volume providers, game catalog and metadata | Not yet implemented natively |
 | Store & packages | Signed host catalog, dependency planning, recipes, ZIP inspection and host staging | Host-side code present; no PS2 installer |
 | Transactions | Journal, backup, verification, rollback and recovery | Host-side sandbox reference |
@@ -37,7 +37,7 @@ cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c tests/nat
 /tmp/nexus_navigation_test
 ~~~
 
-The host suite passes 112 Python cases plus C navigation and native C syntax checks. The PS2DEV EE cross-build is verified separately.
+The M6.10 baseline passed 112 Python cases plus C navigation and native C syntax checks. M6.11 adds eight asset-pipeline regression tests; its new CI run is tracked separately from the already verified M6.10 build.
 
 ## Safety line
 NEXUS must not silently replace boot-critical assets or rewrite FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN/OSDSYS installations. The host transaction engine is sandboxed. No PS2 storage is mounted or written. Native device status remains NOT PROBED until real probes exist. ZIP staging writes only to an explicit host cache. PSU/SAS remain unsupported. The synthetic signing key is not a production key.
@@ -50,6 +50,6 @@ NEXUS must not silently replace boot-critical assets or rewrite FMCB/FHDB/OpenTu
 These are user-reported observations, not CI or independently repeated hardware tests.
 
 ## Known native limitations
-The current graphical renderer is an initial GS shell, not the final animated frontend. It has no original icon atlas, cover-art texture cache, animated section scenes, live device discovery, filesystem providers, OPL/Neutrino launch handoff, PS2-side HTTP/TLS/Ed25519 or native Store installer.
+The current graphical renderer is an initial GS shell, not the final animated frontend. The host-side PNG-to-NXA1 icon packer is committed, but the native renderer does not yet upload or draw that atlas and has no cover-art texture cache or animated section scenes. Live device discovery, filesystem providers, OPL/Neutrino launch handoff, PS2-side HTTP/TLS/Ed25519 and a native Store installer also remain outstanding.
 
-See [roadmap](docs/ROADMAP.md), [verified status](docs/STATUS.md), [safety rules](docs/SAFETY.md), [M6.8 host staging](docs/M6.8-host-staging.md), [M6.7 signed catalog trust](docs/M6.7-signed-catalog.md), [M6.9 native shell](docs/M6.9-native-shell.md) and [M6.10 GS renderer](docs/M6.10-gs-renderer.md).
+See [roadmap](docs/ROADMAP.md), [verified status](docs/STATUS.md), [safety rules](docs/SAFETY.md), [M6.8 host staging](docs/M6.8-host-staging.md), [M6.7 signed catalog trust](docs/M6.7-signed-catalog.md), [M6.9 native shell](docs/M6.9-native-shell.md) and [M6.10 GS renderer](docs/M6.10-gs-renderer.md) and [M6.11 asset pipeline](docs/M6.11-asset-pipeline.md).
