@@ -28,7 +28,8 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.12 | Native EE NXA1 structural + SHA-256 validation, GIF DMA upload, GS texture binding and six-cell icon sampling | PS2DEV build and host regressions passed |
 | M6.13 | Versioned original PNGs, deterministic CI packing and 16-byte-aligned NXA1 embedding in ELF; boot-time GS upload | Host CI #195 and native PS2DEV build #42 passed |
 | M6.14 | System diagnostics for video mode, atlas upload state and controller status; PCSX2 launcher and MX Linux smoke-test guide | Host CI #208 and native PS2DEV build #43 passed; emulator/console smoke test pending |
-| M6.15 | Fixed four-slot 128×128 RGBA32 GS artwork cache, contiguous VRAM reservation and LRU replacement policy | Host CI #242 and native PS2DEV build #50 passed; image source integration and runtime visual test pending |
+| M6.15 | Fixed four-slot 128×128 RGBA32 GS artwork cache, contiguous VRAM reservation, LRU replacement and explicit D-cache sync for REF uploads | Host CI #251 and native PS2DEV build #52 passed; image source integration and runtime visual test pending |
+| M6.16 | Bounded native game catalog, source/platform/favorites filters, sorted index, view modes and cyclic selection | Host CI #271 and native PS2DEV build #56 passed; storage scanner and runtime UI test pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -41,6 +42,12 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - NXA1 format: 64-byte little-endian header, 256×128 PSMCT32 RGBA atlas, 131,072-byte pixel payload and SHA-256 validation.
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
+
+## M6.16 verification
+- Native catalog model holds up to 96 entries with 64-bit `(source, key)` identity, deterministic title ordering, PS1/PS2 and HDD/MMCE/USB tags, backend hints, favorites and fixed-width path/title metadata.
+- View state provides source/platform/favorites filters, Grid/Carousel/Coverflow/List mode selection and wraparound movement. Games page exposes catalog-empty vs populated state; no games are fabricated.
+- Host CI [#271](https://github.com/SilverCrow2323/rtps2/actions/runs/44582680857) passed the full suite. Native EE build [#56](https://github.com/SilverCrow2323/rtps2/actions/runs/44582409082) passed and uploaded a 565,321-byte artifact ZIP (SHA-256 `62c18dfda47556754415376a5f32d71a1488192b0a684bb27ea29e32cfdee4ed`). Extracted ELF: 1,754,284 bytes; SHA-256 `792f8abbd1d773598f0fbb429cc77c5276a82bcd6eee48772246a5aa8d235e53`.
+- The model is not a device scanner. No HDD/MMCE/USB provider, image decoder, persistent favorites or game launcher is connected yet.
 
 ## M6.15 verification
 - Added four fixed 128×128 RGBA32 slots (256 KiB total) allocated as one contiguous 512×128 PSMCT32 block, respecting PS2SDK's FIFO bump allocator behavior.
@@ -83,10 +90,10 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icons are now embedded in the native ELF and handed to the GS uploader during renderer initialization. Cover-art cache, multi-slot streaming and animated page backgrounds are still pending.
 
 ## Next priorities
-1. Run the M6.15 ELF in PCSX2 and on real PAL/NTSC hardware; record atlas appearance, cache reservation, controller mapping, page-flip stability and frame pacing.
-2. Add read-only game discovery and a bounded artwork decoder/resizer that feeds the four cache slots from verified source assets.
-3. Build the Games UI around grid, carousel, coverflow and list views using real title metadata and cache-backed artwork.
-4. Add read-only device and mounted-volume providers incrementally, then documented OPL/Neutrino launch handoff.
+1. Run the M6.16 ELF in PCSX2 and on real PAL/NTSC hardware; record atlas appearance, cache reservation, empty catalog state, controller mapping, page-flip stability and frame pacing.
+2. Implement read-only HDD/MMCE/USB providers that discover real PS2/PS1 titles and populate the native catalog without altering existing installations.
+3. Add a bounded cover-image decoder/resizer that feeds verified assets into the four cache slots; then connect Grid/Carousel/Coverflow/List UI to real entries.
+4. Add documented, version-aware OPL/Neutrino/POPS launch handoff without inventing private commands.
 5. Add native PS2 Store networking only after transport and crypto architecture are proven.
 6. Recover M1–M5 original source snapshots, especially M5 Bridge API contract.
 7. Implement and test genuine PSU/SAS readers.
