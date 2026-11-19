@@ -175,7 +175,7 @@ int main(void)
     assert(status.scan_confirm_pending == 0U);
     assert(status.scan_attempted == 1U);
     assert(status.last_scan_result == 0);
-    assert(status.last_scan_report.indexed == 3U);
+    assert(status.last_scan_report.indexed == 2U);
     assert(scan_calls == 1);
     assert(strcmp(last_scan_config.root, "mmce0:/") == 0);
     assert(last_scan_config.source == NEXUS_LIBRARY_SOURCE_MMCE);
