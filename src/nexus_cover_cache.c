@@ -2,6 +2,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#include <kernel.h>
+
 #include <packet.h>
 #include <dma.h>
 #include <graph.h>
@@ -139,6 +141,9 @@ int nexus_cover_cache_store(uint32_t key, const void *pixels, size_t bytes)
                               NEXUS_COVER_CACHE_WIDTH);
     q = draw_texture_flush(q);
 
+    /* REF tags bypass the DMA chain's own cache sync; flush pixels too. */
+    SyncDCache((void *)pixels,
+               (void *)((const unsigned char *)pixels + bytes));
     dma_wait_fast();
     send_result = dma_channel_send_chain(DMA_CHANNEL_GIF, packet->data,
                                          (int)(q - packet->data), 0, 0);
