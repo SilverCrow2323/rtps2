@@ -40,6 +40,7 @@ static unsigned int read_le32(const unsigned char *p)
 
 int nexus_atlas_validate_pack(const void *pack, size_t size)
 {
+    const unsigned char *data = (const unsigned char *)pack;
     if (data == 0 || size != NXA_TOTAL_SIZE)
         return -1;
     if (data[0] != 'N' || data[1] != 'X' ||
