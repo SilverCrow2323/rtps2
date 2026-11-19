@@ -66,9 +66,17 @@ def decode_png_rgba(data):
         raise AssetError("incomplete PNG or unexpected trailing data")
     channels=4 if color==6 else 3
     stride=width*channels
-    try: raw=zlib.decompress(bytes(idat))
-    except zlib.error as exc: raise AssetError("invalid PNG deflate stream") from exc
-    if len(raw)!=height*(stride+1): raise AssetError("PNG decoded size mismatch")
+    expected=height*(stride+1)
+    try:
+        decoder=zlib.decompressobj()
+        raw=decoder.decompress(bytes(idat),expected+1)
+        if len(raw)>expected or decoder.unconsumed_tail:
+            raise AssetError("PNG decompressed data exceeds IHDR dimensions")
+        raw+=decoder.flush(expected+1-len(raw))
+    except zlib.error as exc:
+        raise AssetError("invalid PNG deflate stream") from exc
+    if len(raw)!=expected or not decoder.eof or decoder.unused_data:
+        raise AssetError("PNG decoded size mismatch or trailing deflate data")
     decoded=bytearray(height*stride); cursor=0
     for y in range(height):
         ft=raw[cursor]; cursor+=1
