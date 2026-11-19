@@ -272,8 +272,8 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
         case NEXUS_PAGE_SYSTEM:
             if (actions != 0 && actions->filexio_confirm_pending) {
                 body1 = "ACTIVATE FILEXIO / IOMANX SERVICES?";
-                body2 = "Loads missing RPC modules; no IOP reset or mount.";
-                body3 = "CROSS CONFIRMS. CIRCLE CANCELS.";
+                body2 = "Loads IOP modules and may apply SBV hooks.";
+                body3 = "No reset or mount. CROSS confirms; CIRCLE cancels.";
                 tag2 = "CONFIRM REQUIRED";
                 next = "No device scan or filesystem write will run.";
             } else if (actions != 0 && actions->filexio_ready) {
