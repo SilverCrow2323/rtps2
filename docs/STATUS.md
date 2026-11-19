@@ -5,7 +5,7 @@
 - Bridge-to-Store adapter: requires a separately declared installed size; it never mistakes compressed download size for installed storage requirement.
 - Store workflow state machine: SELECT → DEPENDENCIES → SPACE → CONFIRM → DOWNLOAD → VERIFY → READY_TO_INSTALL. It blocks confirmation if capacity is unknown/insufficient, verification before 100%, and install-ready state before successful verification.
 - Previous M6.2 transaction reference engine, dependency resolver, M6.3 Store planning/TUI and M6.4 package recipe validation remain present.
-- GitHub Actions host test workflow configured for push/PR.
+- GitHub Actions host test workflow configured for push/PR. **63/63 unit tests and compile check passed** on commit `6263e98e728baf54e8a19100f6783f85501db08c` (run [#44463407162](https://github.com/SilverCrow2323/rtps2/actions/runs/44463407162)).
 
 ## Verification boundary
 M6.5 currently has fake-transport regression tests committed, but the hosted GitHub Actions run must be checked before marking CI green. The code is host-side Python; no PS2SDK build or console test is claimed.
