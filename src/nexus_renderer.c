@@ -109,6 +109,7 @@ static qword_t *draw_icon(qword_t *q, int index, int x, int y, int selected)
         return q;
     }
     if (nexus_atlas_ready()) {
+        q = nexus_atlas_bind(q, NEXUS_CONTEXT);
         return nexus_atlas_draw(q, NEXUS_CONTEXT, (unsigned int)index,
                                 x - (NEXUS_WIDTH / 2),
                                 y - (screen_height / 2), 32);
