@@ -4,6 +4,7 @@ import unittest
 import zipfile
 from pathlib import Path
 
+from nexus_txn.engine import Transaction
 from nexus_txn.staging import StagingError, remove_staged_package, stage_zip_package
 
 
@@ -42,14 +43,20 @@ class StagingTests(unittest.TestCase):
             self.assertFalse(staged["device_write_performed"])
             self.assertFalse(staged["installer_execution_enabled"])
 
-    def test_staged_manifest_is_compatible_with_transaction_engine(self):
+    def test_staged_manifest_commits_only_to_an_explicit_test_sandbox(self):
         with tempfile.TemporaryDirectory() as td:
-            root = Path(td) / "cache"
+            cache = Path(td) / "cache"
             archive = self.make_zip(td, [("APP/main.elf", PAYLOAD)])
-            staged = stage_zip_package(archive, RECIPE, root)
-            entry = staged["manifest"]["files"][0]
-            self.assertEqual(entry["source"], "APP/main.elf")
-            self.assertEqual(entry["sha256"], hashlib.sha256((Path(staged["payload_dir"]) / entry["source"]).read_bytes()).hexdigest())
+            staged = stage_zip_package(archive, RECIPE, cache)
+            sandbox_root = Path(td) / "sandbox-target"
+            state_root = Path(td) / "transaction-state"
+            result = Transaction(sandbox_root, state_root).install(
+                staged["manifest"], Path(staged["payload_dir"])
+            )
+            self.assertEqual(result["state"], "COMMITTED")
+            installed = sandbox_root / "NEXUS/demo/main.elf"
+            self.assertEqual(installed.read_bytes(), PAYLOAD)
+            self.assertTrue(staged["device_write_performed"] is False)
 
     def test_hash_mismatch_fails_without_leaving_partial_stage(self):
         with tempfile.TemporaryDirectory() as td:
