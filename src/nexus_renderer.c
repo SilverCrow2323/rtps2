@@ -11,6 +11,7 @@
 #include "nexus_renderer.h"
 #include "nexus_atlas.h"
 #include "nexus_cover_cache.h"
+#include "nexus_library.h"
 #include "nexus_asset_blob.h"
 #include "nexus_icon_patterns.h"
 
@@ -231,11 +232,13 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
 
     switch (state->page) {
         case NEXUS_PAGE_GAMES:
-            body1 = "Browse titles discovered from supported storage sources.";
-            body2 = "Planned sources: internal HDD, MMCE and USB.";
-            body3 = "Views: Grid, Carousel, Coverflow and List.";
-            tag2 = "LIBRARY PENDING";
-            next = "Read-only game discovery";
+            body1 = nexus_library_count() == 0U
+                ? "NATIVE CATALOG READY - NO TITLES INDEXED YET."
+                : "INDEXED GAME ENTRIES ARE AVAILABLE.";
+            body2 = "Sources: internal HDD, MMCE and USB (read-only).";
+            body3 = "Filters: platform, source and favorites; four view modes.";
+            tag2 = nexus_library_count() == 0U ? "INDEX EMPTY" : "CATALOG READY";
+            next = "Connect read-only discovery providers";
             break;
         case NEXUS_PAGE_PS1:
             body1 = "A dedicated collection for PlayStation 1 titles.";
