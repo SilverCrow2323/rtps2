@@ -1,43 +1,48 @@
 # NEXUS — verified status snapshot
 
+## M6.10 native GS renderer
+- Native renderer uses PS2SDK libgraph, libdraw, libfont, libpacket and libdma.
+- Double 32-bit framebuffer in GS VRAM, 640 px wide with region-specific height: 512 PAL / 448 NTSC.
+- Reusable bounded 60,000-qword GIF render packet; DMA submission and VSync-based page flip.
+- KROM ROM font loaded via FontX; debug text remains as fallback if GS or font initialization fails.
+- NEXUS dark-navy / cyan / blue-grey / amber palette.
+- Home screen: six status chips (Disc, MC0, MC1, HDD, MMCE, USB) and 3×2 module cards. Separate module panels for Games, PS1, Homebrew, Store, Files and System.
+- Device values remain NOT PROBED; no live probing or storage writes are claimed.
+
+### Verified GS artifact
+- PS2DEV EE cross-build and artifact upload passed: [workflow #44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616).
+- Source commit: 3c47ae7bbb15b1ab6ff4c58e0c795f41d1bdb901.
+- Artifact ID: 14511920550; artifact ZIP: 506,996 bytes.
+- ZIP SHA-256: 68cc91c23636e1dad543c0d157ae4070629bab41e3bb0156bd9c378a38c5d0dc.
+- Extracted NEXUS.ELF: 1,564,624 bytes, ELF32 little-endian MIPS, N32 ABI, statically linked, R5900/MIPS III flags.
+- ELF SHA-256: c313bc7ca7e00cb1c49d30d784d78ab59921132f31f7b55223c59207d49ebf27.
+- Host tests and C checks passed: [workflow #44488236424](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236424): 112 Python tests, Python compile, C navigation test and syntax-only compile of all native C modules including GS renderer.
+
+The build confirms compilation/linking and ELF target format, not physical-console startup or visual output. TV/monitor and video-mode checks remain to be done.
+
 ## M6.9 native shell
-- Native EE shell source is committed under src/: entry point, libpad DualShock input, portable navigation state machine, dashboard and distinct Games/PS1/Homebrew/Store/Files/System views.
-- Controller backend uses SIO2MAN/PADMAN, a 256-byte / 64-byte-aligned DMA work area, PAD_STATE_STABLE reads and edge-triggered button events.
-- Input polling uses the EE delaythread.h API for a 10 ms pause.
+- Native EE shell source: entry point, libpad DualShock input, portable navigation, dashboard and distinct module pages.
+- Controller backend loads SIO2MAN/PADMAN, uses 256-byte / 64-byte-aligned DMA work area, PAD_STATE_STABLE reads and edge-triggered input.
 - Native device slots remain NOT PROBED until real probes exist.
-- The actual PS2DEV EE cross-build **passed** and uploaded NEXUS.ELF: [run #44486831714](https://github.com/SilverCrow2323/rtps2/actions/runs/44486831714).
-- Artifact: NEXUS-ELF, 396,215-byte ZIP, SHA-256 2e84f1afd9c8e85d8ab392b108301a111767502bd27b472d41c6e8d58bd69add.
-- Extracted binary: 1,234,820 bytes, ELF32 little-endian MIPS with R5900/MIPS III flags; SHA-256 06c47a71407582732efb4449230337f6ba4414ee4d12042375af4dc083c7c51f.
-- Host test workflow also passed on the following test-fixture commit: 112 Python tests, Python compile, native C navigation test and syntax-only native module compile ([run #44486842812](https://github.com/SilverCrow2323/rtps2/actions/runs/44486842812)).
-- This confirms compilation and ELF format, not a physical-console boot test.
 
-## M6.8 source
-- Recipe-scoped ZIP staging into an explicit host cache; repeats inspection and hash matching, copies only mapped members and emits a transaction manifest.
-- Store flow requires VERIFY → INSPECT → STAGE → READY_TO_INSTALL. Archive modification between inspection and staging blocks readiness.
-- End-to-end staging manifest test commits only into a disposable transaction sandbox.
+## M6.8 host staging
+- Recipe-scoped ZIP staging into explicit host cache; reinspection and hash matching; only mapped members copied; manifest passed to transaction reference engine inside isolated sandbox.
+- Store flow requires VERIFY → INSPECT → STAGE → READY_TO_INSTALL; archive changes between inspect and stage block readiness.
 
-## M6.7 source
-- Pinned Ed25519 signed-catalog trust; exact payload bytes are signed and verified. Unsigned catalogs, unknown keys, altered content, invalid times and duplicate JSON fields are rejected.
-- Bridge downloads must use metadata from the latest verified catalog record.
+## M6.7 signed catalog
+- Ed25519 signature verification with locally pinned public keys; exact payload bytes, validity window, strict JSON and Bridge binding to trusted records.
 
-## M6.6 source
-- Read-only ZIP inspection, safe path/type/size checks and SHA-256 content verification.
-- PSU/SAS recognized but unsupported; never treated as ZIP.
+## M6.6 archive inspection
+- Read-only ZIP inspection with safe path/type/size/hash checks. PSU/SAS recognized but unsupported.
 
-## M6.5 source
-- Injected host Bridge client, bearer auth, validated catalog, distinct download vs installed size, resumable ranged downloads and final hash/size checks.
-- Original M5 Bridge route compatibility remains unverified.
-
-## Verification boundary
-- Host suite: 112 tests and both C host checks pass.
-- Native EE cross-compile and artifact upload pass.
-- No physical PS2 console test is claimed.
+## M6.5 host Bridge
+- Injected transport, bearer token, range/resume downloads, explicit download vs installed sizes and SHA verification. Actual M5 route compatibility remains unverified.
 
 ## Not implemented
-- GS graphical renderer, fonts, textures, artwork, animation or final design system.
-- Live disc/MC/HDD/MMCE/USB probing, mounted-volume providers or filesystem access.
-- OPL/Neutrino launch adapters.
-- Native PS2 network transport, TLS, Ed25519 catalog validation or package installer.
+- Final animated GS design system, original icon atlas, cover-art cache / texture streaming.
+- Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
+- Game catalog scanner and documented OPL/Neutrino handoff.
+- Native PS2 Store networking, PS2-side TLS/Ed25519 and installer.
 - PSU/SAS parsers.
 - Production SPDW Factory signing-key lifecycle.
 - Bootloader/OSDSYS/FMCB/FHDB/PSBBN changes.
