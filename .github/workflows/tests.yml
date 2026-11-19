@@ -32,6 +32,10 @@ jobs:
         run: |
           cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_library.c tests/native/test_library.c -o /tmp/nexus_library_test
           /tmp/nexus_library_test
+      - name: Native explicit System action confirmation test
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c src/nexus_actions.c tests/native/test_actions.c -o /tmp/nexus_actions_test
+          /tmp/nexus_actions_test
       - name: Native explicit fileXio adapter test
         run: |
           cc -std=c11 -Wall -Wextra -Werror -Itests/native/stubs -Isrc/include \
@@ -56,4 +60,4 @@ jobs:
           /tmp/nexus_sha256_test
       - name: Native shell C syntax check (PS2SDK API stubs)
         run: |
-          cc -std=c11 -Wall -Wextra -Werror -fsyntax-only -Itests/native/stubs -Isrc/include src/nexus_main.c src/nexus_input.c src/nexus_ui.c src/nexus_renderer.c src/nexus_atlas.c src/nexus_cover_cache.c src/nexus_cover_cache_policy.c src/nexus_library.c src/nexus_library_scan.c src/nexus_filexio.c src/nexus_sha256.c src/nexus_devices.c src/nexus_navigation.c
+          cc -std=c11 -Wall -Wextra -Werror -fsyntax-only -Itests/native/stubs -Isrc/include src/nexus_main.c src/nexus_input.c src/nexus_ui.c src/nexus_renderer.c src/nexus_atlas.c src/nexus_cover_cache.c src/nexus_cover_cache_policy.c src/nexus_library.c src/nexus_library_scan.c src/nexus_filexio.c src/nexus_actions.c src/nexus_sha256.c src/nexus_devices.c src/nexus_navigation.c
