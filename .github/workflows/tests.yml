@@ -24,3 +24,9 @@ jobs:
             src/nexus_navigation.c tests/native/test_navigation.c \
             -o /tmp/nexus_navigation_test
           /tmp/nexus_navigation_test
+      - name: Native shell C syntax check (PS2SDK API stubs)
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -fsyntax-only \
+            -Itests/native/stubs -Isrc/include \
+            src/nexus_main.c src/nexus_input.c src/nexus_ui.c \
+            src/nexus_devices.c src/nexus_navigation.c
