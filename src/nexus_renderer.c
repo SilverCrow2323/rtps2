@@ -9,6 +9,7 @@
 #include <font.h>
 
 #include "nexus_renderer.h"
+#include "nexus_atlas.h"
 #include "nexus_icon_patterns.h"
 
 #define NEXUS_WIDTH 640
@@ -107,6 +108,11 @@ static qword_t *draw_icon(qword_t *q, int index, int x, int y, int selected)
     if (index < 0 || index >= 6) {
         return q;
     }
+    if (nexus_atlas_ready()) {
+        return nexus_atlas_draw(q, NEXUS_CONTEXT, (unsigned int)index,
+                                x - (NEXUS_WIDTH / 2),
+                                y - (screen_height / 2), 32);
+    }
 
     for (row = 0; row < 5; ++row) {
         for (col = 0; col < 5; ++col) {
@@ -171,6 +177,9 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
     unsigned int i;
 
     q = fill_rect(q, 0, 0, NEXUS_WIDTH, screen_height, C_BG);
+    if (nexus_atlas_ready()) {
+        q = nexus_atlas_bind(q, NEXUS_CONTEXT);
+    }
     q = draw_topbar(q, "DASHBOARD");
     q = print_text(q, "YOUR CONSOLE. YOUR LIBRARY.", 20, 64, C_TEXT);
     q = print_text(q, "A new home for the PlayStation 2", 20, 86, C_MUTED);
