@@ -12,6 +12,7 @@
 #define PAD_SELECT    0x0001
 #define PAD_CROSS     0x4000
 #define PAD_CIRCLE    0x2000
+#define PAD_TRIANGLE  0x1000
 #define PAD_L1        0x0400
 #define PAD_R1        0x0800
 
