@@ -1,5 +1,6 @@
 #include <kernel.h>
 #include <sifrpc.h>
+#include <delaythread.h>
 
 #include "nexus_input.h"
 #include "nexus_navigation.h"
@@ -35,9 +36,7 @@ int main(void)
         }
 
         previous_connected = connected;
-
-        /* PS2SDK EE kernel.h provides nopdelay(); DelayThread is IOP-side. */
-        nopdelay();
+        DelayThread(10000);
     }
 
     return 0;
