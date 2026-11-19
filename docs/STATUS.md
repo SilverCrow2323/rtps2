@@ -1,12 +1,15 @@
 # NEXUS — verified status snapshot
 
-## M6.9 source
-- New native EE shell bootstrap under src/: entry point, DualShock input backend, portable navigation state machine, first dashboard and distinct section screens.
-- Controller backend uses PS2SDK libpad, SIO2MAN/PADMAN module loading and a 256-byte, 64-byte-aligned pad work area. It reads only after PAD_STATE_STABLE.
-- Bootstrap controls: D-pad selects, Cross opens, L1/R1 switches sections, Circle backs, Start returns home.
-- Native device status slots remain NOT PROBED until actual device providers are implemented.
-- src/Makefile produces NEXUS.ELF with the PS2SDK sample build rules; requires the official PS2DEV toolchain.
-- CI adds a host C compiler test for the portable navigation state machine. This is not a PS2SDK cross-build.
+## M6.9 native shell
+- Native EE shell source is committed under src/: entry point, libpad DualShock input, portable navigation state machine, dashboard and distinct Games/PS1/Homebrew/Store/Files/System views.
+- Controller backend uses SIO2MAN/PADMAN, a 256-byte / 64-byte-aligned DMA work area, PAD_STATE_STABLE reads and edge-triggered button events.
+- Input polling uses the EE delaythread.h API for a 10 ms pause.
+- Native device slots remain NOT PROBED until real probes exist.
+- The actual PS2DEV EE cross-build **passed** and uploaded NEXUS.ELF: [run #44486831714](https://github.com/SilverCrow2323/rtps2/actions/runs/44486831714).
+- Artifact: NEXUS-ELF, 396,215-byte ZIP, SHA-256 2e84f1afd9c8e85d8ab392b108301a111767502bd27b472d41c6e8d58bd69add.
+- Extracted binary: 1,234,820 bytes, ELF32 little-endian MIPS with R5900/MIPS III flags; SHA-256 06c47a71407582732efb4449230337f6ba4414ee4d12042375af4dc083c7c51f.
+- Host test workflow also passed on the following test-fixture commit: 112 Python tests, Python compile, native C navigation test and syntax-only native module compile ([run #44486842812](https://github.com/SilverCrow2323/rtps2/actions/runs/44486842812)).
+- This confirms compilation and ELF format, not a physical-console boot test.
 
 ## M6.8 source
 - Recipe-scoped ZIP staging into an explicit host cache; repeats inspection and hash matching, copies only mapped members and emits a transaction manifest.
@@ -26,9 +29,9 @@
 - Original M5 Bridge route compatibility remains unverified.
 
 ## Verification boundary
-- Latest native C navigation CI run is pending at the time of this document update.
-- Previous M6.8 source snapshot passed 112 host tests and Python compile check ([run #44484998507](https://github.com/SilverCrow2323/rtps2/actions/runs/44484998507)).
-- PS2SDK cross-build, NEXUS.ELF artifact and physical console test are not yet claimed.
+- Host suite: 112 tests and both C host checks pass.
+- Native EE cross-compile and artifact upload pass.
+- No physical PS2 console test is claimed.
 
 ## Not implemented
 - GS graphical renderer, fonts, textures, artwork, animation or final design system.
