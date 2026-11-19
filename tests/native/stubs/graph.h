@@ -2,7 +2,7 @@
 #define TEST_GRAPH_H
 #define GRAPH_MODE_PAL 2
 #define GRAPH_ALIGN_PAGE 2048
-#define GRAPH_ALIGN_BLOCK 256
+#define GRAPH_ALIGN_BLOCK 64
 int graph_get_region(void);
 void graph_vram_clear(void);
 int graph_vram_allocate(int width,int height,int psm,int alignment);
