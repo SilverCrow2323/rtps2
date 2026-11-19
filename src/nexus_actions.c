@@ -43,6 +43,7 @@ void nexus_actions_init(NexusActionStatus *status)
 
     memset(status, 0, sizeof(*status));
     status->filexio_ready = (uint8_t)(nexus_filexio_ready() != 0);
+    nexus_library_view_init(&status->library_view);
 }
 
 static void move_scan_root(NexusActionStatus *status, int delta)
@@ -116,6 +117,63 @@ void nexus_actions_apply(NexusNavState *navigation,
                 status->filexio_attempted = 0;
                 status->last_filexio_result = 0;
             }
+            return;
+        }
+    }
+
+    if (navigation->in_section && navigation->page == NEXUS_PAGE_GAMES) {
+        if (status->game_detail_open) {
+            if (key == NEXUS_KEY_BACK) {
+                status->game_detail_open = 0U;
+                return;
+            }
+            if (key == NEXUS_KEY_HOME) {
+                status->game_detail_open = 0U;
+                nexus_nav_apply(navigation, key);
+                return;
+            }
+            return;
+        }
+
+        if (key == NEXUS_KEY_UP) {
+            (void)nexus_library_move(&status->library_view, -1);
+            return;
+        }
+        if (key == NEXUS_KEY_DOWN) {
+            (void)nexus_library_move(&status->library_view, 1);
+            return;
+        }
+        if (key == NEXUS_KEY_ACTION) {
+            uint8_t next_mode = (uint8_t)(
+                (status->library_view.view_mode + 1U) % NEXUS_LIBRARY_VIEW_COUNT);
+            (void)nexus_library_set_view_mode(&status->library_view, next_mode);
+            return;
+        }
+        if (key == NEXUS_KEY_FAVORITE) {
+            (void)nexus_library_toggle_favorite(&status->library_view);
+            return;
+        }
+        if (key == NEXUS_KEY_FILTER_SOURCE) {
+            uint8_t current = status->library_view.source_filter;
+            uint8_t next = current == NEXUS_LIBRARY_FILTER_ANY
+                ? 0U
+                : (current + 1U >= NEXUS_LIBRARY_SOURCE_COUNT
+                    ? NEXUS_LIBRARY_FILTER_ANY : (uint8_t)(current + 1U));
+            (void)nexus_library_set_source(&status->library_view, next);
+            return;
+        }
+        if (key == NEXUS_KEY_FILTER_PLATFORM) {
+            uint8_t current = status->library_view.platform_filter;
+            uint8_t next = current == NEXUS_LIBRARY_FILTER_ANY
+                ? 0U
+                : (current + 1U >= NEXUS_LIBRARY_PLATFORM_COUNT
+                    ? NEXUS_LIBRARY_FILTER_ANY : (uint8_t)(current + 1U));
+            (void)nexus_library_set_platform(&status->library_view, next);
+            return;
+        }
+        if (key == NEXUS_KEY_CONFIRM) {
+            if (nexus_library_selected(&status->library_view) != 0)
+                status->game_detail_open = 1U;
             return;
         }
     }
