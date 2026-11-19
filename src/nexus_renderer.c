@@ -266,10 +266,20 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
             break;
         case NEXUS_PAGE_SYSTEM:
             body1 = input_ready ? "DualShock input backend initialized." : "DualShock input backend unavailable.";
-            body2 = connected ? "Controller detected on port 0." : "Waiting for a controller on port 0.";
-            body3 = "Device slots remain NOT PROBED until real probes exist.";
-            tag2 = connected ? "CONTROLLER READY" : "CONTROLLER WAITING";
-            next = "Device provider registry";
+            if (screen_height == NEXUS_PAL_HEIGHT) {
+                body2 = nexus_atlas_ready()
+                    ? "GS: PAL 640x512 | NXA1 ICON ATLAS READY."
+                    : "GS: PAL 640x512 | PROCEDURAL ICON FALLBACK.";
+            } else {
+                body2 = nexus_atlas_ready()
+                    ? "GS: NTSC 640x448 | NXA1 ICON ATLAS READY."
+                    : "GS: NTSC 640x448 | PROCEDURAL ICON FALLBACK.";
+            }
+            body3 = connected
+                ? "Controller port 0 detected; storage probes remain pending."
+                : "Controller waiting; storage probes remain pending.";
+            tag2 = nexus_atlas_ready() ? "ATLAS READY" : "ICON FALLBACK";
+            next = "Read-only device provider registry";
             break;
         default:
             break;
