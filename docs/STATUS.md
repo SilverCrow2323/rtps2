@@ -1,12 +1,20 @@
 # NEXUS — verified status snapshot
 
+## M6.17 read-only game catalog scanner core
+- Added a bounded directory scanner over injected read-only open/read/close callbacks. It inspects only explicitly configured root children `CD/`, `DVD/` and `POPS/`; accepts `.iso`/`.zso` for PS2 and `.vcd` for PS1.
+- Validates source roots and fixed-width basenames, rejects traversal/separators/control characters, stages each read before catalog insertion, handles missing optional directories, and preserves 64-bit file sizes. No recursion or filesystem write API exists in the scanner contract.
+- Native regression uses an in-memory fake filesystem: extension filtering, PS1/PS2 entries, >4 GiB size, malformed names, optional missing directories, staged read failure and path traversal are covered.
+- Host CI [#289](https://github.com/SilverCrow2323/rtps2/actions/runs/44583873744) passed the full suite and scanner regression. Native EE build [#63](https://github.com/SilverCrow2323/rtps2/actions/runs/44583873664) passed and published `NEXUS-ELF`.
+- Artifact ZIP: 573,905 bytes; SHA-256 `a853fc06580d151ca53b73543196275b8736c38314fb9e717b7ed74bc4d77f27`. Extracted ELF: 1,774,060 bytes; SHA-256 `83ad74bdcb35714a52cbeb04db64971cf970793a9ea00b5f91e70752043b281f` (ELF32 little-endian MIPS N32, R5900/MIPS III).
+- This is the scanner core only. The fileXio/IOMANX driver lifecycle, USB mass adapter, MMCEMAN adapter and actual root configuration are not connected. No real drive has been scanned. APA HDD games need a separate partition provider.
+- Details: [M6.17 read-only scanner](M6.17-read-only-scanner.md).
 ## M6.16 native game-library model
 - Added a fixed-capacity 96-entry in-memory catalog with a 64-bit key scoped by source, HDD/MMCE/USB source tags, PS1/PS2 platform tags, AUTO/OPL/Neutrino/POPS backend hints, title/title ID/path/size and favorites.
 - Upsert validates enums and fixed-width string termination, replaces `(source, key)` entries while retaining favorites, and maintains deterministic title/ID/source/key ordering.
 - View state supports source, platform and favorites-only filters, Grid/Carousel/Coverflow/List modes, visible-entry lookup and circular selection. Games screen now reports whether the native catalog is empty or populated.
 - Host CI [#271](https://github.com/SilverCrow2323/rtps2/actions/runs/44582680857) passed the full suite including catalog behavior, cover-cache LRU, NXA1/SHA-256 and PCSX2 launcher tests. Native PS2DEV build [#56](https://github.com/SilverCrow2323/rtps2/actions/runs/44582409082) passed and linked the model into NEXUS.ELF.
 - Artifact ZIP: 565,321 bytes; SHA-256 `62c18dfda47556754415376a5f32d71a1488192b0a684bb27ea29e32cfdee4ed`. Extracted ELF: 1,754,284 bytes; SHA-256 `792f8abbd1d773598f0fbb429cc77c5276a82bcd6eee48772246a5aa8d235e53` (ELF32 little-endian MIPS N32, R5900/MIPS III).
-- This is an in-memory model, not a filesystem scanner. HDD/MMCE/USB providers, real title ingestion, persistent favorites, image decoding and OPL/Neutrino/POPS launch integration remain pending.
+- M6.17 now includes a read-only directory scanner core, but it has no real fileXio/MMCEMAN adapter yet. Live HDD/MMCE/USB scanning, persistent favorites, image decoding and OPL/Neutrino/POPS launch integration remain pending.
 - Details: [M6.16 library model](M6.16-library-model.md).
 ## M6.15 fixed GS cover-art cache
 - Added a four-slot LRU texture cache: 128×128 RGBA32 per slot, 256 KiB total. One contiguous 512×128 PSMCT32 allocation avoids arbitrary frees against PS2SDK's FIFO bump allocator.
@@ -20,7 +28,7 @@
 ## M6.14 native renderer diagnostics
 - The System module reports PAL 640×512 / NTSC 640×448, embedded NXA1 atlas readiness and controller status. Storage devices remain explicitly NOT PROBED. The PCSX2 launcher and mocked tests cover command dispatch, not emulation.
 - PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090-byte artifact ZIP; SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Extracted ELF: 1,724,512 bytes; SHA-256 `56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29`. Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
-- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md), now pointing to the M6.15 ELF. Actual PCSX2 boot and physical-console visual validation remain pending.
+- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md), now pointing to the M6.17 ELF. Actual PCSX2 boot and physical-console visual validation remain pending.
 
 ## M6.13 embedded boot-time atlas
 - Six source PNGs are versioned in `assets/icons/` and deterministically packed by CI into NXA1 before the native build.
@@ -88,7 +96,7 @@ The build confirms compilation/linking and ELF target format, not physical-conso
 
 ## Not implemented
 - PCSX2 runtime boot/visual verification and physical PAL/NTSC console validation.
-- HDD/MMCE/USB read-only scanners and real title ingestion into the catalog; persistent favorites; cover-image decoding/population for the four-slot cache; final animated GS design system.
+- Native fileXio/IOMANX and MMCEMAN adapter lifecycle; actual read-only HDD/MMCE/USB root configuration and scans; APA/PFS HDD partition provider; persistent favorites; cover-image decoding/population for the four-slot cache; final animated GS design system.
 - Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
 - Game catalog scanner and documented OPL/Neutrino handoff.
 - Native PS2 Store networking, PS2-side TLS/Ed25519 and installer.
