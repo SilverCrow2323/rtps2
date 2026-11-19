@@ -408,7 +408,7 @@ static qword_t *draw_game_card(qword_t *q, const NexusLibraryEntry *entry,
         q = print_text(q, "FAV", x + w - 38, y + 9, C_AMBER);
 
     q = print_text(q, "ARTWORK NOT CACHED",
-                   x + 12, y + cover_h - 5, C_MUTED);
+                   x + 12, y + cover_h - 12, C_MUTED);
 
     precision = w >= 180 ? 20 : (w >= 130 ? 14 : 9);
     (void)snprintf(title, sizeof(title), "%.*s", precision, entry->title);
@@ -501,10 +501,14 @@ static qword_t *render_games_page(qword_t *q, const NexusActionStatus *actions)
             int y = 122 + (int)i * 39;
             entry = nexus_library_visible_at(&view, slot);
             if (entry == 0) continue;
-            q = fill_rect(q, 18, y, 604, 34,
-                          slot == selected ? C_SELECTED : C_PANEL);
-            q = print_text(q, entry->title, 30, y + 9,
-                           slot == selected ? C_TEXT : C_ACCENT);
+            if (slot == selected) {
+                q = fill_rect(q, 18, y, 604, 34, C_SELECTED);
+                q = fill_rect(q, 18, y, 3, 34, C_ACCENT);
+                q = print_text(q, entry->title, 30, y + 9, C_TEXT);
+            } else {
+                q = fill_rect(q, 18, y, 604, 34, C_PANEL);
+                q = print_text(q, entry->title, 30, y + 9, C_ACCENT);
+            }
             (void)snprintf(detail, sizeof(detail), "%s / %s",
                            games_platform_label(entry->platform),
                            games_source_label(entry->source));
@@ -788,7 +792,7 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                    screen_height == NEXUS_PAL_HEIGHT ? "PAL" : "NTSC",
                    nexus_cover_cache_ready() ? "GS CACHE READY" : "GS CACHE LIMITED");
     q = draw_info_card(q, 406, 280, 216, "VIDEO / GRAPHICS",
-                       session, C_TEXT, C_ACCENT, C_TEXT);
+                       session, 232, 243, 249);
 
     q = fill_rect(q, 18, footer_y, 604, 27, C_HEADER);
     q = fill_rect(q, 18, footer_y, 604, 1, C_LINE);
