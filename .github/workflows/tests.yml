@@ -19,7 +19,9 @@ jobs:
       - name: Compile check
         run: python -m compileall -q nexus_txn tools tests
       - name: PCSX2 launcher shell syntax
-        run: bash -n tools/run_nexus_pcsx2.sh
+        run: |
+          bash -n tools/run_nexus_pcsx2.sh
+          bash -n tests/test_pcsx2_launcher.sh
       - name: PCSX2 launcher argument and fallback tests
         run: bash tests/test_pcsx2_launcher.sh
       - name: Native navigation host test
