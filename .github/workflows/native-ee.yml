@@ -11,6 +11,8 @@ on:
     paths:
       - "src/**"
       - ".github/workflows/native-ee.yml"
+      - "assets/icons/**"
+      - "tools/nexus_asset_pack.py"
   workflow_dispatch:
 
 jobs:
@@ -20,23 +22,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build embedded NXA1 icon atlas
-        run: |
-          python3 tools/nexus_asset_pack.py pack \\
-            --icons assets/icons \\
-            --output assets/build/NEXUS-ICONS.NXA \\
-            --manifest assets/build/nexus-icons.json
+        run: python3 tools/nexus_asset_pack.py pack --icons assets/icons --output assets/build/NEXUS-ICONS.NXA --manifest assets/build/nexus-icons.json
       - name: Cross-compile NEXUS.ELF with the PS2DEV toolchain
-        run: |
-          docker run --rm --platform linux/amd64 \
-            -v "$GITHUB_WORKSPACE:/workspace" \
-            -w /workspace \
-            ps2dev/ps2dev:latest \
-            sh -c 'export PS2DEV=/usr/local/ps2dev; \
-                   export PS2SDK=/usr/local/ps2dev/ps2sdk; \
-                   export PATH="$PS2DEV/bin:$PS2DEV/ee/bin:$PS2SDK/bin:$PATH"; \
-                   apk add --no-cache make; \
-                   command -v mips64r5900el-ps2-elf-gcc; \
-                   make -C src clean && make -C src'
+        run: docker run --rm --platform linux/amd64 -v "$GITHUB_WORKSPACE:/workspace" -w /workspace ps2dev/ps2dev:latest sh -c 'export PS2DEV=/usr/local/ps2dev; export PS2SDK=/usr/local/ps2dev/ps2sdk; export PATH="$PS2DEV/bin:$PS2DEV/ee/bin:$PS2SDK/bin:$PATH"; apk add --no-cache make; command -v mips64r5900el-ps2-elf-gcc; make -C src clean && make -C src'
       - name: Upload NEXUS.ELF
         uses: actions/upload-artifact@v4
         with:
