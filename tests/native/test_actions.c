@@ -88,5 +88,11 @@ int main(void)
     assert(navigation.page == NEXUS_PAGE_HOME);
     assert(navigation.in_section == 0U);
     assert(activation_calls == 2);
+
+    /* Triangle is inert everywhere outside System. */
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_ACTION);
+    assert(status.filexio_confirm_pending == 0U);
+    assert(activation_calls == 2);
+    assert(navigation.page == NEXUS_PAGE_HOME);
     return 0;
 }
