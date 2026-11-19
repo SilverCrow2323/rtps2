@@ -5,6 +5,8 @@ on:
     paths:
       - "src/**"
       - ".github/workflows/native-ee.yml"
+      - "assets/icons/**"
+      - "tools/nexus_asset_pack.py"
   pull_request:
     paths:
       - "src/**"
@@ -17,6 +19,12 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Build embedded NXA1 icon atlas
+        run: |
+          python3 tools/nexus_asset_pack.py pack \\
+            --icons assets/icons \\
+            --output assets/build/NEXUS-ICONS.NXA \\
+            --manifest assets/build/nexus-icons.json
       - name: Cross-compile NEXUS.ELF with the PS2DEV toolchain
         run: |
           docker run --rm --platform linux/amd64 \
