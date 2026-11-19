@@ -79,7 +79,31 @@ static void render_fallback_page(const NexusNavState *state, int input_ready, in
             scr_printf("NEXUS STORE\nHost signed catalog exists; native transport pending.\n");
             break;
         case NEXUS_PAGE_FILES:
-            scr_printf("FILE EXPLORER\nNo filesystem is mounted or modified.\n");
+            scr_printf("FILE EXPLORER - READ ONLY\n");
+            if (actions != 0 && actions->scan_confirm_pending) {
+                scr_printf("Scan root: %s\n",
+                           nexus_actions_scan_root_path(actions));
+                scr_printf("CROSS confirm scan / CIRCLE cancel / START home\n");
+                scr_printf("Only CD/DVD/POPS folders are inspected.\n");
+            } else if (actions != 0 && actions->scan_attempted) {
+                scr_printf("Root: %s\n",
+                           nexus_actions_scan_root_path(actions));
+                scr_printf("Result: %d  Indexed: %lu  Seen: %lu  Rejected: %lu\n",
+                           actions->last_scan_result,
+                           (unsigned long)actions->last_scan_report.indexed,
+                           (unsigned long)actions->last_scan_report.entries_seen,
+                           (unsigned long)actions->last_scan_report.rejected);
+                scr_printf("No game was launched and no files were written.\n");
+            } else if (actions != 0 && actions->filexio_ready) {
+                scr_printf("FileXio ready. Root: %s (%s)\n",
+                           nexus_actions_scan_root_path(actions),
+                           nexus_actions_scan_root_label(actions));
+                scr_printf("UP/DOWN choose root. TRIANGLE requests scan.\n");
+                scr_printf("CROSS confirms; CIRCLE cancels.\n");
+            } else {
+                scr_printf("FileXio inactive. No driver or volume is mounted.\n");
+                scr_printf("Activate services in System first.\n");
+            }
             break;
         case NEXUS_PAGE_SYSTEM:
             scr_printf("SYSTEM\nInput: %s\nController: %s\n",
