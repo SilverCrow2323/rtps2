@@ -1,9 +1,18 @@
 # NEXUS — verified status snapshot
 
+## M6.15 fixed GS cover-art cache
+- Added a four-slot LRU texture cache: 128×128 RGBA32 per slot, 256 KiB total. One contiguous 512×128 PSMCT32 allocation avoids arbitrary frees against PS2SDK's FIFO bump allocator.
+- Renderer reserves the cache after the two framebuffers and embedded icon atlas; allocation is optional and non-fatal. System diagnostics report whether the four artwork slots were reserved.
+- Store API accepts 16-byte-aligned 128×128 RGBA pixels and publishes a slot only after successful GIF DMA. LRU replacement reuses fixed addresses; it never allocates/frees per cover.
+- Host CI [#242](https://github.com/SilverCrow2323/rtps2/actions/runs/44581408402) passed the LRU policy test and native C syntax checks. PS2DEV EE build [#50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927) passed and uploaded NEXUS-ELF.
+- Artifact ZIP: 558,304 bytes; SHA-256 e2f5d9b6e17017941b95e020c4a437735283ddb0e0cefc58ba1d7c08be1e7417. Extracted ELF: 1,737,732 bytes; SHA-256 93006b873561f6007f52c3b572281a3b8efcd57d0ecf477677adf3e67beb8deb.
+- No game scanner, cover-image decoder or catalog-to-cache integration yet; PCSX2 and physical-console visual checks remain pending.
+- Details: [M6.15 cover cache](M6.15-cover-cache.md).
+
 ## M6.14 native renderer diagnostics
 - The System module reports PAL 640×512 / NTSC 640×448, embedded NXA1 atlas readiness and controller status. Storage devices remain explicitly NOT PROBED. The PCSX2 launcher and mocked tests cover command dispatch, not emulation.
 - PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090-byte artifact ZIP; SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Extracted ELF: 1,724,512 bytes; SHA-256 `56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29`. Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
-- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md). PCSX2 launcher regression tests have been added to host CI; the new run is pending. Actual PCSX2 boot and physical-console visual validation remain pending.
+- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md), now pointing to the M6.15 ELF. Actual PCSX2 boot and physical-console visual validation remain pending.
 
 ## M6.13 embedded boot-time atlas
 - Six source PNGs are versioned in `assets/icons/` and deterministically packed by CI into NXA1 before the native build.
@@ -71,7 +80,7 @@ The build confirms compilation/linking and ELF target format, not physical-conso
 
 ## Not implemented
 - PCSX2 runtime boot/visual verification and physical PAL/NTSC console validation.
-- Cover-art cache / texture streaming, multi-slot VRAM management and final animated GS design system.
+- Game-library feed and cover-image decoding/population for the four-slot cache; final animated GS design system.
 - Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
 - Game catalog scanner and documented OPL/Neutrino handoff.
 - Native PS2 Store networking, PS2-side TLS/Ed25519 and installer.
