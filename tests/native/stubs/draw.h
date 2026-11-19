@@ -27,6 +27,8 @@ qword_t *draw_setup_environment(qword_t *,int,framebuffer_t *,zbuffer_t *);
 qword_t *draw_primitive_xyoffset(qword_t *,int,float,float);
 qword_t *draw_rect_filled(qword_t *,int,rect_t *);
 qword_t *draw_rect_textured(qword_t *,int,texrect_t *);
+void draw_enable_blending(void);
+void draw_disable_blending(void);
 qword_t *draw_framebuffer(qword_t *,int,framebuffer_t *);
 qword_t *draw_clear(qword_t *,int,float,float,float,float,int,int,int);
 qword_t *draw_finish(qword_t *);
