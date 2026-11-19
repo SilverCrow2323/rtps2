@@ -5,7 +5,7 @@ NEXUS is a native PS2 shell with a polished PSBBN-inspired dashboard and clear s
 
 Games should support storage-source tabs, DualShock L1/R1 switching, grid/carousel/coverflow/list presentation, artwork and metadata, favorites and backend selection. Launching must use documented, version-aware OPL/Neutrino handoff paths; never invent a private command line or claim direct per-title launch where the backend does not expose it.
 
-The Store should eventually provide an online catalog and a dedicated full-screen terminal/TUI workflow: select package → resolve dependencies → check capacity → confirm → download → verify → install. Every package must have a validated recipe describing archive format, destination, dependencies and post-install action.
+The Store should provide an online catalog and a dedicated full-screen terminal/TUI workflow: select package → resolve dependencies → check capacity → confirm → download → verify → inspect archive → install. Every installable package needs a validated recipe describing archive format, destination, dependencies and post-install action.
 
 ## Milestone ledger
 | Milestone | Scope | Source status |
@@ -18,18 +18,19 @@ The Store should eventually provide an online catalog and a dedicated full-scree
 | M6.2 | Host transaction reference, dependency resolver, network provider contract | Source committed |
 | M6.3 | Store profiles, install/update/keep planning, space preview, dependency-safe removal, TUI renderer | Source committed |
 | M6.4 | Strict non-executing install recipe validation, target/path/hash/dependency validation | Source committed |
-| M6.5 | Injected Bridge client, range/resume download cache, size/SHA verification, Store flow state machine | Source committed; hosted CI result pending |
+| M6.5 | Injected Bridge client, range/resume download cache, size/SHA verification, Store flow | Source committed; route compatibility awaits M5 recovery |
+| M6.6 | Read-only ZIP inspection, recipe SHA matching, PSU/SAS fail-closed handling, Store inspection gate | Source committed; new CI run pending |
 
-## M6.5 safety boundary
-The Bridge client uses an injected transport and configurable route paths. It does not claim compatibility with M5 until the original Bridge route contract is recovered. Archive download size and installed storage size are distinct fields. Unknown free space blocks confirmation. A verified download only reaches READY_TO_INSTALL; no installer is invoked.
+## M6.6 safety boundary
+ZIP inspection streams content and checks paths, types, sizes, compression ratios and hashes without extraction. PSU and SAS remain unsupported and cannot reach READY_TO_INSTALL. A successful Store state is only a host-side pre-install gate; it does not execute an installer or write a device.
 
 ## Recovery rule
 Do not recreate missing M1–M5 files from descriptions and label them original. Recover the real source snapshots or reimplement them as new, clearly versioned work with tests.
 
 ## Next priorities
-1. Recover and merge M1–M5 source snapshots, especially the M5 Companion/Bridge route contract and package inspector.
-2. Bind actual Bridge metadata to validated M6.4 recipes and define a signed catalog trust policy.
-3. Add format-specific archive inspectors; PSU and SAS must not be treated as ZIP.
+1. Recover and merge M1–M5 source snapshots, especially the M5 Companion/Bridge route contract and prior package-inspector implementation.
+2. Define a signed catalog trust policy with pinned publisher keys and a standard signature implementation; SHA-256 alone is not publisher authentication.
+3. Implement and independently test genuine PSU and SAS readers, retaining strict target/path protections.
 4. Implement a native PS2 network provider/Bridge client only after selecting a supported transport and validating the PS2SDK integration.
 5. Build the native PS2 Store screen as a separate full-screen terminal/TUI view with nonblocking progress and explicit confirmation.
 6. Add PS2SDK cross-build and integration tests when the native shell source is recovered.
