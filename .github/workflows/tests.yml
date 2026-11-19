@@ -34,7 +34,7 @@ jobs:
           /tmp/nexus_library_test
       - name: Native explicit System action confirmation test
         run: |
-          cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c src/nexus_actions.c tests/native/test_actions.c -o /tmp/nexus_actions_test
+          cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c src/nexus_library.c src/nexus_actions.c tests/native/test_actions.c -o /tmp/nexus_actions_test
           /tmp/nexus_actions_test
       - name: Native explicit fileXio adapter test
         run: |
