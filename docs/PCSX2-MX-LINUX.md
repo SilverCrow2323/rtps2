@@ -43,7 +43,7 @@ Expected SHA-256:
 
     792f8abbd1d773598f0fbb429cc77c5276a82bcd6eee48772246a5aa8d235e53
 
-The ELF is 1,754,284 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the fixed four-slot GS artwork cache reservation; cover art is not populated until a game-library provider is implemented.
+The ELF is 1,754,284 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache and M6.16 game-catalog model. The catalog starts empty; read-only storage providers are the next integration step.
 
 ## 4. Boot NEXUS directly
 
