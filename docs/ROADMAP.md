@@ -24,7 +24,8 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.8 | Recipe-scoped host staging, repeated hash checks and transaction-manifest handoff | Source committed |
 | M6.9 | Native EE shell, libpad DualShock input, dashboard/pages | PS2DEV build passed |
 | M6.10 | PS2SDK GS renderer: double buffering, KROM font, dashboard cards and module panels | PS2DEV build and host checks passed; console visual validation pending |
-| M6.11 | Original section icon set, deterministic PNG-to-NXA1 PSMCT32 atlas packer, manifest and SHA-256 verifier | Source and eight unit tests committed; native GS upload/cache pending |
+| M6.11 | Original section icon set, deterministic PNG-to-NXA1 PSMCT32 atlas packer, manifest and SHA-256 verifier | Source and eight unit tests committed |
+| M6.12 | Native EE NXA1 structural validation, GIF DMA upload, GS texture binding and six-cell icon sampling | Source committed; asset loading, native digest verification and console visual test pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -42,7 +43,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icon artwork now has a host-side packing path, but no native GS texture upload, cover-art cache or animated page backgrounds are active yet.
 
 ## Next priorities
-1. Implement M6.12: native GS texture upload, atlas sampling and a bounded VRAM cache; visually validate on a PS2 before claiming the artwork is displayed.
+1. Implement M6.13: read-only runtime asset loading, EE-side SHA-256 validation and a bounded VRAM cache; visually validate on a PS2 before claiming the artwork is displayed.
 2. Build the final dashboard backgrounds and distinct animated section scenes only after the M6.12 frame pacing and memory budgets are measured.
 3. Add read-only device and mounted-volume providers incrementally.
 4. Add game discovery, metadata/artwork integration and documented OPL/Neutrino launch handoff.
