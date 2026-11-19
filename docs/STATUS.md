@@ -1,9 +1,9 @@
 # NEXUS — verified status snapshot
 
 ## M6.14 native renderer diagnostics
-- The System module reports PAL 640×512 / NTSC 640×448, embedded NXA1 atlas readiness and controller status. This gives the first concrete emulator/hardware smoke-test checklist without implying that storage devices are probed.
+- The System module reports PAL 640×512 / NTSC 640×448, embedded NXA1 atlas readiness and controller status. Storage devices remain explicitly NOT PROBED. The PCSX2 launcher and mocked tests cover command dispatch, not emulation.
 - PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090-byte artifact ZIP; SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Extracted ELF: 1,724,512 bytes; SHA-256 `56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29`. Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
-- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md). Actual PCSX2 and physical-console visual validation remain pending.
+- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md). PCSX2 launcher regression tests have been added to host CI; the new run is pending. Actual PCSX2 boot and physical-console visual validation remain pending.
 
 ## M6.13 embedded boot-time atlas
 - Six source PNGs are versioned in `assets/icons/` and deterministically packed by CI into NXA1 before the native build.
@@ -12,7 +12,7 @@
 - Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) and native EE build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed.
 - Extracted ELF: 1,724,400 bytes; SHA-256: `51ad1a8c2799aee05452369b8b73fe1141ffcf187737227086c66882b4908d1b`. Artifact ZIP SHA-256: `1c7a2ac9be049987f8a379c60dbf6244b916c4cb2a60919ca62f08673022cc81`.
 - Actual texture display, alpha appearance, timing and PAL/NTSC output still need a physical PS2 test.
-- Details: [M6.13 embedded icon atlas](M6.13-embedded-icon-atlas.md).
+- Details: [M6.13 embedded icon atlas](M6.13-embedded-icon-atlas.md) and [M6.14 System diagnostics](M6.14-system-diagnostics.md).
 
 ## M6.12 native GS atlas upload path
 - Added `nexus_atlas.c`: strict NXA1 header/size checks, aligned PSMCT32 texture upload through GIF DMA, texture flush, nearest sampling and six-cell atlas draw helper.
@@ -70,6 +70,7 @@ The build confirms compilation/linking and ELF target format, not physical-conso
 - Injected transport, bearer token, range/resume downloads, explicit download vs installed sizes and SHA verification. Actual M5 route compatibility remains unverified.
 
 ## Not implemented
+- PCSX2 runtime boot/visual verification and physical PAL/NTSC console validation.
 - Cover-art cache / texture streaming, multi-slot VRAM management and final animated GS design system.
 - Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
 - Game catalog scanner and documented OPL/Neutrino handoff.
