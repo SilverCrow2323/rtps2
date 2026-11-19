@@ -32,6 +32,10 @@ jobs:
         run: |
           cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_library.c tests/native/test_library.c -o /tmp/nexus_library_test
           /tmp/nexus_library_test
+      - name: Native read-only game-library scanner test
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_library.c src/nexus_library_scan.c tests/native/test_library_scan.c -o /tmp/nexus_library_scan_test
+          /tmp/nexus_library_scan_test
       - name: Native cover-cache LRU policy test
         run: |
           cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_cover_cache_policy.c tests/native/test_cover_cache_policy.c -o /tmp/nexus_cover_cache_policy_test
@@ -46,4 +50,4 @@ jobs:
           /tmp/nexus_sha256_test
       - name: Native shell C syntax check (PS2SDK API stubs)
         run: |
-          cc -std=c11 -Wall -Wextra -Werror -fsyntax-only -Itests/native/stubs -Isrc/include src/nexus_main.c src/nexus_input.c src/nexus_ui.c src/nexus_renderer.c src/nexus_atlas.c src/nexus_cover_cache.c src/nexus_cover_cache_policy.c src/nexus_library.c src/nexus_sha256.c src/nexus_devices.c src/nexus_navigation.c
+          cc -std=c11 -Wall -Wextra -Werror -fsyntax-only -Itests/native/stubs -Isrc/include src/nexus_main.c src/nexus_input.c src/nexus_ui.c src/nexus_renderer.c src/nexus_atlas.c src/nexus_cover_cache.c src/nexus_cover_cache_policy.c src/nexus_library.c src/nexus_library_scan.c src/nexus_sha256.c src/nexus_devices.c src/nexus_navigation.c
