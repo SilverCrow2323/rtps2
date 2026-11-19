@@ -5,7 +5,7 @@ from nexus_txn.bridge import BridgeClient, BridgeError
 DATA = b"PS2BBN NEXUS package fixture / " * 9
 DIGEST = hashlib.sha256(DATA).hexdigest()
 PACKAGE = {"id":"demo","version":"1.0","name":"Demo package","size":len(DATA),
-           "sha256":DIGEST,"download_path":"/cache/demo.pkg","requires":[]}
+           "installed_size":4096,"sha256":DIGEST,"download_path":"/cache/demo.pkg","requires":[]}
 
 class FakeTransport:
     def __init__(self): self.calls=[]; self.fail_status=None
@@ -24,6 +24,14 @@ class BridgeTests(unittest.TestCase):
     def setUp(self): self.transport=FakeTransport(); self.client=BridgeClient(self.transport,"secret-token")
     def test_catalog_validation(self):
         out=self.client.catalog(); self.assertEqual(out["count"],1); self.assertEqual(out["packages"][0]["id"],"demo")
+    def test_store_catalog_requires_separate_install_size(self):
+        self.assertEqual(self.client.store_catalog()[0]["installed_size"],4096)
+    def test_store_catalog_refuses_missing_install_size(self):
+        class NoInstallSize:
+            def __call__(self,*args):
+                p={k:v for k,v in PACKAGE.items() if k!="installed_size"}
+                return {"status":200,"body":{"packages":[p]}}
+        with self.assertRaises(BridgeError): BridgeClient(NoInstallSize(),"x").store_catalog()
     def test_auth_header_sent_without_logging_token(self):
         self.client.catalog(); self.assertEqual(self.transport.calls[0][2]["Authorization"],"Bearer secret-token")
     def test_range_download_and_hash(self):
