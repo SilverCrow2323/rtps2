@@ -32,6 +32,12 @@ jobs:
         run: |
           cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_library.c tests/native/test_library.c -o /tmp/nexus_library_test
           /tmp/nexus_library_test
+      - name: Native explicit fileXio adapter test
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -Itests/native/stubs -Isrc/include \
+            src/nexus_library.c src/nexus_library_scan.c src/nexus_filexio.c \
+            tests/native/test_filexio_adapter.c -o /tmp/nexus_filexio_test
+          /tmp/nexus_filexio_test
       - name: Native read-only game-library scanner test
         run: |
           cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_library.c src/nexus_library_scan.c tests/native/test_library_scan.c -o /tmp/nexus_library_scan_test
