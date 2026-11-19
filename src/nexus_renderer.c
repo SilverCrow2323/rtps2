@@ -1,7 +1,6 @@
 #include <tamtypes.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdio.h>
 
 #include <packet.h>
 #include <dma.h>
@@ -34,6 +33,10 @@
 #define C_MUTED    133, 160, 178
 #define C_WARN     223, 183, 105
 #define C_DARK     4, 12, 21
+#define C_SOFT     10, 25, 39
+#define C_LINE     28, 64, 82
+#define C_GREEN    91, 210, 153
+#define C_AMBER    238, 181, 98
 
 static framebuffer_t frames[2];
 static packet_t *render_packet;
@@ -85,23 +88,18 @@ static qword_t *print_text(qword_t *q, const char *value, int x, int y,
 
 static qword_t *draw_topbar(qword_t *q, const char *section)
 {
-    q = fill_rect(q, 0, 0, NEXUS_WIDTH, 47, C_HEADER);
-    q = fill_rect(q, 0, 46, NEXUS_WIDTH, 3, C_ACCENT);
-    q = print_text(q, "SPDW FACTORY", 20, 16, C_ACCENT);
-    q = print_text(q, "/  PS2BBN NEXUS", 130, 16, C_TEXT);
-    if (section != 0) {
-        q = print_text(q, section, 500, 16, C_MUTED);
-    }
-    return q;
-}
-
-static qword_t *draw_status_chip(qword_t *q, int index, const char *label)
-{
-    int x = 10 + index * 104;
-    q = fill_rect(q, x, 104, 98, 40, C_PANEL);
-    q = fill_rect(q, x, 104, 3, 40, C_ACCENT);
-    q = print_text(q, label, x + 10, 109, C_MUTED);
-    q = print_text(q, "NOT PROBED", x + 10, 126, C_WARN);
+    q = fill_rect(q, 0, 0, NEXUS_WIDTH, 55, C_HEADER);
+    q = fill_rect(q, 0, 54, NEXUS_WIDTH, 2, C_ACCENT);
+    q = fill_rect(q, 18, 13, 28, 28, C_SELECTED);
+    q = fill_rect(q, 22, 17, 3, 20, C_ACCENT);
+    q = fill_rect(q, 27, 17, 3, 20, C_ACCENT);
+    q = fill_rect(q, 32, 17, 3, 20, C_ACCENT);
+    q = print_text(q, "SPDW FACTORY", 56, 13, C_ACCENT);
+    q = print_text(q, "/  NEXUS", 56, 30, C_TEXT);
+    q = fill_rect(q, 428, 14, 1, 26, C_LINE);
+    q = print_text(q, "PLAYSTATION 2", 444, 13, C_MUTED);
+    if (section != 0)
+        q = print_text(q, section, 444, 30, C_TEXT);
     return q;
 }
 
@@ -134,88 +132,202 @@ static qword_t *draw_icon(qword_t *q, int index, int x, int y, int selected)
     return q;
 }
 
-static qword_t *draw_home_card(qword_t *q, int index, int selected,
-                               const char *title, const char *line1,
-                               const char *line2)
+static qword_t *draw_nav_item(qword_t *q, int index, int selected,
+                              const char *title, const char *subtitle,
+                              int x, int y, int width, int height)
 {
-    static const int x_positions[3] = {18, 223, 428};
-    static const int y_positions[2] = {166, 282};
-    int x = x_positions[index % 3];
-    int y = y_positions[index / 3];
-    int w = 194;
-    int h = 100;
-
     if (selected) {
-        q = fill_rect(q, x, y, w, h, 18, 80, 101);
-        q = fill_rect(q, x, y, w, 3, 60, 218, 235);
-        q = fill_rect(q, x, y + 3, 4, h - 3, 60, 218, 235);
-        q = print_text(q, title, x + 15, y + 16, 232, 243, 249);
-        q = print_text(q, "SELECTED", x + 130, y + 16, C_WARN);
+        q = fill_rect(q, x, y, width, height, C_SELECTED);
+        q = fill_rect(q, x, y, 3, height, C_ACCENT);
+        q = fill_rect(q, x + 3, y, width - 3, 1, C_LINE);
     } else {
-        q = fill_rect(q, x, y, w, h, C_PANEL);
-        q = fill_rect(q, x, y, w, 3, C_PANEL_2);
-        q = fill_rect(q, x, y + 3, 4, h - 3, C_PANEL_2);
-        q = print_text(q, title, x + 15, y + 16, C_ACCENT);
+        q = fill_rect(q, x, y, width, height, C_SOFT);
+        q = fill_rect(q, x, y + height - 1, width, 1, C_LINE);
     }
-    q = print_text(q, line1, x + 15, y + 48, C_TEXT);
-    q = print_text(q, line2, x + 15, y + 68, C_MUTED);
-    q = draw_icon(q, index, x + 156, y + 45, selected);
+    q = draw_icon(q, index, x + 10, y + (height - 28) / 2, selected);
+    q = print_text(q, title, x + 48, y + 10,
+                   selected ? C_TEXT : C_MUTED);
+    q = print_text(q, subtitle, x + 48, y + 27,
+                   selected ? C_ACCENT : C_MUTED);
+    return q;
+}
+
+static qword_t *draw_large_icon(qword_t *q, int index, int x, int y, int size)
+{
+    int row, col;
+    if (index < 0 || index >= 6)
+        return q;
+    if (nexus_atlas_ready()) {
+        q = nexus_atlas_bind(q, NEXUS_CONTEXT);
+        return nexus_atlas_draw(q, NEXUS_CONTEXT, (unsigned int)index,
+                                x - (NEXUS_WIDTH / 2),
+                                y - (screen_height / 2), (unsigned int)size);
+    }
+    for (row = 0; row < 5; ++row) {
+        for (col = 0; col < 5; ++col) {
+            if ((nexus_icon_patterns[index][row] & (1U << (4 - col))) != 0) {
+                int px = size / 5;
+                q = fill_rect(q, x + col * px, y + row * px,
+                              px - 2, px - 2, C_ACCENT);
+            }
+        }
+    }
+    return q;
+}
+
+static qword_t *draw_metric_card(qword_t *q, int x, int y, int width,
+                                 const char *label, const char *value,
+                                 int ready)
+{
+    q = fill_rect(q, x, y, width, 1, C_LINE);
+    q = fill_rect(q, x, y + 1, width, 1, ready ? C_ACCENT : C_AMBER);
+    q = fill_rect(q, x, y + 2, width, 70, C_SOFT);
+    q = print_text(q, label, x + 10, y + 12, C_MUTED);
+    q = print_text(q, value, x + 10, y + 34,
+                   ready ? C_TEXT : C_AMBER);
     return q;
 }
 
 static qword_t *render_home(qword_t *q, const NexusNavState *state,
-                            int input_ready, int connected)
+                            int input_ready, int connected,
+                            const NexusActionStatus *actions)
 {
     static const char *const labels[6] = {
         "GAMES", "PS1 LIBRARY", "HOMEBREW",
         "NEXUS STORE", "FILES", "SYSTEM"
     };
-    static const char *const line1[6] = {
-        "HDD / MMCE / USB", "POPS COLLECTION", "LOCAL ELF LIBRARY",
-        "ONLINE CATALOG", "STORAGE BROWSER", "CONSOLE SETTINGS"
+    static const char *const subtitles[6] = {
+        "PS2 COLLECTION", "POPS COLLECTION", "ELF APPLICATIONS",
+        "ONLINE CATALOG", "STORAGE BROWSER", "CONSOLE CONTROL"
     };
-    static const char *const line2[6] = {
-        "Grid - Coverflow - List", "Artworks and metadata",
-        "Apps and utilities", "Packages and updates",
-        "Browse and manage files", "Devices and information"
+    static const char *const descriptions[6] = {
+        "Your PlayStation 2 library, all in one place.",
+        "A dedicated home for PlayStation classics.",
+        "Launchers, utilities and homebrew tools.",
+        "Discover applications and updates for NEXUS.",
+        "Browse connected storage without changing it.",
+        "Hardware, video, input and system services."
     };
-
+    static const char *const details[6] = {
+        "GRID / CAROUSEL / COVERFLOW / LIST",
+        "POPS / VCD / TITLE INFORMATION",
+        "LOCAL ELFS / TOOLS / EMULATORS",
+        "PACKAGES / DEPENDENCIES / UPDATES",
+        "USB / MMCE / INTERNAL STORAGE",
+        "VIDEO MODE / CONTROLLER / FILEXIO"
+    };
     unsigned int i;
+    int row_height;
+    int nav_y = 74;
+    int nav_x = 18;
+    int nav_width = 150;
+    int hero_x = 180;
+    int hero_y = 74;
+    int hero_width = 442;
+    int hero_height = screen_height == NEXUS_PAL_HEIGHT ? 246 : 202;
+    int footer_y = screen_height - 35;
+    int content_bottom = footer_y - 10;
+    int nav_available = content_bottom - nav_y;
+    int metric_y = hero_y + hero_height + 12;
+    int metric_height = content_bottom - metric_y;
+    int metric_width = 142;
+    char count_line[48];
+    char renderer_line[48];
+    const char *status_line = "READY TO EXPLORE";
+    int selected = state->selected < 6U ? state->selected : 0;
+
+    row_height = (nav_available - 25) / 6;
+    if (row_height > 58)
+        row_height = 58;
+    if (row_height < 42)
+        row_height = 42;
 
     q = fill_rect(q, 0, 0, NEXUS_WIDTH, screen_height, C_BG);
-    if (nexus_atlas_ready()) {
-        q = nexus_atlas_bind(q, NEXUS_CONTEXT);
-    }
     q = draw_topbar(q, "DASHBOARD");
-    q = print_text(q, "YOUR CONSOLE. YOUR LIBRARY.", 20, 64, C_TEXT);
-    q = print_text(q, "A new home for the PlayStation 2", 20, 86, C_MUTED);
-
-    q = draw_status_chip(q, 0, "DISC");
-    q = draw_status_chip(q, 1, "MC0");
-    q = draw_status_chip(q, 2, "MC1");
-    q = draw_status_chip(q, 3, "HDD");
-    q = draw_status_chip(q, 4, "MMCE");
-    q = draw_status_chip(q, 5, "USB");
-
-    q = print_text(q, "EXPLORE NEXUS", 20, 150, C_ACCENT);
-    for (i = 0; i < 6; ++i) {
-        q = draw_home_card(q, (int)i, state->selected == i,
-                           labels[i], line1[i], line2[i]);
+    q = print_text(q, "YOUR CONSOLE", nav_x, 63, C_ACCENT);
+    for (i = 0; i < 6U; ++i) {
+        int y = nav_y + (int)i * (row_height + 5);
+        q = draw_nav_item(q, (int)i, selected == (int)i,
+                          labels[i], subtitles[i],
+                          nav_x, y, nav_width, row_height);
     }
 
-    q = fill_rect(q, 18, screen_height - 45, 604, 40, C_HEADER);
-    q = print_text(q, "UP / DOWN  SELECT", 28, screen_height - 39, C_TEXT);
-    q = print_text(q, "CROSS  OPEN", 190, screen_height - 39, C_ACCENT);
-    q = print_text(q, "L1 / R1  MOVE", 315, screen_height - 36, C_TEXT);
-    q = print_text(q, "START  HOME", 470, screen_height - 39, C_MUTED);
+    q = fill_rect(q, hero_x, hero_y, hero_width, hero_height, C_PANEL);
+    q = fill_rect(q, hero_x, hero_y, hero_width, 3, C_ACCENT);
+    q = fill_rect(q, hero_x + 1, hero_y + hero_height - 2,
+                  hero_width - 2, 1, C_LINE);
+    q = fill_rect(q, hero_x + 284, hero_y + 20, 140,
+                  hero_height - 40, C_SOFT);
+    q = print_text(q, "NEXUS MODULE", hero_x + 22, hero_y + 18, C_ACCENT);
+    q = print_text(q, labels[selected], hero_x + 22, hero_y + 54, C_TEXT);
+    q = print_text(q, descriptions[selected], hero_x + 22, hero_y + 92, C_MUTED);
+    q = print_text(q, details[selected], hero_x + 22, hero_y + 116, C_TEXT);
+    q = fill_rect(q, hero_x + 22, hero_y + 148, 228, 1, C_LINE);
 
-    if (input_ready) {
-        q = print_text(q, "PAD READY", 20, screen_height - 20, C_ACCENT);
+    if (selected == 0) {
+        (void)snprintf(count_line, sizeof(count_line), "%u TITLES INDEXED",
+                       nexus_library_count());
+        status_line = nexus_library_count() == 0U
+            ? "LIBRARY WAITING FOR ITS FIRST SCAN" : "LIBRARY READY";
+    } else if (selected == 1) {
+        (void)snprintf(count_line, sizeof(count_line), "POPS COLLECTION");
+        status_line = "PS1 DISCOVERY READY FOR INTEGRATION";
+    } else if (selected == 2) {
+        (void)snprintf(count_line, sizeof(count_line), "LOCAL ELF INDEX");
+        status_line = "HOMEBREW DISCOVERY IN DEVELOPMENT";
+    } else if (selected == 3) {
+        (void)snprintf(count_line, sizeof(count_line), "STORE COMPANION");
+        status_line = "HOST PACKAGE PIPELINE AVAILABLE";
+    } else if (selected == 4) {
+        (void)snprintf(count_line, sizeof(count_line), "%s",
+                       actions != 0 && actions->filexio_ready
+                           ? "FILEXIO RPC READY" : "FILEXIO NOT ACTIVE");
+        status_line = actions != 0 && actions->filexio_ready
+            ? "SELECT A ROOT AND CONFIRM A READ-ONLY SCAN"
+            : "ACTIVATE FILEXIO FROM SYSTEM";
     } else {
-        q = print_text(q, "PAD OFFLINE", 20, screen_height - 20, C_WARN);
+        (void)snprintf(count_line, sizeof(count_line), "%s",
+                       actions != 0 && actions->filexio_ready
+                           ? "FILEXIO AVAILABLE" : "FILEXIO INACTIVE");
+        status_line = input_ready && connected
+            ? "DUALSHOCK CONTROLLER CONNECTED"
+            : "WAITING FOR CONTROLLER INPUT";
     }
-    q = print_text(q, connected ? "CONTROLLER CONNECTED" : "WAITING FOR CONTROLLER",
-                   122, screen_height - 20, C_MUTED);
+
+    q = print_text(q, count_line, hero_x + 22, hero_y + 164, C_ACCENT);
+    q = print_text(q, status_line, hero_x + 22, hero_y + 185, C_MUTED);
+    q = draw_large_icon(q, selected, hero_x + 319,
+                        hero_y + (hero_height - 84) / 2, 84);
+    q = print_text(q, selected == 0 ? "01 / 06" :
+                      selected == 1 ? "02 / 06" :
+                      selected == 2 ? "03 / 06" :
+                      selected == 3 ? "04 / 06" :
+                      selected == 4 ? "05 / 06" : "06 / 06",
+                   hero_x + 326, hero_y + hero_height - 26, C_ACCENT);
+
+    if (metric_height > 50) {
+        (void)snprintf(count_line, sizeof(count_line), "%u",
+                       nexus_library_count());
+        (void)snprintf(renderer_line, sizeof(renderer_line), "%s",
+                       nexus_atlas_ready() ? "ATLAS READY" : "ICON FALLBACK");
+        q = draw_metric_card(q, hero_x, metric_y, metric_width,
+                             "GAME CATALOG", count_line,
+                             nexus_library_count() > 0U);
+        q = draw_metric_card(q, hero_x + 150, metric_y, metric_width,
+                             "GS GRAPHICS", renderer_line,
+                             nexus_atlas_ready());
+        q = draw_metric_card(q, hero_x + 300, metric_y, metric_width,
+                             "CONTROLLER",
+                             connected ? "CONNECTED" : "WAITING",
+                             input_ready && connected);
+    }
+
+    q = fill_rect(q, 18, footer_y, 604, 27, C_HEADER);
+    q = fill_rect(q, 18, footer_y, 604, 1, C_LINE);
+    q = print_text(q, "UP / DOWN  SELECT", 28, footer_y + 7, C_TEXT);
+    q = print_text(q, "CROSS  OPEN", 190, footer_y + 7, C_ACCENT);
+    q = print_text(q, "L1 / R1  MODULES", 315, footer_y + 7, C_TEXT);
+    q = print_text(q, "START  HOME", 490, footer_y + 7, C_MUTED);
     return q;
 }
 
@@ -654,7 +766,7 @@ int nexus_renderer_init(void)
         return -3;
     }
 
-    if (fontx_load("rom0:KROM", &system_font, SINGLE_BYTE, 1, 1, 0) != 0) {
+    if (fontx_load("rom0:KROM", &system_font, SINGLE_BYTE, 1, 1, 1) != 0) {
         return -4;
     }
 
@@ -720,7 +832,7 @@ int nexus_renderer_render(const NexusNavState *state, int input_ready, int conne
                    C_BG);
 
     if (!state->in_section || state->page == NEXUS_PAGE_HOME) {
-        q = render_home(q, state, input_ready, connected);
+        q = render_home(q, state, input_ready, connected, actions);
     } else if (state->page == NEXUS_PAGE_GAMES) {
         q = render_games_page(q, actions);
     } else {
