@@ -9,6 +9,7 @@
 #include <font.h>
 
 #include "nexus_renderer.h"
+#include "nexus_icon_patterns.h"
 
 #define NEXUS_WIDTH 640
 #define NEXUS_NTSC_HEIGHT 448
@@ -98,6 +99,29 @@ static qword_t *draw_status_chip(qword_t *q, int index, const char *label)
     return q;
 }
 
+static qword_t *draw_icon(qword_t *q, int index, int x, int y, int selected)
+{
+    int row;
+    int col;
+
+    if (index < 0 || index >= 6) {
+        return q;
+    }
+
+    for (row = 0; row < 5; ++row) {
+        for (col = 0; col < 5; ++col) {
+            if ((nexus_icon_patterns[index][row] & (1U << (4 - col))) != 0) {
+                if (selected) {
+                    q = fill_rect(q, x + col * 5, y + row * 5, 4, 4, C_ACCENT);
+                } else {
+                    q = fill_rect(q, x + col * 5, y + row * 5, 4, 4, C_MUTED);
+                }
+            }
+        }
+    }
+    return q;
+}
+
 static qword_t *draw_home_card(qword_t *q, int index, int selected,
                                const char *title, const char *line1,
                                const char *line2)
@@ -123,6 +147,7 @@ static qword_t *draw_home_card(qword_t *q, int index, int selected,
     }
     q = print_text(q, line1, x + 15, y + 48, C_TEXT);
     q = print_text(q, line2, x + 15, y + 68, C_MUTED);
+    q = draw_icon(q, index, x + 156, y + 45, selected);
     return q;
 }
 
