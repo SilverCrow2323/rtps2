@@ -59,7 +59,8 @@ static void render_fallback_home(const NexusNavState *state, int input_ready, in
     scr_printf("START HOME  CIRCLE BACK\n");
 }
 
-static void render_fallback_page(const NexusNavState *state, int input_ready, int connected)
+static void render_fallback_page(const NexusNavState *state, int input_ready, int connected,
+                                 const NexusActionStatus *actions)
 {
     scr_printf("SPDW FACTORY  /  NEXUS  /  %s\n", nexus_page_name(state->page));
     scr_printf("==============================================\n\n");
@@ -81,9 +82,21 @@ static void render_fallback_page(const NexusNavState *state, int input_ready, in
             scr_printf("FILE EXPLORER\nNo filesystem is mounted or modified.\n");
             break;
         case NEXUS_PAGE_SYSTEM:
-            scr_printf("SYSTEM\nInput: %s\nController: %s\nDevice probing: pending\n",
+            scr_printf("SYSTEM\nInput: %s\nController: %s\n",
                        input_ready ? "READY" : "UNAVAILABLE",
                        connected ? "CONNECTED" : "WAITING");
+            if (actions != 0 && actions->filexio_confirm_pending) {
+                scr_printf("Activate missing IOMANX/FileXio modules?\n");
+                scr_printf("No IOP reset, mount or scan. CROSS confirm / CIRCLE cancel.\n");
+            } else if (actions != 0 && actions->filexio_ready) {
+                scr_printf("FileXio RPC: READY (no volumes mounted)\n");
+            } else if (actions != 0 && actions->filexio_attempted) {
+                scr_printf("FileXio activation result: %d\n",
+                           actions->last_filexio_result);
+            } else {
+                scr_printf("Triangle: request explicit FileXio activation\n");
+            }
+            scr_printf("Storage probing: not started\n");
             break;
         default:
             scr_printf("Unknown page.\n");
@@ -93,14 +106,15 @@ static void render_fallback_page(const NexusNavState *state, int input_ready, in
     scr_printf("\nL1/R1 PREVIOUS/NEXT  CIRCLE BACK  START HOME\n");
 }
 
-void nexus_ui_render(const NexusNavState *state, int input_ready, int controller_connected)
+void nexus_ui_render(const NexusNavState *state, int input_ready,
+                     int controller_connected, const NexusActionStatus *actions)
 {
     if (state == 0) {
         return;
     }
 
     if (gs_renderer_ready &&
-        nexus_renderer_render(state, input_ready, controller_connected) == 0) {
+        nexus_renderer_render(state, input_ready, controller_connected, actions) == 0) {
         return;
     }
 
@@ -108,6 +122,6 @@ void nexus_ui_render(const NexusNavState *state, int input_ready, int controller
     if (!state->in_section || state->page == NEXUS_PAGE_HOME) {
         render_fallback_home(state, input_ready, controller_connected);
     } else {
-        render_fallback_page(state, input_ready, controller_connected);
+        render_fallback_page(state, input_ready, controller_connected, actions);
     }
 }
