@@ -31,7 +31,8 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.15 | Fixed four-slot 128×128 RGBA32 GS artwork cache, contiguous VRAM reservation, LRU replacement and explicit D-cache sync for REF uploads | Host CI #251 and native PS2DEV build #52 passed; image source integration and runtime visual test pending |
 | M6.16 | Bounded native game catalog, source/platform/favorites filters, sorted index, view modes and cyclic selection | Host CI #271 and native PS2DEV build #56 passed |
 | M6.17 | Bounded read-only directory scanner core for OPL CD/DVD ISO/ZSO and POPS VCD roots; 64-bit file sizes and staged reads | Host CI #289 and native PS2DEV build #63 passed |
-| M6.18 | Explicit PS2SDK IOMANX/FileXio IRX integration and read-only Dopen/Dread/Dclose adapter, no IOP reset or mount | Host CI #307 and native PS2DEV build #70 passed; UI activation, storage drivers and live scan pending |
+| M6.18 | Explicit PS2SDK IOMANX/FileXio IRX integration and read-only Dopen/Dread/Dclose adapter, no IOP reset or mount | Host CI #307 and native PS2DEV build #70 passed |
+| M6.19 | Two-step System UI action for explicit FileXio activation: Triangle prompt, Cross confirm, Circle cancel; no automatic scan/mount | Host CI #332 and native PS2DEV build #84 passed; live device scan pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -44,6 +45,14 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - NXA1 format: 64-byte little-endian header, 256×128 PSMCT32 RGBA atlas, 131,072-byte pixel payload and SHA-256 validation.
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
+
+## M6.19 verification
+- System page now exposes an explicit activation prompt: Triangle opens warning, Cross confirms, Circle cancels and Start cancels/returns Home. Triangle is inert outside System. Renderer and debug fallback both display action states.
+- Confirmation warns that missing IOP modules may be loaded and SBV hooks may be applied. FileXio activation is not automatic and does not reset IOP, mount, scan or write a filesystem.
+- Host CI [#332](https://github.com/SilverCrow2323/rtps2/actions/runs/44586520529) passed the complete suite including confirm/cancel/failure/retry and outside-System tests. Native EE build [#84](https://github.com/SilverCrow2323/rtps2/actions/runs/44586493569) passed.
+- Artifact ZIP: 629,839 bytes; SHA-256 `37fc69a9385528621b17d181c795bb8a308b396e29fbd24b55b289bd2be93ba8`. Extracted ELF: 1,968,516 bytes; SHA-256 `436ba1b11ac241685d5e497ccf2e09492dd0b0edcc59310718d5e468671b1ca2`.
+- No PCSX2 boot or physical-console test has been performed.
+- Details: [M6.19 System FileXio confirmation](M6.19-system-filexio-confirm.md).
 
 ## M6.18 verification
 - NEXUS embeds PS2SDK IOMANX and FileXio IRXs in the EE ELF using the upstream `bin2c` pattern. `nexus_filexio_activate()` is explicit, reuses the bootstrap SIF RPC session, loads only missing modules and initializes the FileXio RPC client.
@@ -106,11 +115,11 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icons are now embedded in the native ELF and handed to the GS uploader during renderer initialization. Cover-art cache, multi-slot streaming and animated page backgrounds are still pending.
 
 ## Next priorities
-1. Run the M6.18 ELF in PCSX2 and on real PAL/NTSC hardware; record atlas, cache, adapter-inactive state, controller mapping, page flips and frame pacing.
-2. Add a visible, user-confirmed System/Files action to activate the existing FileXio adapter; never do so automatically at boot.
-3. Add already-loaded/explicit provider adapters for USB mass and MMCEMAN, with no implicit mounts; expose only existing accessible roots.
+1. Run the M6.19 ELF in PCSX2 and on real PAL/NTSC hardware; verify the confirmation/cancel sequence, atlas, cache, no-auto-mount state, controller mapping, page flips and frame pacing.
+2. Add a visible root selector for already-registered devices (for example mass:/ and mmce0:/); scanning must require a separate explicit confirmation after FileXio is ready.
+3. Integrate read-only USB mass and MMCEMAN providers without automatic driver loading or mounts; expose only roots that are already accessible.
 4. Add an APA/PFS-specific read-only provider for traditional internal HDD partitions; the file-based CD/DVD scanner must not pretend to enumerate APA partitions.
-5. Connect scanner roots to library source tabs and add atomic stale-entry reconciliation.
+5. Connect scanner results to library source tabs and add atomic stale-entry reconciliation.
 6. Add a bounded cover-image decoder/resizer that feeds verified assets into the four cache slots; then connect Grid/Carousel/Coverflow/List UI to real entries.
 4. Add documented, version-aware OPL/Neutrino/POPS launch handoff without inventing private commands.
 5. Add native PS2 Store networking only after transport and crypto architecture are proven.
