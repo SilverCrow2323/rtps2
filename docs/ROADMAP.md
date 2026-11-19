@@ -29,7 +29,8 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.13 | Versioned original PNGs, deterministic CI packing and 16-byte-aligned NXA1 embedding in ELF; boot-time GS upload | Host CI #195 and native PS2DEV build #42 passed |
 | M6.14 | System diagnostics for video mode, atlas upload state and controller status; PCSX2 launcher and MX Linux smoke-test guide | Host CI #208 and native PS2DEV build #43 passed; emulator/console smoke test pending |
 | M6.15 | Fixed four-slot 128×128 RGBA32 GS artwork cache, contiguous VRAM reservation, LRU replacement and explicit D-cache sync for REF uploads | Host CI #251 and native PS2DEV build #52 passed; image source integration and runtime visual test pending |
-| M6.16 | Bounded native game catalog, source/platform/favorites filters, sorted index, view modes and cyclic selection | Host CI #271 and native PS2DEV build #56 passed; storage scanner and runtime UI test pending |
+| M6.16 | Bounded native game catalog, source/platform/favorites filters, sorted index, view modes and cyclic selection | Host CI #271 and native PS2DEV build #56 passed |
+| M6.17 | Bounded read-only directory scanner core for OPL CD/DVD ISO/ZSO and POPS VCD roots; 64-bit file sizes and staged reads | Host CI #289 and native PS2DEV build #63 passed; real filesystem adapters and live scan pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -42,6 +43,12 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - NXA1 format: 64-byte little-endian header, 256×128 PSMCT32 RGBA atlas, 131,072-byte pixel payload and SHA-256 validation.
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
+
+## M6.17 verification
+- Added a callback-driven, read-only scanner core. It confirms the configured root is openable and scans only its direct `CD/`, `DVD/`, and `POPS/` children; ISO/ZSO and VCD filters are explicit.
+- Host test uses a fake filesystem to verify extension/platform mapping, >4 GiB file size preservation, unsafe path/name rejection, optional missing folders, read-error staging and scanner idempotence. Host CI [#289](https://github.com/SilverCrow2323/rtps2/actions/runs/44583873744) passed.
+- Native EE build [#63](https://github.com/SilverCrow2323/rtps2/actions/runs/44583873664) passed and uploaded a 573,905-byte artifact ZIP (SHA-256 `a853fc06580d151ca53b73543196275b8736c38314fb9e717b7ed74bc4d77f27`). Extracted ELF: 1,774,060 bytes; SHA-256 `83ad74bdcb35714a52cbeb04db64971cf970793a9ea00b5f91e70752043b281f`.
+- The real fileXio/USB/MMCEMAN adapters and module lifecycle are not connected. No live device scan or APA HDD partition scan has been performed.
 
 ## M6.16 verification
 - Native catalog model holds up to 96 entries with 64-bit `(source, key)` identity, deterministic title ordering, PS1/PS2 and HDD/MMCE/USB tags, backend hints, favorites and fixed-width path/title metadata.
@@ -90,9 +97,11 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icons are now embedded in the native ELF and handed to the GS uploader during renderer initialization. Cover-art cache, multi-slot streaming and animated page backgrounds are still pending.
 
 ## Next priorities
-1. Run the M6.16 ELF in PCSX2 and on real PAL/NTSC hardware; record atlas appearance, cache reservation, empty catalog state, controller mapping, page-flip stability and frame pacing.
-2. Implement read-only HDD/MMCE/USB providers that discover real PS2/PS1 titles and populate the native catalog without altering existing installations.
-3. Add a bounded cover-image decoder/resizer that feeds verified assets into the four cache slots; then connect Grid/Carousel/Coverflow/List UI to real entries.
+1. Run the M6.17 ELF in PCSX2 and on real PAL/NTSC hardware; record atlas, cache, empty scanner-provider state, controller mapping, page flips and frame pacing.
+2. Integrate PS2SDK fileXio with an explicit IOMANX/FILEXIO IRX lifecycle, then add a read-only USB mass adapter and MMCEMAN adapter. Do not auto-mount or initialize drivers without a selected/available provider.
+3. Add an APA/PFS-specific read-only provider for traditional internal HDD game partitions; the file-based CD/DVD scanner must not pretend to enumerate APA partitions.
+4. Connect scanner roots to library source tabs and add atomic stale-entry reconciliation.
+5. Add a bounded cover-image decoder/resizer that feeds verified assets into the four cache slots; then connect Grid/Carousel/Coverflow/List UI to real entries.
 4. Add documented, version-aware OPL/Neutrino/POPS launch handoff without inventing private commands.
 5. Add native PS2 Store networking only after transport and crypto architecture are proven.
 6. Recover M1–M5 original source snapshots, especially M5 Bridge API contract.
