@@ -10,6 +10,7 @@
 #include <draw.h>
 
 #include "nexus_atlas.h"
+#include "nexus_sha256.h"
 
 #define NXA_HEADER_SIZE 64U
 #define NXA_WIDTH 256U
@@ -57,9 +58,16 @@ int nexus_atlas_validate_pack(const void *pack, size_t size)
         return -4;
     {
         unsigned int i;
+        unsigned char digest[32];
         for (i = 52U; i < NXA_HEADER_SIZE; ++i) {
             if (data[i] != 0U)
                 return -4;
+        }
+        if (nexus_sha256(data + NXA_HEADER_SIZE, NXA_PAYLOAD_SIZE, digest) != 0)
+            return -8;
+        for (i = 0; i < 32U; ++i) {
+            if (digest[i] != data[20U + i])
+                return -8;
         }
     }
     return 0;
@@ -80,6 +88,7 @@ int nexus_atlas_upload(const void *pack, size_t pack_size)
     packet_t *packet;
     qword_t *q;
     int result;
+    int dma_result;
 
     result = nexus_atlas_validate_pack(bytes, pack_size);
     if (result != 0)
@@ -99,7 +108,7 @@ int nexus_atlas_upload(const void *pack, size_t pack_size)
         return -6;
 
     packet = packet_init(NXA_TRANSFER_QWORDS, PACKET_NORMAL);
-    if (packet == 0) {
+    if (packet == 0 || packet->data == 0) {
         graph_vram_free((int)atlas_texture.address);
         memset(&atlas_texture, 0, sizeof(atlas_texture));
         return -7;
@@ -110,8 +119,15 @@ int nexus_atlas_upload(const void *pack, size_t pack_size)
                               NXA_WIDTH, NXA_HEIGHT, GS_PSM_32,
                               (int)atlas_texture.address, NXA_WIDTH);
     q = draw_texture_flush(q);
-    dma_channel_send_chain(DMA_CHANNEL_GIF, packet->data,
-                           (int)(q - packet->data), 0, 0);
+    dma_wait_fast();
+    dma_result = dma_channel_send_chain(DMA_CHANNEL_GIF, packet->data,
+                                        (int)(q - packet->data), 0, 0);
+    if (dma_result < 0) {
+        packet_free(packet);
+        graph_vram_free((int)atlas_texture.address);
+        memset(&atlas_texture, 0, sizeof(atlas_texture));
+        return -9;
+    }
     dma_wait_fast();
     packet_free(packet);
 
