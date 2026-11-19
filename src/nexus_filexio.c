@@ -49,18 +49,35 @@ int nexus_filexio_activate(void)
      * standard retail IOMAN. Activation is explicit and never automatic.
      */
     sceSifInitRpc(0);
-    sbv_patch_enable_lmb();
-    sbv_patch_disable_prefix_check();
 
-    result = ensure_module(IOMANX_MODULE_NAME,
-                           iomanX_irx, size_iomanX_irx);
-    if (result < 0)
-        return -1;
+    /*
+     * Avoid changing patch state when another component has already loaded
+     * both SDK services. Only enable the documented embedded-IRX patches
+     * when this explicit activation must load at least one missing module.
+     */
+    {
+        int need_iomanx = (SifSearchModuleByName(IOMANX_MODULE_NAME) < 0);
+        int need_filexio = (SifSearchModuleByName(FILEXIO_MODULE_NAME) < 0);
 
-    result = ensure_module(FILEXIO_MODULE_NAME,
-                           fileXio_irx, size_fileXio_irx);
-    if (result < 0)
-        return -2;
+        if (need_iomanx || need_filexio) {
+            sbv_patch_enable_lmb();
+            sbv_patch_disable_prefix_check();
+        }
+
+        if (need_iomanx) {
+            result = ensure_module(IOMANX_MODULE_NAME,
+                                   iomanX_irx, size_iomanX_irx);
+            if (result < 0)
+                return -1;
+        }
+
+        if (need_filexio) {
+            result = ensure_module(FILEXIO_MODULE_NAME,
+                                   fileXio_irx, size_fileXio_irx);
+            if (result < 0)
+                return -2;
+        }
+    }
 
     result = fileXioInit();
     if (result < 0)
