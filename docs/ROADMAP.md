@@ -64,7 +64,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - src/nexus_asset_blob.S embeds the pack in .rodata at 16-byte alignment. nexus_renderer_init() uploads it after GS/DMA initialization; the existing procedural glyph path remains the fallback if upload fails.
 - Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) passed the full 120-test Python suite, native SHA-256 vectors, NXA1 integrity regression, C navigation and C syntax checks.
 - Native EE build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed NXA generation, PS2DEV compile/link and ELF artifact upload.
-- Extracted NEXUS.ELF: 1,724,400 bytes; SHA-256 `51ad1a8c2799aee05452369c60dbf6244b916c4cb2a60919ca62f08673022cc81`.
+- Extracted NEXUS.ELF: 1,724,400 bytes; SHA-256 `51ad1a8c2799aee05452369b8b73fe1141ffcf187737227086c66882b4908d1b`.
 - No real-console boot or visual output is claimed.
 
 ## M6.10 design boundary
