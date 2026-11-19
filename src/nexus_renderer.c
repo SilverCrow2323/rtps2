@@ -10,6 +10,7 @@
 
 #include "nexus_renderer.h"
 #include "nexus_atlas.h"
+#include "nexus_asset_blob.h"
 #include "nexus_icon_patterns.h"
 
 #define NEXUS_WIDTH 640
@@ -361,6 +362,10 @@ int nexus_renderer_init(void)
     dma_wait_fast();
     graph_set_framebuffer_filtered((int)frames[0].address,
                                    NEXUS_WIDTH, GS_PSM_32, 0, 0);
+
+    /* The pack is linked into .rodata; failure keeps the procedural fallback. */
+    (void)nexus_atlas_upload(nexus_icon_pack_start,
+                             (size_t)(nexus_icon_pack_end - nexus_icon_pack_start));
 
     front_index = 0;
     renderer_is_ready = 1;
