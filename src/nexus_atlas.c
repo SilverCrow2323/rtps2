@@ -174,5 +174,8 @@ qword_t *nexus_atlas_draw(qword_t *q, int context, unsigned int icon,
     rect.color.b = 0x80;
     rect.color.a = 0x80;
     rect.color.q = 1.0f;
-    return draw_rect_textured(q, context, &rect);
+    draw_enable_blending();
+    q = draw_rect_textured(q, context, &rect);
+    draw_disable_blending();
+    return q;
 }
