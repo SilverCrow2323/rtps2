@@ -33,7 +33,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - No physical-console boot or visual test yet.
 
 ## M6.11 verification
-- Host packer and eight focused tests added in `tools/nexus_asset_pack.py` and `tests/test_asset_pack.py`; local test run passed 8/8.
+- Host packer and eight focused tests added in `tools/nexus_asset_pack.py` and `tests/test_asset_pack.py`; GitHub Actions run [#129](https://github.com/SilverCrow2323/rtps2/actions/runs/44574962515) passed all 120 Python tests plus Python compile and native C checks.
 - NXA1 format: 64-byte little-endian header, 256×128 PSMCT32 RGBA atlas, 131,072-byte pixel payload and SHA-256 validation.
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
