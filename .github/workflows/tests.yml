@@ -30,6 +30,12 @@ jobs:
             -Itests/native/stubs -Isrc/include src/nexus_atlas.c tests/native/test_atlas.c \
             -Wl,--gc-sections -o /tmp/nexus_atlas_test
           /tmp/nexus_atlas_test
+      - name: Native SHA-256 regression test
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -Isrc/include \\
+            src/nexus_sha256.c tests/native/test_sha256.c \\
+            -o /tmp/nexus_sha256_test
+          /tmp/nexus_sha256_test
       - name: Native shell C syntax check (PS2SDK API stubs)
         run: |
           cc -std=c11 -Wall -Wextra -Werror -fsyntax-only \
