@@ -4,12 +4,16 @@
 #include <math3d.h>
 #define DRAW_DISABLE 0
 #define ZTEST_METHOD_GREATER 1
-#define GRAPH_ALIGN_BLOCK 256
+#define TEXTURE_COMPONENTS_RGB 0
 #define TEXTURE_COMPONENTS_RGBA 1
+#define TEXTURE_FUNCTION_MODULATE 0
 #define TEXTURE_FUNCTION_DECAL 1
 #define CLUT_STORAGE_MODE1 0
 #define CLUT_NO_LOAD 0
-#define LOD_USE_K 0
+#define LOD_USE_K 1
+#define LOD_MAG_LINEAR 1
+#define LOD_MIN_LINEAR 1
+#define LOD_MIPMAP_REGISTER 0
 #define LOD_MAG_NEAREST 0
 #define LOD_MIN_NEAREST 0
 typedef struct { unsigned int address,width,height,psm,mask; } framebuffer_t;
@@ -21,7 +25,7 @@ typedef struct { vertex_t v0,v1; color_t color; } rect_t;
 typedef struct { unsigned char width,height,components,function; } texinfo_t;
 typedef struct { unsigned int address,width,psm; texinfo_t info; } texbuffer_t;
 typedef struct { unsigned int storage_mode,start,psm,load_method,address; } clutbuffer_t;
-typedef struct { unsigned char calculation,max_level,mag_filter,min_filter; float l,k; } lod_t;
+typedef struct { unsigned char calculation,max_level,mag_filter,min_filter,mipmap_select,l; float k; } lod_t;
 typedef struct { vertex_t v0; texel_t t0; vertex_t v1; texel_t t1; color_t color; } texrect_t;
 qword_t *draw_setup_environment(qword_t *,int,framebuffer_t *,zbuffer_t *);
 qword_t *draw_primitive_xyoffset(qword_t *,int,float,float);
