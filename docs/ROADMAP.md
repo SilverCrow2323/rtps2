@@ -27,7 +27,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.11 | Original section icon set, deterministic PNG-to-NXA1 PSMCT32 atlas packer, manifest and SHA-256 verifier | Source and eight unit tests committed |
 | M6.12 | Native EE NXA1 structural + SHA-256 validation, GIF DMA upload, GS texture binding and six-cell icon sampling | PS2DEV build and host regressions passed |
 | M6.13 | Versioned original PNGs, deterministic CI packing and 16-byte-aligned NXA1 embedding in ELF; boot-time GS upload | Host CI #195 and native PS2DEV build #42 passed |
-| M6.14 | System diagnostics for video mode, atlas upload state and controller status | Host CI #208 and native PS2DEV build #43 passed; runtime smoke test pending |
+| M6.14 | System diagnostics for video mode, atlas upload state and controller status; PCSX2 launcher and MX Linux smoke-test guide | Host CI #208 and native PS2DEV build #43 passed; launcher regression suite added, emulator/console smoke test pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -42,17 +42,12 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - No native ELF rebuild or physical-console test is claimed for M6.11.
 
 ## M6.14 verification
-- System page reports PAL/NTSC geometry, NXA1 atlas ready/fallback state and controller status.
-- Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed; native EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and uploaded a 553,090-byte ELF artifact (ZIP SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`).
-- The MX Linux guide covers Flatpak install, artifact download, SHA-256 verification and direct ELF launch: [PCSX2 on MX Linux](PCSX2-MX-LINUX.md).
-- Extracted ELF: 1,724,512 bytes, ELF32 little-endian MIPS N32 / R5900 MIPS III; SHA-256 `56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29`. Details: [M6.14 renderer diagnostics](M6.14-renderer-diagnostics.md).
-- No PCSX2 or physical-console visual validation has been performed from CI.
-
-## M6.14 verification
-- System page reports PAL/NTSC geometry, NXA1 atlas ready/fallback state and controller status.
-- Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed; native EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and uploaded a 553,090-byte artifact ZIP (SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`).
-- MX Linux install, download and direct ELF launch steps: [PCSX2 on MX Linux](PCSX2-MX-LINUX.md).
-- No PCSX2 or physical-console visual validation is claimed yet.
+- The System page reports PAL/NTSC framebuffer geometry, NXA1 atlas-ready/fallback state and controller port-0 status. Storage remains explicitly NOT PROBED.
+- PCSX2 launcher helper and MX Linux setup/download guide are included: [PCSX2-MX-LINUX.md](PCSX2-MX-LINUX.md) and [M6.14 System diagnostics](M6.14-system-diagnostics.md).
+- Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) and native EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed. Build #43 produced a 1,724,512-byte ELF; SHA-256 56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29.
+- Artifact ZIP SHA-256: 06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81.
+- Launcher tests for Flatpak/native fallback, paths with spaces and missing files have been added to the host workflow; first run pending.
+- CI has not performed a PCSX2 boot or physical-console visual validation.
 
 ## M6.13 verification
 - The build packs all six original PNGs into `assets/build/NEXUS-ICONS.NXA`, embeds the pack through `src/nexus_asset_blob.S`, and uploads it from `nexus_renderer_init()`.
@@ -79,8 +74,8 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icons are now embedded in the native ELF and handed to the GS uploader during renderer initialization. Cover-art cache, multi-slot streaming and animated page backgrounds are still pending.
 
 ## Next priorities
-1. Implement M6.14: measure the embedded atlas on real PAL/NTSC consoles, then add a strictly bounded cover-art texture cache without disturbing the framebuffers.
-2. Build the final dashboard backgrounds and distinct animated section scenes only after M6.14 measures frame pacing and memory budgets.
+1. Complete M6.15 smoke tests in PCSX2 and on real PAL/NTSC hardware; record atlas appearance, controller mapping, page-flip stability and startup timing before tuning the texture cache.
+2. Add a strictly bounded cover-art texture cache and later animated section scenes only after M6.15 measures frame pacing and memory budgets.
 3. Add read-only device and mounted-volume providers incrementally.
 4. Add game discovery, metadata/artwork integration and documented OPL/Neutrino launch handoff.
 5. Add native PS2 Store networking only after transport and crypto architecture are proven.
