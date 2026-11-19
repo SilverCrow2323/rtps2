@@ -5,7 +5,7 @@ NEXUS is a native PS2 shell with a polished PSBBN-inspired dashboard and clear s
 
 Games should support storage-source tabs, DualShock L1/R1 switching, grid/carousel/coverflow/list presentation, artwork and metadata, favorites and backend selection. Launching must use documented, version-aware OPL/Neutrino handoff paths; never invent a private command line or claim direct per-title launch where the backend does not expose it.
 
-The Store should provide an online catalog and a dedicated full-screen terminal/TUI workflow: select package → resolve dependencies → check capacity → confirm → download → verify → inspect archive → install. Every installable package needs a validated recipe describing archive format, destination, dependencies and post-install action.
+The Store should provide an online catalog and a dedicated full-screen terminal/TUI workflow: select package → resolve dependencies → check capacity → confirm → download → verify → inspect archive → stage files → install. Every installable package needs a validated recipe describing archive format, destination, dependencies and post-install action.
 
 ## Milestone ledger
 | Milestone | Scope | Source status |
@@ -19,20 +19,21 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.3 | Store profiles, install/update/keep planning, space preview, dependency-safe removal, TUI renderer | Source committed |
 | M6.4 | Strict non-executing install recipe validation, target/path/hash/dependency validation | Source committed |
 | M6.5 | Injected Bridge client, range/resume download cache, size/SHA verification, Store flow | Source committed; route compatibility awaits M5 recovery |
-| M6.6 | Read-only ZIP inspection, recipe SHA matching, PSU/SAS fail-closed handling, Store inspection gate | Source committed; host tests and compile check pass |
-| M6.7 | Pinned Ed25519 signed-catalog trust, expiry/key policy, Bridge download binding to trusted records | Source committed; 100 host tests and compile check pass ([CI run #44484611611](https://github.com/SilverCrow2323/rtps2/actions/runs/44484611611)) |
+| M6.6 | Read-only ZIP inspection, recipe SHA matching, PSU/SAS fail-closed handling | Source committed |
+| M6.7 | Pinned Ed25519 signed-catalog trust, expiry/key policy, Bridge download binding to trusted records | Source committed |
+| M6.8 | Recipe-scoped host staging, repeated hash checks, transaction-manifest handoff and Store staging gate | Source committed; 112 host tests and compile check pass ([CI run #44484998507](https://github.com/SilverCrow2323/rtps2/actions/runs/44484998507)) |
 
-## M6.7 safety boundary
-The host Bridge client rejects unsigned catalog responses and requires a locally pinned publisher key. The signature authenticates catalog bytes; SHA-256 then binds downloaded package bytes to the signed catalog record. Neither check proves that a package is harmless or that the publisher's build pipeline is uncompromised.
+## M6.8 safety boundary
+Only ZIP is staged. Each mapped entry is streamed into a new host cache directory, verified again and represented in a manifest for the transaction reference engine. The Store will not reach READY_TO_INSTALL if the archive changes between inspection and staging. The test commits only into a disposable sandbox. No real PS2 mount is a valid target for this host reference engine.
 
-No production SPDW Factory signing key has been created or provisioned. The test key is synthetic and must never be reused for releases. No PS2-side cryptography or installation is included.
+READY_TO_INSTALL means staged for a future installer adapter. It does not mean installed. PSU and SAS remain unsupported.
 
 ## Recovery rule
 Do not recreate missing M1–M5 files from descriptions and label them original. Recover the real source snapshots or reimplement them as new, clearly versioned work with tests.
 
 ## Next priorities
-1. Recover and merge M1–M5 source snapshots, especially the M5 Companion/Bridge route contract and prior package-inspector implementation.
-2. Define SPDW Factory release-key custody, signing, key rotation and revocation; provision a production public key through a trusted release channel.
+1. Recover and merge M1–M5 source snapshots, especially the M5 Companion/Bridge route contract and original package-inspector implementation.
+2. Define SPDW Factory release-key custody, signing, rotation and revocation; provision a production public key through a trusted release channel.
 3. Implement and independently test genuine PSU and SAS readers, retaining strict target/path protections.
 4. Implement a native PS2 network provider/Bridge client only after selecting a supported transport and validating the PS2SDK integration.
 5. Build the native PS2 Store screen as a separate full-screen terminal/TUI view with nonblocking progress and explicit confirmation.
