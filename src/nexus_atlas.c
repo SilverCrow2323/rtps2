@@ -1,6 +1,7 @@
 #include <tamtypes.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <kernel.h>
 #include <string.h>
 
 #include <packet.h>
@@ -120,6 +121,9 @@ int nexus_atlas_upload(const void *pack, size_t pack_size)
                               NXA_WIDTH, NXA_HEIGHT, GS_PSM_32,
                               (int)atlas_texture.address, NXA_WIDTH);
     q = draw_texture_flush(q);
+    /* REF tags bypass the DMA chain's own cache sync; flush pixel source too. */
+    SyncDCache((void *)(bytes + NXA_HEADER_SIZE),
+               (void *)(bytes + NXA_HEADER_SIZE + NXA_PAYLOAD_SIZE));
     dma_wait_fast();
     dma_result = dma_channel_send_chain(DMA_CHANNEL_GIF, packet->data,
                                         (int)(q - packet->data), 0, 0);
