@@ -57,7 +57,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - Added a callback-driven, read-only scanner core. It confirms the configured root is openable and scans only its direct `CD/`, `DVD/`, and `POPS/` children; ISO/ZSO and VCD filters are explicit.
 - Host test uses a fake filesystem to verify extension/platform mapping, >4 GiB file size preservation, unsafe path/name rejection, optional missing folders, read-error staging and scanner idempotence. Host CI [#289](https://github.com/SilverCrow2323/rtps2/actions/runs/44583873744) passed.
 - Native EE build [#63](https://github.com/SilverCrow2323/rtps2/actions/runs/44583873664) passed and uploaded a 573,905-byte artifact ZIP (SHA-256 `a853fc06580d151ca53b73543196275b8736c38314fb9e717b7ed74bc4d77f27`). Extracted ELF: 1,774,060 bytes; SHA-256 `83ad74bdcb35714a52cbeb04db64971cf970793a9ea00b5f91e70752043b281f`.
-- The real fileXio/USB/MMCEMAN adapters and module lifecycle are not connected. No live device scan or APA HDD partition scan has been performed.
+- The FileXio directory adapter is now integrated in M6.18 but is not activated from the UI/startup; USB mass/MMCEMAN drivers and real source selection remain pending. No live device scan or APA HDD partition scan has been performed.
 
 ## M6.16 verification
 - Native catalog model holds up to 96 entries with 64-bit `(source, key)` identity, deterministic title ordering, PS1/PS2 and HDD/MMCE/USB tags, backend hints, favorites and fixed-width path/title metadata.
