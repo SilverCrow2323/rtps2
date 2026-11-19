@@ -1,3 +1,8 @@
+## M6.14 native renderer diagnostics
+- The System module now reports the selected video mode (PAL 640×512 / NTSC 640×448), whether the embedded NXA1 atlas uploaded successfully, and controller status. This gives the first emulator/hardware smoke-test checklist without pretending device probes exist.
+- PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090 bytes; artifact ZIP SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
+- PCSX2 run guide: [MX Linux XFCE](PCSX2-MX-LINUX.md). Real visual validation remains pending.
+
 # NEXUS — verified status snapshot
 
 ## M6.13 embedded NXA1 boot asset
