@@ -2,9 +2,11 @@
 #define NEXUS_RENDERER_H
 
 #include "nexus_navigation.h"
+#include "nexus_actions.h"
 
 int nexus_renderer_init(void);
 int nexus_renderer_ready(void);
-int nexus_renderer_render(const NexusNavState *state, int input_ready, int connected);
+int nexus_renderer_render(const NexusNavState *state, int input_ready, int connected,
+                          const NexusActionStatus *actions);
 
 #endif
