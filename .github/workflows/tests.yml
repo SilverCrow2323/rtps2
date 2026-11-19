@@ -20,6 +20,8 @@ jobs:
         run: python -m compileall -q nexus_txn tools tests
       - name: PCSX2 launcher shell syntax
         run: bash -n tools/run_nexus_pcsx2.sh
+      - name: PCSX2 launcher argument and fallback tests
+        run: bash tests/test_pcsx2_launcher.sh
       - name: Native navigation host test
         run: |
           cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c tests/native/test_navigation.c -o /tmp/nexus_navigation_test
