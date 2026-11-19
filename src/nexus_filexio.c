@@ -48,8 +48,6 @@ int nexus_filexio_activate(void)
      * PS2SDK has its legacy IOMAN hook enabled so it can coexist with the
      * standard retail IOMAN. Activation is explicit and never automatic.
      */
-    sceSifInitRpc(0);
-
     /*
      * Avoid changing patch state when another component has already loaded
      * both SDK services. Only enable the documented embedded-IRX patches
