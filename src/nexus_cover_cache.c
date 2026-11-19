@@ -123,8 +123,6 @@ int nexus_cover_cache_store(uint32_t key, const void *pixels, size_t bytes)
         slot = i;
     }
 
-    /* A failed/partial transfer must never leave stale pixels addressable. */
-    slots[slot].valid = 0;
     packet = packet_init(COVER_PACKET_QWORDS, PACKET_NORMAL);
     if (packet == 0 || packet->data == 0) {
         if (packet != 0)
@@ -132,6 +130,8 @@ int nexus_cover_cache_store(uint32_t key, const void *pixels, size_t bytes)
         return -4;
     }
 
+    /* A failed/partial transfer must never leave stale pixels addressable. */
+    slots[slot].valid = 0;
     q = draw_texture_transfer(packet->data, (void *)pixels,
                               NEXUS_COVER_CACHE_WIDTH,
                               NEXUS_COVER_CACHE_HEIGHT, GS_PSM_32,
