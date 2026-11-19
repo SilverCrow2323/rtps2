@@ -1,5 +1,13 @@
 # NEXUS — verified status snapshot
 
+## M6.12 native GS atlas upload path
+- Added `nexus_atlas.c`: strict NXA1 header/size checks, aligned PSMCT32 texture upload through GIF DMA, texture flush, nearest sampling and six-cell atlas draw helper.
+- Dashboard card renderer selects atlas icons when a caller has loaded an atlas; procedural 5×5 glyphs remain the fallback.
+- The shell does not yet mount/read an NXA file at boot. Native caller must verify payload SHA-256 before upload; the EE helper currently validates structure and alignment, not the digest.
+- One atlas VRAM slot only; no cover-art LRU or safe multi-slot allocator yet.
+- Console visual validation remains pending.
+- Details: [M6.12 native GS atlas](M6.12-native-gs-atlas.md).
+
 ## M6.11 host-side asset pipeline
 - Added a deterministic PNG decoder/atlas packer with no third-party Python dependency.
 - Six 64×64 section icons map to a 256×128 PSMCT32 RGBA atlas; two 64×64 atlas cells remain reserved.
