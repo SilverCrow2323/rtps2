@@ -1,5 +1,13 @@
 # NEXUS — verified status snapshot
 
+## M6.11 host-side asset pipeline
+- Added a deterministic PNG decoder/atlas packer with no third-party Python dependency.
+- Six 64×64 section icons map to a 256×128 PSMCT32 RGBA atlas; two 64×64 atlas cells remain reserved.
+- NXA1 uses a 64-byte little-endian header, 131,072-byte pixel payload and SHA-256 verification. PNG alpha is scaled to the GS 0..128 range.
+- Eight focused host tests passed locally, including malformed CRC, payload corruption, non-power-of-two dimensions and missing/wrong-size assets.
+- Native GS upload, VRAM allocation/LRU and visual console validation are not implemented in this milestone.
+- Details: [M6.11 asset pipeline](M6.11-asset-pipeline.md).
+
 ## M6.10 native GS renderer
 - Native renderer uses PS2SDK libgraph, libdraw, libfont, libpacket and libdma.
 - Double 32-bit framebuffer in GS VRAM, 640 px wide with region-specific height: 512 PAL / 448 NTSC.
@@ -39,7 +47,7 @@ The build confirms compilation/linking and ELF target format, not physical-conso
 - Injected transport, bearer token, range/resume downloads, explicit download vs installed sizes and SHA verification. Actual M5 route compatibility remains unverified.
 
 ## Not implemented
-- Final animated GS design system, original icon atlas, cover-art cache / texture streaming.
+- Final animated GS design system, native upload of the M6.11 icon atlas, cover-art cache / texture streaming.
 - Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
 - Game catalog scanner and documented OPL/Neutrino handoff.
 - Native PS2 Store networking, PS2-side TLS/Ed25519 and installer.
