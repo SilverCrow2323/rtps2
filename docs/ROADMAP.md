@@ -19,7 +19,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.3 | Store profiles, install/update/keep planning, space preview, dependency-safe removal, TUI renderer | Source committed |
 | M6.4 | Strict non-executing install recipe validation, target/path/hash/dependency validation | Source committed |
 | M6.5 | Injected Bridge client, range/resume download cache, size/SHA verification, Store flow | Source committed; route compatibility awaits M5 recovery |
-| M6.6 | Read-only ZIP inspection, recipe SHA matching, PSU/SAS fail-closed handling, Store inspection gate | Source committed; new CI run pending |
+| M6.6 | Read-only ZIP inspection, recipe SHA matching, PSU/SAS fail-closed handling, Store inspection gate | Source committed; 85 host tests and compile check pass ([CI run #44484276661](https://github.com/SilverCrow2323/rtps2/actions/runs/44484276661)) |
 
 ## M6.6 safety boundary
 ZIP inspection streams content and checks paths, types, sizes, compression ratios and hashes without extraction. PSU and SAS remain unsupported and cannot reach READY_TO_INSTALL. A successful Store state is only a host-side pre-install gate; it does not execute an installer or write a device.
