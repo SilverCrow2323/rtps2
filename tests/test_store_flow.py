@@ -21,14 +21,24 @@ class StoreFlowTests(unittest.TestCase):
         flow.mark_verified(True)
         return flow
 
-    def test_complete_preinstall_workflow(self):
+    def make_inspected(self):
         flow = self.make_verified()
         flow.advance("INSPECT")
         flow.mark_inspected(True)
-        out = flow.advance("READY_TO_INSTALL")
+        return flow
+
+    def make_staged(self):
+        flow = self.make_inspected()
+        flow.advance("STAGE")
+        flow.mark_staged(True)
+        return flow
+
+    def test_complete_preinstall_workflow(self):
+        out = self.make_staged().advance("READY_TO_INSTALL")
         self.assertEqual(out["stage"], "READY_TO_INSTALL")
         self.assertTrue(out["verified"])
         self.assertTrue(out["inspected"])
+        self.assertTrue(out["staged"])
         self.assertFalse(out["device_write_performed"])
         self.assertFalse(out["installer_execution_enabled"])
 
@@ -61,10 +71,16 @@ class StoreFlowTests(unittest.TestCase):
         flow.mark_verified(False)
         self.assertEqual(flow.stage, "FAILED")
 
-    def test_failed_inspection_blocks_install(self):
+    def test_failed_inspection_blocks_staging(self):
         flow = self.make_verified()
         flow.advance("INSPECT")
         flow.mark_inspected(False)
+        self.assertEqual(flow.stage, "FAILED")
+
+    def test_failed_staging_blocks_install(self):
+        flow = self.make_inspected()
+        flow.advance("STAGE")
+        flow.mark_staged(False)
         self.assertEqual(flow.stage, "FAILED")
         with self.assertRaises(StoreFlowError):
             flow.advance("READY_TO_INSTALL")
@@ -77,8 +93,16 @@ class StoreFlowTests(unittest.TestCase):
         with self.assertRaises(StoreFlowError):
             flow.advance("INSPECT")
 
-    def test_cannot_skip_inspection(self):
+    def test_cannot_enter_staging_without_inspection(self):
         flow = self.make_verified()
+        with self.assertRaises(StoreFlowError):
+            flow.advance("STAGE")
+
+    def test_cannot_skip_inspection_or_staging(self):
+        flow = self.make_inspected()
+        with self.assertRaises(StoreFlowError):
+            flow.advance("READY_TO_INSTALL")
+        flow.advance("STAGE")
         with self.assertRaises(StoreFlowError):
             flow.advance("READY_TO_INSTALL")
 
