@@ -9,7 +9,7 @@ A native PlayStation 2 frontend and system shell inspired by PSBBN, developed un
 | Area | Purpose | Current status |
 |---|---|---|
 | Native shell | EE entry point, DualShock input, navigation and GS dashboard | PS2DEV cross-build passed; NEXUS.ELF artifact published |
-| Graphics | PS2SDK GS renderer, KROM font, embedded NXA1 atlas, EE SHA-256 validation, GIF DMA and four-slot cover-art texture cache | Native EE build #50 passed; game-library artwork loading and PCSX2/console visual validation pending |
+| Graphics | PS2SDK GS renderer, KROM font, embedded NXA1 atlas, EE SHA-256 validation, GIF DMA and four-slot cover-art texture cache | Native EE build #52 passed; game-library artwork loading and PCSX2/console visual validation pending |
 | Devices & library | Mounted-volume providers, game catalog and metadata | Not yet implemented natively |
 | Store & packages | Signed host catalog, dependency planning, recipes, ZIP inspection and host staging | Host-side code present; no PS2 installer |
 | Transactions | Journal, backup, verification, rollback and recovery | Host-side sandbox reference |
@@ -19,12 +19,12 @@ A native PlayStation 2 frontend and system shell inspired by PSBBN, developed un
 
 The native NEXUS.ELF is compiled using the PS2DEV Docker image and the PS2SDK EE toolchain.
 
-- Latest native EE build with embedded atlas and four-slot cover cache: [Actions run #50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927)
-- Latest host verification including cache-policy and PCSX2 launcher regressions: [Actions run #243](https://github.com/SilverCrow2323/rtps2/actions/runs/44581454864)
+- Latest native EE build with embedded atlas and four-slot cover cache: [Actions run #52](https://github.com/SilverCrow2323/rtps2/actions/runs/44581909557)
+- Latest host verification including cache-policy and PCSX2 launcher regressions: [Actions run #251](https://github.com/SilverCrow2323/rtps2/actions/runs/44581918935)
 - MX Linux / PCSX2 smoke-test guide: [PCSX2-MX-LINUX.md](docs/PCSX2-MX-LINUX.md); launcher: `tools/run_nexus_pcsx2.sh`
 - Renderer notes: [M6.10 GS renderer](docs/M6.10-gs-renderer.md), [M6.12 native GS atlas](docs/M6.12-native-gs-atlas.md), [M6.13 embedded icon atlas](docs/M6.13-embedded-icon-atlas.md), [M6.14 System diagnostics](docs/M6.14-system-diagnostics.md), [M6.15 cover-art cache](docs/M6.15-cover-cache.md), [M6.14 renderer diagnostics](docs/M6.14-renderer-diagnostics.md)
 
-Extracted ELF: **1,737,732 bytes**, ELF32 little-endian MIPS, N32 ABI, statically linked, R5900/MIPS III flags. SHA-256: 93006b873561f6007f52c3b572281a3b8efcd57d0ecf477677adf3e67beb8deb. The binary includes the six-icon NXA1 atlas, M6.14 System diagnostics and M6.15 four-slot GS artwork cache reservation.
+Extracted ELF: **1,738,060 bytes**, ELF32 little-endian MIPS, N32 ABI, statically linked, R5900/MIPS III flags. SHA-256: 43f6038be6372d91034ec33760182c079716dbb816bc7061d7f49477f9e6d992. The binary includes the six-icon NXA1 atlas, M6.14 System diagnostics and M6.15 four-slot GS artwork cache reservation.
 
 Build success proves compilation/linking and target format, not that the binary has been tested on a physical PS2.
 
@@ -38,7 +38,7 @@ cc -std=c11 -Wall -Wextra -Werror -Isrc/include src/nexus_navigation.c tests/nat
 /tmp/nexus_navigation_test
 ~~~
 
-M6.15 host CI [#242](https://github.com/SilverCrow2323/rtps2/actions/runs/44581408402) passed, including cover-cache LRU policy, launcher argument/fallback, NXA1 integrity, native SHA-256, navigation and C syntax checks. PS2DEV EE build [#50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927) generated and embedded NXA1, linked the renderer and four-slot cover-cache module, and uploaded the ELF.
+M6.15 host CI [#251](https://github.com/SilverCrow2323/rtps2/actions/runs/44581918935) passed, including cover-cache LRU policy, launcher argument/fallback, NXA1 integrity, native SHA-256, navigation and C syntax checks. PS2DEV EE build [#52](https://github.com/SilverCrow2323/rtps2/actions/runs/44581909557) generated and embedded NXA1, linked the renderer and four-slot cover-cache module, and uploaded the ELF (artifact ZIP SHA-256 8308f8d60fcadf3a1f634421bbde7e5b5eb346ac43224a4596969daf2a3aaa80). The atlas and cover artwork DMA sources are explicitly synchronized before REF-tagged transfers.
 
 ## Safety line
 NEXUS must not silently replace boot-critical assets or rewrite FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN/OSDSYS installations. The host transaction engine is sandboxed. No PS2 storage is mounted or written. Native device status remains NOT PROBED until real probes exist. ZIP staging writes only to an explicit host cache. PSU/SAS remain unsupported. The synthetic signing key is not a production key.
