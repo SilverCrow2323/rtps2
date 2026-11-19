@@ -16,7 +16,7 @@ A native PlayStation 2 frontend and system shell inspired by PSBBN, developed un
 | Network | Provider-neutral PS2 network contract | Header contract only; no driver or transport |
 
 ## Repository structure
-- `nexus_txn/` — host-side reference logic for transactions, dependencies, Store planning/TUI and recipe validation.
+- `nexus_txn/` — host-side reference logic for transactions, dependencies, Store planning/TUI, recipe validation, Bridge client and Store workflow state machine.
 - `src/include/` — native-facing API contracts.
 - `tools/` — host-side simulation CLI.
 - `tests/` — automated host regression tests.
@@ -42,4 +42,4 @@ These are user-reported observations, not CI or independently repeated hardware 
 ## Current engineering boundary
 No `NEXUS.ELF`, PS2SDK cross-build, PS2-side HTTP/TLS client, native archive installer, PSU/SAS parser or on-console package extraction is included in the currently recoverable source snapshot. Do not describe host reference modules as a functioning PS2 installer.
 
-See [roadmap](docs/ROADMAP.md), [verified status](docs/STATUS.md), [safety rules](docs/SAFETY.md), [M6 transaction/network](docs/M6-transaction-network.md), [M6.3 Store manager](docs/M6.3-store-manager.md) and [M6.4 package recipes](docs/M6.4-package-recipes.md).
+See [roadmap](docs/ROADMAP.md), [verified status](docs/STATUS.md), [safety rules](docs/SAFETY.md), [M6 transaction/network](docs/M6-transaction-network.md), [M6.3 Store manager](docs/M6.3-store-manager.md), [M6.4 package recipes](docs/M6.4-package-recipes.md) and [M6.5 Bridge client](docs/M6.5-bridge-client.md).
