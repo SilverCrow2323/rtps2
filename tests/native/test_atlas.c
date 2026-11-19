@@ -31,6 +31,15 @@ int main(void)
     put16(pack + 12, 0);
     put16(pack + 14, 0);
     put32(pack + 16, 256U * 128U * 4U);
+    {
+        static const unsigned char zero_payload_sha256[32] = {
+            0xfa,0x43,0x23,0x9b,0xce,0xe7,0xb9,0x7c,
+            0xa6,0x2f,0x00,0x7c,0xc6,0x84,0x87,0x56,
+            0x0a,0x39,0xe1,0x9f,0x74,0xf3,0xdd,0xe7,
+            0x48,0x6d,0xb3,0xf9,0x8d,0xf8,0xe4,0x71
+        };
+        memcpy(pack + 20, zero_payload_sha256, sizeof(zero_payload_sha256));
+    }
 
     assert(nexus_atlas_validate_pack(pack, PACK_SIZE) == 0);
     assert(nexus_atlas_validate_pack(pack, PACK_SIZE - 1U) == -1);
@@ -55,6 +64,14 @@ int main(void)
     put32(pack + 16, 1);
     assert(nexus_atlas_validate_pack(pack, PACK_SIZE) == -4);
     put32(pack + 16, 256U * 128U * 4U);
+
+    pack[64U + 123U] = 1U;
+    assert(nexus_atlas_validate_pack(pack, PACK_SIZE) == -8);
+    pack[64U + 123U] = 0U;
+    pack[20] ^= 1U;
+    assert(nexus_atlas_validate_pack(pack, PACK_SIZE) == -8);
+    pack[20] ^= 1U;
+
     pack[52] = 1;
     assert(nexus_atlas_validate_pack(pack, PACK_SIZE) == -4);
 
