@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="$(cd -- "$(dirname -- "$0")/../.." && pwd -P)"
+ROOT="$(cd -- "$(dirname -- "$0")/.. && pwd -P)"
 LAUNCHER="$ROOT/tools/run_nexus_pcsx2.sh"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
