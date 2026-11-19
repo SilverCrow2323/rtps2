@@ -2,7 +2,7 @@
 
 ## M6.14 native renderer diagnostics
 - The System module reports PAL 640×512 / NTSC 640×448, embedded NXA1 atlas readiness and controller status. This gives the first concrete emulator/hardware smoke-test checklist without implying that storage devices are probed.
-- PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090-byte artifact ZIP; SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
+- PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090-byte artifact ZIP; SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Extracted ELF: 1,724,512 bytes; SHA-256 `56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29`. Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
 - PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md). Actual PCSX2 and physical-console visual validation remain pending.
 
 ## M6.13 embedded boot-time atlas
