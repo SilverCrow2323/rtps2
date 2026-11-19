@@ -10,6 +10,7 @@
 
 #include "nexus_renderer.h"
 #include "nexus_atlas.h"
+#include "nexus_cover_cache.h"
 #include "nexus_asset_blob.h"
 #include "nexus_icon_patterns.h"
 
@@ -275,11 +276,12 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                     ? "GS: NTSC 640x448 | NXA1 ICON ATLAS READY."
                     : "GS: NTSC 640x448 | PROCEDURAL ICON FALLBACK.";
             }
-            body3 = connected
-                ? "Controller port 0 detected; storage probes remain pending."
-                : "Controller waiting; storage probes remain pending.";
+            body3 = nexus_cover_cache_ready()
+                ? "Four 128x128 artwork slots reserved; storage probes pending."
+                : "Artwork cache unavailable; storage probes pending.";
             tag2 = nexus_atlas_ready() ? "ATLAS READY" : "ICON FALLBACK";
-            next = "Read-only device provider registry";
+            next = connected ? "Controller ready / read-only device registry"
+                             : "Controller waiting / read-only device registry";
             break;
         default:
             break;
@@ -376,6 +378,9 @@ int nexus_renderer_init(void)
     /* The pack is linked into .rodata; failure keeps the procedural fallback. */
     (void)nexus_atlas_upload(nexus_icon_pack_start,
                              (size_t)(nexus_icon_pack_end - nexus_icon_pack_start));
+
+    /* Fixed LRU artwork slots are optional; the dashboard works without them. */
+    (void)nexus_cover_cache_init();
 
     front_index = 0;
     renderer_is_ready = 1;
