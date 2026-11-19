@@ -90,6 +90,20 @@ class BridgeClient:
                            "sha256":digest.lower(),"download_path":package_path,"requires":list(requires)})
         return {"packages":result, "count":len(result)}
 
+    def store_catalog(self):
+        """Convert validated Bridge records for Store planning when install size is explicit."""
+        catalog = self.catalog()
+        packages = []
+        for item in catalog["packages"]:
+            installed_size = item.get("installed_size")
+            if not isinstance(installed_size, int) or isinstance(installed_size, bool) or installed_size < 0:
+                raise BridgeError(f"catalog has no valid installed_size for {item['id']}")
+            packages.append({"id":item["id"], "version":item["version"], "name":item["name"],
+                             "installed_size":installed_size, "requires":item["requires"],
+                             "download_size":item["size"], "sha256":item["sha256"],
+                             "download_path":item["download_path"]})
+        return packages
+
     def download(self, package, destination: Path, chunk_size=256*1024):
         """Download/resume a catalog package into a PC cache and verify size + SHA-256."""
         if not isinstance(package, dict): raise BridgeError("package metadata must be an object")
