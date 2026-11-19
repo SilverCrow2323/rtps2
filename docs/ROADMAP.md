@@ -93,3 +93,8 @@ The current GS renderer is a first functional graphical layer: navy and cyan pal
 
 ## Non-goals
 No automatic bootloader/OSDSYS/FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN replacement. No implicit mount, IOP reset, device formatting or filesystem repair. Bluetooth HID compatibility does not imply Wi-Fi support.
+
+
+## M6.16 next steps
+1. Connect game-library metadata to cover paths, add bounded image decoding and stable artwork keys, and route updates through the four-slot cache.
+2. Run the NEXUS ELF in PCSX2 and on PAL/NTSC hardware; record boot, display mode, controller mapping, atlas/cover appearance, frame pacing and input latency before increasing VRAM use.
