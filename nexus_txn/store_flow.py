@@ -1,4 +1,4 @@
-"""Explicit Store screen workflow state machine; no device I/O or installer execution."""
+"""Store workflow state machine; all host-side gates precede any installer adapter."""
 from dataclasses import dataclass, field
 
 NEXT = {
@@ -8,7 +8,8 @@ NEXT = {
     "CONFIRM": {"DOWNLOAD", "CANCELLED"},
     "DOWNLOAD": {"VERIFY", "FAILED", "CANCELLED"},
     "VERIFY": {"INSPECT", "FAILED"},
-    "INSPECT": {"READY_TO_INSTALL", "FAILED"},
+    "INSPECT": {"STAGE", "FAILED"},
+    "STAGE": {"READY_TO_INSTALL", "FAILED"},
     "READY_TO_INSTALL": {"CANCELLED"},
     "CANCELLED": set(),
     "FAILED": set(),
@@ -27,6 +28,7 @@ class StoreFlow:
     progress: int = 0
     verified: bool = False
     inspected: bool = False
+    staged: bool = False
     events: list[str] = field(default_factory=list)
 
     def advance(self, stage):
@@ -40,8 +42,10 @@ class StoreFlow:
             raise StoreFlowError("download must reach 100% before verification")
         if stage == "INSPECT" and not self.verified:
             raise StoreFlowError("download must pass verification before inspection")
-        if stage == "READY_TO_INSTALL" and not self.inspected:
-            raise StoreFlowError("archive inspection and recipe matching must pass before install-ready state")
+        if stage == "STAGE" and not self.inspected:
+            raise StoreFlowError("archive inspection and recipe matching must pass before staging")
+        if stage == "READY_TO_INSTALL" and not self.staged:
+            raise StoreFlowError("recipe-mapped payload must be staged before install-ready state")
         self.stage = stage
         self.events.append(stage)
         return self.snapshot()
@@ -74,6 +78,14 @@ class StoreFlow:
             return
         self.inspected = True
 
+    def mark_staged(self, valid):
+        if self.stage != "STAGE" or not self.inspected:
+            raise StoreFlowError("staging result outside inspected STAGE stage")
+        if valid is not True:
+            self.advance("FAILED")
+            return
+        self.staged = True
+
     def snapshot(self):
         return {
             "stage": self.stage,
@@ -82,6 +94,7 @@ class StoreFlow:
             "progress": self.progress,
             "verified": self.verified,
             "inspected": self.inspected,
+            "staged": self.staged,
             "device_write_performed": False,
             "installer_execution_enabled": False,
             "events": list(self.events),
