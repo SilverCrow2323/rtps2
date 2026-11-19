@@ -80,7 +80,12 @@ int main(void)
 
     assert(nexus_library_move(&view, -1) == 0);
     assert(view.selected_index == 3U);
-    assert(nexus_library_selected(&view) != 0);
+    entry = nexus_library_selected(&view);
+    assert(entry != 0 && entry->key == 1U);
+    assert(nexus_library_move(&view, -1) == 0);
+    assert(view.selected_index == 2U);
+    entry = nexus_library_selected(&view);
+    assert(entry != 0 && entry->key == 4U);
     assert(nexus_library_toggle_favorite(&view) == 0);
     assert(nexus_library_set_favorites_only(&view, 1) == 0);
     assert(nexus_library_visible_count(&view) == 1U);
