@@ -13,6 +13,7 @@ from pathlib import Path
 
 PNG_SIGNATURE=b"\x89PNG\r\n\x1a\n"
 HEADER=struct.Struct("<4sHHHHHHI32s12s")
+HEADER_SIZE=HEADER.size
 MAGIC=b"NXA1"
 VERSION=1
 PSMCT32=0
