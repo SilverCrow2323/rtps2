@@ -1,26 +1,17 @@
-## M6.14 native renderer diagnostics
-- The System module now reports the selected video mode (PAL 640×512 / NTSC 640×448), whether the embedded NXA1 atlas uploaded successfully, and controller status. This gives the first emulator/hardware smoke-test checklist without pretending device probes exist.
-- PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090 bytes; artifact ZIP SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
-- PCSX2 run guide: [MX Linux XFCE](PCSX2-MX-LINUX.md). Real visual validation remains pending.
-
 # NEXUS — verified status snapshot
 
-## M6.13 embedded NXA1 boot asset
-- Six original section PNGs are packed during the native build into `assets/build/NEXUS-ICONS.NXA`; `src/nexus_asset_blob.S` embeds the verified blob in the ELF read-only section.
-- `nexus_renderer_init()` uploads the embedded atlas during startup. EE validation checks the NXA1 structure, reserved bytes and SHA-256 payload digest before allocating texture VRAM.
-- No storage mount is required for the section icons. If the upload fails, the procedural glyph fallback remains available.
-- Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) and PS2DEV native build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed. Artifact `NEXUS-ELF`: 553,030 bytes; ZIP SHA-256 `1c7a2ac9be049987f8a379c60dbf6244b916c4cb2a60919ca62f08673022cc81`.
-- This validates asset generation and linking, not visible rendering on a real console. PCSX2 and physical-console visual checks remain open.
-- Details: [M6.13 embedded atlas](M6.13-embedded-atlas.md).
-
+## M6.14 native renderer diagnostics
+- The System module reports PAL 640×512 / NTSC 640×448, embedded NXA1 atlas readiness and controller status. This gives the first concrete emulator/hardware smoke-test checklist without implying that storage devices are probed.
+- PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090-byte artifact ZIP; SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
+- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md). Actual PCSX2 and physical-console visual validation remain pending.
 
 ## M6.13 embedded boot-time atlas
-- Six source PNGs are versioned in assets/icons/ and packed by CI to NXA1 before the native build.
-- The generated pack is linked into NEXUS.ELF through a 16-byte-aligned .rodata blob; nexus_renderer_init() calls the GS uploader after framebuffer and GIF DMA setup.
+- Six source PNGs are versioned in `assets/icons/` and deterministically packed by CI into NXA1 before the native build.
+- The generated pack is embedded in ELF read-only data through a 16-byte-aligned assembly blob. `nexus_renderer_init()` calls the GS uploader after framebuffer and GIF DMA setup.
 - EE-side structure and SHA-256 checks run before VRAM allocation. If upload fails, procedural 5×5 glyphs remain active and renderer startup continues.
 - Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) and native EE build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed.
-- Extracted ELF: 1,724,400 bytes; SHA-256: 51ad1a8c2799aee05452369b8b73fe1141ffcf187737227086c66882b4908d1b.
-- Actual texture display, PAL/NTSC appearance and startup timing still need a physical PS2 test.
+- Extracted ELF: 1,724,400 bytes; SHA-256: `51ad1a8c2799aee05452369b8b73fe1141ffcf187737227086c66882b4908d1b`. Artifact ZIP SHA-256: `1c7a2ac9be049987f8a379c60dbf6244b916c4cb2a60919ca62f08673022cc81`.
+- Actual texture display, alpha appearance, timing and PAL/NTSC output still need a physical PS2 test.
 - Details: [M6.13 embedded icon atlas](M6.13-embedded-icon-atlas.md).
 
 ## M6.12 native GS atlas upload path
