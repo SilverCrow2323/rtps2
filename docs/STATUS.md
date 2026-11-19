@@ -1,5 +1,14 @@
 # NEXUS — verified status snapshot
 
+## M6.22 native GS visual redesign
+- Replaced the old 3×2 Home cards/device strip with a left navigation rail, contextual module hero and three lower metrics for catalog, GS atlas and controller state.
+- Reworked shared topbar and generic module pages into a consistent overview panel, right-side state cards and one context-aware controller footer. Geometry is derived from 640×448 NTSC or 640×512 PAL.
+- Games cards now use a distinct cover-art area, metadata strip, platform badge, favorite marker and focus frame across Grid/Carousel/Coverflow/List. Text lengths and title rows are constrained for the 640-pixel output.
+- The current art in these cards is still a placeholder (ARTWORK NOT CACHED) backed by section icons. The 4-slot VRAM cache exists, but no real cover decoder/source mapping feeds it yet. No animation or real cover art is claimed.
+- Host CI [#367](https://github.com/SilverCrow2323/rtps2/actions/runs/44598741640) passed; native EE build [#101](https://github.com/SilverCrow2323/rtps2/actions/runs/44598741740) passed atlas generation, PS2DEV compile/link and ELF upload.
+- Artifact ZIP: 661,824 bytes; SHA-256 398ff56052ed70be3471bc87e4b32b3fb96fcf530182fc7e9529a253769ad525. Extracted ELF: 2,047,340 bytes; SHA-256 a84f7acf833bc53536f3f081cd00020094fc10fdc6f37f7037c67a6a29653922 (ELF32 little-endian MIPS N32/R5900/MIPS III).
+- The user has confirmed that the preceding NEXUS build boots and runs in PCSX2. M6.22 cross-compiles, but its new layout still needs a PCSX2 screenshot/visual review. No physical-PS2 visual test is claimed.
+- Details: [M6.22 visual redesign](M6.22-visual-redesign.md).
 ## M6.20 Files root selector and confirmed read-only scan
 - Files now offers a fixed root allowlist: `mass:/` (USB), `mmce0:/` (MMCE slot 0), `mmce1:/` (MMCE slot 1). Up/Down cycles the roots; no free-form path input exists.
 - When FileXio is ready, Triangle opens a scan warning, Cross confirms and Circle cancels. Start also cancels and returns Home. If FileXio is inactive, Files directs the user to System instead.
@@ -119,10 +128,10 @@ The build confirms compilation/linking and ELF target format, not physical-conso
 - Injected transport, bearer token, range/resume downloads, explicit download vs installed sizes and SHA verification. Actual M5 route compatibility remains unverified.
 
 ## Not implemented
-- PCSX2 runtime boot/visual verification and physical PAL/NTSC console validation.
+- Visual review of the M6.22 redesign in PCSX2 (the preceding build's boot/run is user-confirmed), plus physical PAL/NTSC console validation.
 - Native fileXio/IOMANX and MMCEMAN adapter lifecycle; actual read-only HDD/MMCE/USB root configuration and scans; APA/PFS HDD partition provider; persistent favorites; cover-image decoding/population for the four-slot cache; final animated GS design system.
 - Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
-- Game catalog scanner and documented OPL/Neutrino handoff.
+- Live HDD/MMCE/USB provider availability, APA/PFS internal-HDD partition reader and documented OPL/Neutrino/POPS launch handoff.
 - Native PS2 Store networking, PS2-side TLS/Ed25519 and installer.
 - PSU/SAS parsers.
 - Production SPDW Factory signing-key lifecycle.
