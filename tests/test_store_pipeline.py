@@ -91,15 +91,22 @@ class StorePipelineTests(unittest.TestCase):
         self.assertFalse(report["store_ready"])
         self.assertEqual(flow.stage, "FAILED")
 
-    def test_staging_failure_fails_flow(self):
+    def test_archive_changed_after_inspection_fails_staging(self):
         payload = b"expected"
         with tempfile.TemporaryDirectory() as td:
             archive = Path(td) / "demo.zip"
             with zipfile.ZipFile(archive, "w") as zf:
-                zf.writestr("APP/main.elf", b"changed")
+                zf.writestr("APP/main.elf", payload)
             flow = self.make_flow()
-            inspect_download_for_store(flow, archive, self.recipe(payload))
+            inspected = inspect_download_for_store(flow, archive, self.recipe(payload))
+            self.assertTrue(inspected["store_ready"])
+            flow.advance("STAGE")
+            with zipfile.ZipFile(archive, "w") as zf:
+                zf.writestr("APP/main.elf", b"changed after inspection")
+            staged = stage_download_for_store(flow, archive, self.recipe(payload), Path(td) / "cache")
+            self.assertFalse(staged["store_ready"])
             self.assertEqual(flow.stage, "FAILED")
+            self.assertFalse(staged["device_write_performed"])
 
     def test_requires_verified_inspection_stage(self):
         flow = StoreFlow(selected_ids=["demo"])
