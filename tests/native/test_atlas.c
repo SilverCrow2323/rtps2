@@ -54,6 +54,9 @@ int main(void)
 
     put32(pack + 16, 1);
     assert(nexus_atlas_validate_pack(pack, PACK_SIZE) == -4);
+    put32(pack + 16, 256U * 128U * 4U);
+    pack[52] = 1;
+    assert(nexus_atlas_validate_pack(pack, PACK_SIZE) == -4);
 
     free(pack);
     return 0;
