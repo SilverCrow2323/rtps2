@@ -24,7 +24,8 @@ typedef enum {
     NEXUS_KEY_BACK,
     NEXUS_KEY_HOME,
     NEXUS_KEY_PREVIOUS,
-    NEXUS_KEY_NEXT
+    NEXUS_KEY_NEXT,
+    NEXUS_KEY_ACTION
 } NexusKey;
 
 typedef struct {
