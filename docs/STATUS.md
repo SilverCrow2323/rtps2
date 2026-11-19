@@ -1,12 +1,21 @@
 # NEXUS — verified status snapshot
 
+## M6.13 embedded boot-time atlas
+- Six source PNGs are versioned in assets/icons/ and packed by CI to NXA1 before the native build.
+- The generated pack is linked into NEXUS.ELF through a 16-byte-aligned .rodata blob; nexus_renderer_init() calls the GS uploader after framebuffer and GIF DMA setup.
+- EE-side structure and SHA-256 checks run before VRAM allocation. If upload fails, procedural 5×5 glyphs remain active and renderer startup continues.
+- Host CI [#195](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819542) and native EE build [#42](https://github.com/SilverCrow2323/rtps2/actions/runs/44579819621) passed.
+- Extracted ELF: 1,724,400 bytes; SHA-256: 51ad1a8c2799aee05452369c60dbf6244b916c4cb2a60919ca62f08673022cc81.
+- Actual texture display, PAL/NTSC appearance and startup timing still need a physical PS2 test.
+- Details: [M6.13 embedded icon atlas](M6.13-embedded-icon-atlas.md).
+
 ## M6.12 native GS atlas upload path
 - Added `nexus_atlas.c`: strict NXA1 header/size checks, aligned PSMCT32 texture upload through GIF DMA, texture flush, nearest sampling and six-cell atlas draw helper.
 - Dashboard card renderer selects atlas icons when a caller has loaded an atlas; procedural 5×5 glyphs remain the fallback.
-- The shell does not yet read or embed an NXA file at boot. The EE validator now computes SHA-256 over the full pixel payload and checks the digest in the NXA1 header before allocating VRAM.
+- The shell now embeds its six-icon NXA1 pack in the ELF and invokes the uploader during renderer initialization; EE validation checks SHA-256 before allocating VRAM. Real-console visual validation remains pending.
 - One atlas VRAM slot only; no cover-art LRU or safe multi-slot allocator yet.
 - PS2DEV cross-build passed with the SHA-256 object linked: [native build #33](https://github.com/SilverCrow2323/rtps2/actions/runs/44577115974). Host CI [run #178](https://github.com/SilverCrow2323/rtps2/actions/runs/44577288782) passed all 120 Python tests, C navigation, NXA1 checksum regressions, SHA-256 standard/block-boundary vectors and native C syntax.
-- Console visual validation remains pending.
+- Console visual validation remains pending. M6.13 now embeds and invokes the atlas uploader during boot; see [M6.13](M6.13-embedded-icon-atlas.md).
 - Details: [M6.12 native GS atlas](M6.12-native-gs-atlas.md).
 
 ## M6.11 host-side asset pipeline
@@ -56,7 +65,7 @@ The build confirms compilation/linking and ELF target format, not physical-conso
 - Injected transport, bearer token, range/resume downloads, explicit download vs installed sizes and SHA verification. Actual M5 route compatibility remains unverified.
 
 ## Not implemented
-- Automatic boot-time loading of the NXA1 icon atlas, cover-art cache / texture streaming and final animated GS design system.
+- Cover-art cache / texture streaming, multi-slot VRAM management and final animated GS design system.
 - Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
 - Game catalog scanner and documented OPL/Neutrino handoff.
 - Native PS2 Store networking, PS2-side TLS/Ed25519 and installer.
