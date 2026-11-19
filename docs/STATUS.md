@@ -1,16 +1,13 @@
 # NEXUS — verified status snapshot
 
-## M6.15 native cover cache
-- Added four fixed 128×128 PSMCT32 GS slots (256 KiB total) with free-slot/LRU replacement policy.
-- The cache is reserved at renderer initialization after the 128 KiB embedded icon atlas; the System page reports reservation status.
-- Host CI [#243](https://github.com/SilverCrow2323/rtps2/actions/runs/44581454864) passed the host suite, native SHA-256/NXA1 tests, cache LRU policy tests and PCSX2 launcher regressions.
-- Native PS2DEV build [#50](https://github.com/SilverCrow2323/rtps2/actions/runs/44581387927) passed with both cache objects linked.
-- Extracted ELF: 1,737,732 bytes; SHA-256: 93006b873561f6007f52c3b572281a3b8efcd57d0ecf477677adf3e67beb8deb.
-- The cache primitives are ready, but game-library artwork discovery/decoding and automatic cover upload are not yet integrated. Emulator and physical-console visual validation remain pending.
-- Details: [M6.15 cover cache](M6.15-cover-cache.md).
-
-
-
+## M6.16 native game-library model
+- Added a fixed-capacity 96-entry in-memory catalog with a 64-bit key scoped by source, HDD/MMCE/USB source tags, PS1/PS2 platform tags, AUTO/OPL/Neutrino/POPS backend hints, title/title ID/path/size and favorites.
+- Upsert validates enums and fixed-width string termination, replaces `(source, key)` entries while retaining favorites, and maintains deterministic title/ID/source/key ordering.
+- View state supports source, platform and favorites-only filters, Grid/Carousel/Coverflow/List modes, visible-entry lookup and circular selection. Games screen now reports whether the native catalog is empty or populated.
+- Host CI [#271](https://github.com/SilverCrow2323/rtps2/actions/runs/44582680857) passed the full suite including catalog behavior, cover-cache LRU, NXA1/SHA-256 and PCSX2 launcher tests. Native PS2DEV build [#56](https://github.com/SilverCrow2323/rtps2/actions/runs/44582409082) passed and linked the model into NEXUS.ELF.
+- Artifact ZIP: 565,321 bytes; SHA-256 `62c18dfda47556754415376a5f32d71a1488192b0a684bb27ea29e32cfdee4ed`. Extracted ELF: 1,754,284 bytes; SHA-256 `792f8abbd1d773598f0fbb429cc77c5276a82bcd6eee48772246a5aa8d235e53` (ELF32 little-endian MIPS N32, R5900/MIPS III).
+- This is an in-memory model, not a filesystem scanner. HDD/MMCE/USB providers, real title ingestion, persistent favorites, image decoding and OPL/Neutrino/POPS launch integration remain pending.
+- Details: [M6.16 library model](M6.16-library-model.md).
 ## M6.15 fixed GS cover-art cache
 - Added a four-slot LRU texture cache: 128×128 RGBA32 per slot, 256 KiB total. One contiguous 512×128 PSMCT32 allocation avoids arbitrary frees against PS2SDK's FIFO bump allocator.
 - Renderer reserves the cache after the two framebuffers and embedded icon atlas; allocation is optional and non-fatal. System diagnostics report whether the four artwork slots were reserved.
@@ -91,7 +88,7 @@ The build confirms compilation/linking and ELF target format, not physical-conso
 
 ## Not implemented
 - PCSX2 runtime boot/visual verification and physical PAL/NTSC console validation.
-- Game-library feed and cover-image decoding/population for the four-slot cache; final animated GS design system.
+- HDD/MMCE/USB read-only scanners and real title ingestion into the catalog; persistent favorites; cover-image decoding/population for the four-slot cache; final animated GS design system.
 - Live Disc/MC/HDD/MMCE/USB detection, mounted volume providers and filesystem writes.
 - Game catalog scanner and documented OPL/Neutrino handoff.
 - Native PS2 Store networking, PS2-side TLS/Ed25519 and installer.
