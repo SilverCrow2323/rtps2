@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+*.elf
+*.o
+*.a
+build/
+dist/
+.cache/
+.pytest_cache/
