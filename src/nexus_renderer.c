@@ -235,10 +235,10 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
             body1 = nexus_library_count() == 0U
                 ? "NATIVE CATALOG READY - NO TITLES INDEXED YET."
                 : "INDEXED GAME ENTRIES ARE AVAILABLE.";
-            body2 = "Sources: internal HDD, MMCE and USB (read-only).";
-            body3 = "Filters: platform, source and favorites; four view modes.";
+            body2 = "Scanner core: CD/DVD ISO/ZSO + POPS VCD (read-only).";
+            body3 = "Waiting for an explicitly configured mounted-volume adapter.";
             tag2 = nexus_library_count() == 0U ? "INDEX EMPTY" : "CATALOG READY";
-            next = "Connect read-only discovery providers";
+            next = "Connect fileXio and mounted-volume adapters";
             break;
         case NEXUS_PAGE_PS1:
             body1 = "A dedicated collection for PlayStation 1 titles.";
