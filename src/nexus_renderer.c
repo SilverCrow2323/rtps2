@@ -1,6 +1,7 @@
 #include <tamtypes.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdio.h>
 
 #include <packet.h>
 #include <dma.h>
@@ -215,6 +216,214 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
     }
     q = print_text(q, connected ? "CONTROLLER CONNECTED" : "WAITING FOR CONTROLLER",
                    122, screen_height - 20, C_MUTED);
+    return q;
+}
+
+
+static const char *games_view_label(unsigned int mode)
+{
+    static const char *const names[] = {"GRID", "CAROUSEL", "COVERFLOW", "LIST"};
+    return mode < NEXUS_LIBRARY_VIEW_COUNT ? names[mode] : "GRID";
+}
+
+static const char *games_source_label(unsigned int source)
+{
+    switch (source) {
+        case NEXUS_LIBRARY_SOURCE_HDD: return "HDD";
+        case NEXUS_LIBRARY_SOURCE_MMCE: return "MMCE";
+        case NEXUS_LIBRARY_SOURCE_USB: return "USB";
+        default: return "ANY";
+    }
+}
+
+static const char *games_platform_label(unsigned int platform)
+{
+    switch (platform) {
+        case NEXUS_LIBRARY_PLATFORM_PS2: return "PS2";
+        case NEXUS_LIBRARY_PLATFORM_PS1: return "PS1";
+        default: return "PS1 + PS2";
+    }
+}
+
+static qword_t *draw_game_card(qword_t *q, const NexusLibraryEntry *entry,
+                               int selected, int x, int y, int w, int h)
+{
+    char title[28];
+    char meta[32];
+    if (entry == 0)
+        return q;
+    if (selected) {
+        q = fill_rect(q, x, y, w, h, C_SELECTED);
+        q = fill_rect(q, x, y, w, 3, C_ACCENT);
+    } else {
+        q = fill_rect(q, x, y, w, h, C_PANEL);
+        q = fill_rect(q, x, y, w, 2, C_PANEL_2);
+    }
+    (void)snprintf(title, sizeof(title), "%s", entry->title);
+    q = print_text(q, title, x + 9, y + 10,
+                   selected ? C_TEXT : C_ACCENT);
+    (void)snprintf(meta, sizeof(meta), "%s / %s",
+                   games_platform_label(entry->platform),
+                   games_source_label(entry->source));
+    if (w >= 140) {
+        q = draw_icon(q, entry->platform == NEXUS_LIBRARY_PLATFORM_PS1 ? 1 : 0,
+                      x + 9, y + 38, selected);
+        q = print_text(q, meta, x + 45, y + 42, C_MUTED);
+        q = print_text(q, entry->backend == NEXUS_LIBRARY_BACKEND_POPS ? "POPS" :
+                          entry->backend == NEXUS_LIBRARY_BACKEND_NEUTRINO ? "NEUTRINO" :
+                          entry->backend == NEXUS_LIBRARY_BACKEND_OPL ? "OPL" : "AUTO",
+                       x + 45, y + 61, C_TEXT);
+    } else {
+        q = print_text(q, games_platform_label(entry->platform), x + 9, y + 38, C_MUTED);
+    }
+    if (entry->favorite)
+        q = print_text(q, "FAV", x + w - 34, y + 10, C_WARN);
+    if (selected)
+        q = print_text(q, "SELECTED", x + 9, y + h - 17, C_WARN);
+    return q;
+}
+
+static qword_t *render_games_page(qword_t *q, const NexusActionStatus *actions)
+{
+    NexusLibraryView view;
+    unsigned int count, total, selected, start, i;
+    const NexusLibraryEntry *entry;
+    char summary[88];
+    char detail[88];
+    int detail_open = actions != 0 && actions->game_detail_open;
+
+    if (actions != 0) view = actions->library_view;
+    else nexus_library_view_init(&view);
+    total = nexus_library_count();
+    count = nexus_library_visible_count(&view);
+    if (count == 0U) view.selected_index = 0;
+    else if (view.selected_index >= count) view.selected_index = 0;
+    selected = view.selected_index;
+
+    q = fill_rect(q, 0, 0, NEXUS_WIDTH, screen_height, C_BG);
+    q = draw_topbar(q, "GAME LIBRARY");
+    q = print_text(q, "YOUR PLAYSTATION COLLECTION", 20, 65, C_TEXT);
+    (void)snprintf(summary, sizeof(summary), "%u VISIBLE / %u INDEXED  %s  %s",
+                   count, total, games_view_label(view.view_mode),
+                   games_source_label(view.source_filter));
+    q = print_text(q, summary, 20, 88, C_MUTED);
+
+    if (detail_open) {
+        entry = nexus_library_selected(&view);
+        if (entry != 0) {
+            q = fill_rect(q, 18, 118, 604, screen_height - 183, C_PANEL);
+            q = fill_rect(q, 18, 118, 4, screen_height - 183, C_ACCENT);
+            q = print_text(q, "TITLE DETAILS", 40, 136, C_ACCENT);
+            q = print_text(q, entry->title, 40, 165, C_TEXT);
+            (void)snprintf(detail, sizeof(detail), "%s / %s / %s",
+                           games_platform_label(entry->platform),
+                           games_source_label(entry->source),
+                           entry->backend == NEXUS_LIBRARY_BACKEND_POPS ? "POPS" :
+                           entry->backend == NEXUS_LIBRARY_BACKEND_NEUTRINO ? "NEUTRINO" :
+                           entry->backend == NEXUS_LIBRARY_BACKEND_OPL ? "OPL" : "AUTO");
+            q = print_text(q, detail, 40, 193, C_MUTED);
+            (void)snprintf(detail, sizeof(detail), "SIZE: %llu BYTES",
+                           (unsigned long long)entry->size_bytes);
+            q = print_text(q, detail, 40, 220, C_TEXT);
+            q = print_text(q, entry->title_id[0] ? entry->title_id : "TITLE ID: NOT READ",
+                           40, 247, C_MUTED);
+            (void)snprintf(detail, sizeof(detail), "%.68s", entry->path);
+            q = print_text(q, detail, 40, 274, C_MUTED);
+            q = print_text(q, entry->favorite ? "FAVORITE: YES" : "FAVORITE: NO",
+                           40, 302, C_WARN);
+            q = print_text(q, "LAUNCH HANDOFF NOT CONNECTED - NO GAME STARTED.",
+                           40, 337, C_TEXT);
+        }
+    } else if (count == 0U) {
+        q = fill_rect(q, 18, 122, 604, 220, C_PANEL);
+        q = fill_rect(q, 18, 122, 4, 220, C_ACCENT);
+        q = print_text(q, total == 0U ? "YOUR LIBRARY IS WAITING."
+                                      : "NO TITLES MATCH THIS FILTER.",
+                       42, 160, C_TEXT);
+        q = print_text(q, total == 0U
+                           ? "OPEN FILES AND CONFIRM A READ-ONLY SCAN."
+                           : "CHANGE SOURCE WITH L2 OR PLATFORM WITH R2.",
+                       42, 199, C_MUTED);
+        q = print_text(q, "SUPPORTED: CD/DVD ISO, ZSO AND POPS VCD.",
+                       42, 235, C_MUTED);
+        q = print_text(q, "COVER ART AND GAME LAUNCH REMAIN FUTURE WORK.",
+                       42, 271, C_WARN);
+    } else if (view.view_mode == NEXUS_LIBRARY_VIEW_LIST) {
+        unsigned int visible = count < 6U ? count : 6U;
+        start = selected > visible / 2U ? selected - visible / 2U : 0U;
+        if (start + visible > count) start = count - visible;
+        for (i = 0; i < visible; ++i) {
+            unsigned int slot = start + i;
+            int y = 122 + (int)i * 39;
+            entry = nexus_library_visible_at(&view, slot);
+            if (entry == 0) continue;
+            q = fill_rect(q, 18, y, 604, 34,
+                          slot == selected ? C_SELECTED : C_PANEL);
+            q = print_text(q, entry->title, 30, y + 9,
+                           slot == selected ? C_TEXT : C_ACCENT);
+            (void)snprintf(detail, sizeof(detail), "%s / %s",
+                           games_platform_label(entry->platform),
+                           games_source_label(entry->source));
+            q = print_text(q, detail, 380, y + 9, C_MUTED);
+            if (entry->favorite) q = print_text(q, "FAV", 575, y + 9, C_WARN);
+        }
+    } else if (view.view_mode == NEXUS_LIBRARY_VIEW_CAROUSEL) {
+        if (count == 1U) {
+            q = draw_game_card(q, nexus_library_visible_at(&view, selected),
+                               1, 220, 140, 200, 214);
+        } else {
+            unsigned int left = selected == 0U ? count - 1U : selected - 1U;
+            unsigned int right = selected + 1U >= count ? 0U : selected + 1U;
+            q = draw_game_card(q, nexus_library_visible_at(&view, left),
+                               0, 36, 154, 164, 186);
+            q = draw_game_card(q, nexus_library_visible_at(&view, selected),
+                               1, 220, 140, 200, 214);
+            q = draw_game_card(q, nexus_library_visible_at(&view, right),
+                               0, 440, 154, 164, 186);
+        }
+    } else if (view.view_mode == NEXUS_LIBRARY_VIEW_COVERFLOW) {
+        static const int offsets[5] = {-2, -1, 0, 1, 2};
+        static const int xs[5] = {20, 126, 244, 400, 520};
+        static const int widths[5] = {92, 108, 152, 108, 92};
+        static const int ys[5] = {178, 158, 137, 158, 178};
+        static const int heights[5] = {140, 176, 214, 176, 140};
+        if (count == 1U) {
+            q = draw_game_card(q, nexus_library_visible_at(&view, selected),
+                               1, 244, 137, 152, 214);
+        } else {
+            for (i = 0; i < 5U; ++i) {
+                int target = (int)selected + offsets[i];
+                while (target < 0) target += (int)count;
+                target %= (int)count;
+                if (count == 2U && (i == 0U || i == 4U)) continue;
+                q = draw_game_card(q,
+                    nexus_library_visible_at(&view, (unsigned int)target),
+                    offsets[i] == 0, xs[i], ys[i], widths[i], heights[i]);
+            }
+        }
+    } else {
+        unsigned int visible = count < 6U ? count : 6U;
+        start = selected > visible / 2U ? selected - visible / 2U : 0U;
+        if (start + visible > count) start = count - visible;
+        for (i = 0; i < visible; ++i) {
+            unsigned int slot = start + i;
+            int x = 18 + (int)(i % 3U) * 205;
+            int y = 125 + (int)(i / 3U) * 112;
+            q = draw_game_card(q, nexus_library_visible_at(&view, slot),
+                               slot == selected, x, y, 194, 102);
+        }
+    }
+
+    q = fill_rect(q, 18, screen_height - 48, 604, 44, C_HEADER);
+    if (detail_open) {
+        q = print_text(q, "CIRCLE BACK TO LIBRARY", 28, screen_height - 39, C_ACCENT);
+        q = print_text(q, "START HOME", 470, screen_height - 39, C_MUTED);
+    } else {
+        q = print_text(q, "UP/DOWN SELECT  CROSS DETAILS  TRIANGLE VIEW",
+                       28, screen_height - 39, C_TEXT);
+        q = print_text(q, "SQUARE FAV  L2 SOURCE  R2 PLATFORM  L1/R1 MODULES",
+                       28, screen_height - 20, C_ACCENT);
+    }
     return q;
 }
 
@@ -512,6 +721,8 @@ int nexus_renderer_render(const NexusNavState *state, int input_ready, int conne
 
     if (!state->in_section || state->page == NEXUS_PAGE_HOME) {
         q = render_home(q, state, input_ready, connected);
+    } else if (state->page == NEXUS_PAGE_GAMES) {
+        q = render_games_page(q, actions);
     } else {
         q = render_page(q, state, input_ready, connected, actions);
     }
