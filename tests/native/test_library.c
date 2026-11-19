@@ -114,7 +114,7 @@ int main(void)
     bad.title[0] = '\0';
     assert(nexus_library_upsert(&bad) < 0);
     bad = a;
-    bad.title[sizeof(bad.title) - 1U] = 'X';
+    memset(bad.title, 'X', sizeof(bad.title));
     assert(nexus_library_upsert(&bad) < 0);
     bad = a;
     bad.key = 0;
