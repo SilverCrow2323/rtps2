@@ -281,7 +281,7 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                 body2 = "Only existing registered roots can be scanned.";
                 body3 = "USB/MMCE drivers are not started by this action.";
                 tag2 = "FILEXIO READY";
-                next = "Root selection and read-only scan are next.";
+                next = "FileXio ready; root selection is the next step.";
             } else if (actions != 0 && actions->filexio_attempted) {
                 body1 = actions->last_filexio_result == 0
                     ? "FILEXIO ACTIVATION COMPLETED."
@@ -340,6 +340,11 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
         q = print_text(q, "CROSS  CONFIRM", 28, screen_height - 36, C_ACCENT);
         q = print_text(q, "CIRCLE  CANCEL", 220, screen_height - 36, C_WARN);
         q = print_text(q, "START  HOME", 458, screen_height - 36, C_MUTED);
+    } else if (state->page == NEXUS_PAGE_SYSTEM && state->in_section &&
+               actions != 0 && actions->filexio_ready) {
+        q = print_text(q, "FILEXIO  READY", 28, screen_height - 36, C_ACCENT);
+        q = print_text(q, "L1 / R1  MODULES", 250, screen_height - 36, C_TEXT);
+        q = print_text(q, "CIRCLE  BACK", 472, screen_height - 36, C_MUTED);
     } else if (state->page == NEXUS_PAGE_SYSTEM && state->in_section) {
         q = print_text(q, "TRIANGLE  FILEXIO", 28, screen_height - 36, C_ACCENT);
         q = print_text(q, "L1 / R1  MODULES", 250, screen_height - 36, C_TEXT);
