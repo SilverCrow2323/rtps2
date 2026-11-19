@@ -145,7 +145,12 @@ static int filexio_read_dir(void *context, int handle,
         ((uint64_t)native_entry.stat.hisize << 32) |
         (uint64_t)native_entry.stat.size;
 
-    name_length = strnlen(native_entry.name, sizeof(native_entry.name));
+    for (name_length = 0;
+         name_length < sizeof(native_entry.name) &&
+         native_entry.name[name_length] != '\0';
+         ++name_length) {
+        /* Bounded scan; the IOP may return a damaged unterminated name. */
+    }
     if (name_length >= sizeof(entry->name)) {
         /* Preserve an invalid, unterminated sentinel for scanner rejection. */
         memset(entry->name, 'X', sizeof(entry->name));
