@@ -236,7 +236,7 @@ static int stage_entry(const NexusScanConfig *config,
                         ? NEXUS_LIBRARY_BACKEND_POPS
                         : NEXUS_LIBRARY_BACKEND_AUTO;
     make_title(entry.title, dir_entry->name);
-    if (entry.title[0] == '\\0') {
+    if (entry.title[0] == '\0') {
         ++report->rejected;
         return 0;
     }
