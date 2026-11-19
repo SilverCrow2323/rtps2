@@ -26,7 +26,8 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.10 | PS2SDK GS renderer: double buffering, KROM font, dashboard cards and module panels | PS2DEV build and host checks passed; console visual validation pending |
 | M6.11 | Original section icon set, deterministic PNG-to-NXA1 PSMCT32 atlas packer, manifest and SHA-256 verifier | Source and eight unit tests committed |
 | M6.12 | Native EE NXA1 structural + SHA-256 validation, GIF DMA upload, GS texture binding and six-cell icon sampling | PS2DEV build and host regressions passed |
-| M6.13 | Versioned original PNGs, deterministic CI packing and 16-byte-aligned NXA1 embedding in ELF; boot-time GS upload | Host CI #195 and native PS2DEV build #42 passed; physical-console visual test pending |
+| M6.13 | Versioned original PNGs, deterministic CI packing and 16-byte-aligned NXA1 embedding in ELF; boot-time GS upload | Host CI #195 and native PS2DEV build #42 passed |
+| M6.14 | System diagnostics for video mode, atlas upload state and controller status | Host CI #208 and native PS2DEV build #43 passed; runtime smoke test pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -45,6 +46,12 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed; native EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and uploaded a 553,090-byte ELF artifact (ZIP SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`).
 - The new MX Linux guide covers Flatpak install, artifact download and direct ELF launch: [PCSX2 on MX Linux](PCSX2-MX-LINUX.md).
 - No PCSX2 or physical-console visual validation has been performed from CI.
+
+## M6.14 verification
+- System page reports PAL/NTSC geometry, NXA1 atlas ready/fallback state and controller status.
+- Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed; native EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and uploaded a 553,090-byte artifact ZIP (SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`).
+- MX Linux install, download and direct ELF launch steps: [PCSX2 on MX Linux](PCSX2-MX-LINUX.md).
+- No PCSX2 or physical-console visual validation is claimed yet.
 
 ## M6.13 verification
 - The build packs all six original PNGs into `assets/build/NEXUS-ICONS.NXA`, embeds the pack through `src/nexus_asset_blob.S`, and uploads it from `nexus_renderer_init()`.
