@@ -1,5 +1,6 @@
 #include <tamtypes.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <packet.h>
 #include <dma.h>
@@ -230,6 +231,11 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
     const char *tag2 = "NOT CONNECTED";
     const char *tag3 = "NEXT STEP";
     const char *next = "Provider integration";
+    char scan_summary[64];
+    char scan_detail[64];
+
+    scan_summary[0] = '\0';
+    scan_detail[0] = '\0';
 
     switch (state->page) {
         case NEXUS_PAGE_GAMES:
@@ -263,11 +269,47 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
             next = "Native network provider";
             break;
         case NEXUS_PAGE_FILES:
-            body1 = "Browse detected storage without hiding its source.";
-            body2 = "No filesystem is mounted or modified by this bootstrap.";
-            body3 = "A read-only volume provider is the next requirement.";
-            tag2 = "NO VOLUMES";
-            next = "Read-only volume discovery";
+            if (actions != 0 && actions->scan_confirm_pending) {
+                (void)snprintf(scan_summary, sizeof(scan_summary),
+                               "SCAN ROOT: %.36s",
+                               nexus_actions_scan_root_path(actions));
+                body1 = scan_summary;
+                body2 = "Read-only Dopen/Dread; no mount or writes.";
+                body3 = "CROSS confirms; CIRCLE cancels.";
+                tag2 = "CONFIRM REQUIRED";
+                next = "Only direct CD/DVD/POPS folders are checked.";
+            } else if (actions != 0 && actions->scan_attempted) {
+                (void)snprintf(scan_summary, sizeof(scan_summary),
+                               "SCAN RESULT: %d", actions->last_scan_result);
+                (void)snprintf(scan_detail, sizeof(scan_detail),
+                               "%u indexed / %u seen / %u rejected",
+                               (unsigned int)actions->last_scan_report.indexed,
+                               (unsigned int)actions->last_scan_report.entries_seen,
+                               (unsigned int)actions->last_scan_report.rejected);
+                body1 = scan_summary;
+                body2 = nexus_actions_scan_root_path(actions);
+                body3 = scan_detail;
+                tag2 = actions->last_scan_result == 0
+                    ? "SCAN COMPLETE" : "SCAN ERROR";
+                next = actions->last_scan_result == 0
+                    ? "Read-only scan finished; no title was launched."
+                    : "Check that the selected root is already accessible.";
+            } else if (actions != 0 && actions->filexio_ready) {
+                (void)snprintf(scan_summary, sizeof(scan_summary),
+                               "ROOT: %.40s",
+                               nexus_actions_scan_root_label(actions));
+                body1 = "FILEXIO READY - ROOT NOT SCANNED.";
+                body2 = scan_summary;
+                body3 = "UP/DOWN select root; TRIANGLE requests scan.";
+                tag2 = "READY - NOT SCANNED";
+                next = "Only already-accessible folders will be read.";
+            } else {
+                body1 = "FILEXIO IS NOT ACTIVE.";
+                body2 = "System: Triangle warning, Cross confirmation.";
+                body3 = "No device driver or volume is mounted here.";
+                tag2 = "ACTIVATE IN SYSTEM";
+                next = "Return here after FileXio is ready.";
+            }
             break;
         case NEXUS_PAGE_SYSTEM:
             if (actions != 0 && actions->filexio_confirm_pending) {
@@ -335,7 +377,20 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
     q = print_text(q, next, 20, 373, C_TEXT);
 
     q = fill_rect(q, 18, screen_height - 42, 604, 26, C_HEADER);
-    if (state->page == NEXUS_PAGE_SYSTEM && state->in_section &&
+    if (state->page == NEXUS_PAGE_FILES && state->in_section &&
+        actions != 0 && actions->scan_confirm_pending) {
+        q = print_text(q, "CROSS  SCAN", 28, screen_height - 36, C_ACCENT);
+        q = print_text(q, "CIRCLE  CANCEL", 220, screen_height - 36, C_WARN);
+        q = print_text(q, "START  HOME", 458, screen_height - 36, C_MUTED);
+    } else if (state->page == NEXUS_PAGE_FILES && state->in_section &&
+               actions != 0 && actions->filexio_ready) {
+        q = print_text(q, "UP/DOWN  ROOT", 28, screen_height - 36, C_TEXT);
+        q = print_text(q, "TRIANGLE  SCAN", 250, screen_height - 36, C_ACCENT);
+        q = print_text(q, "CIRCLE  BACK", 472, screen_height - 36, C_MUTED);
+    } else if (state->page == NEXUS_PAGE_FILES && state->in_section) {
+        q = print_text(q, "GO TO SYSTEM FIRST", 28, screen_height - 36, C_WARN);
+        q = print_text(q, "CIRCLE  BACK", 472, screen_height - 36, C_MUTED);
+    } else if (state->page == NEXUS_PAGE_SYSTEM && state->in_section &&
         actions != 0 && actions->filexio_confirm_pending) {
         q = print_text(q, "CROSS  CONFIRM", 28, screen_height - 36, C_ACCENT);
         q = print_text(q, "CIRCLE  CANCEL", 220, screen_height - 36, C_WARN);
