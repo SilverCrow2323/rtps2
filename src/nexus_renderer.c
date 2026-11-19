@@ -738,8 +738,15 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                        state->page == NEXUS_PAGE_FILES &&
                        actions != 0 && actions->scan_attempted &&
                        actions->last_scan_result != 0
-                           ? C_AMBER : C_ACCENT[0],
-                       218, 235);
+                           ? 238 : 60,
+                       state->page == NEXUS_PAGE_FILES &&
+                       actions != 0 && actions->scan_attempted &&
+                       actions->last_scan_result != 0
+                           ? 181 : 218,
+                       state->page == NEXUS_PAGE_FILES &&
+                       actions != 0 && actions->scan_attempted &&
+                       actions->last_scan_result != 0
+                           ? 98 : 235);
     q = draw_info_card(q, 406, 198, 216, "SESSION INPUT",
                        connected ? "CONTROLLER CONNECTED" : "CONTROLLER WAITING",
                        input_ready && connected ? 91 : 238,
