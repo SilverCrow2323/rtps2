@@ -1,0 +1,33 @@
+name: Native PS2 EE build
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - ".github/workflows/native-ee.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - ".github/workflows/native-ee.yml"
+  workflow_dispatch:
+
+jobs:
+  build-ee:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cross-compile NEXUS.ELF with the PS2DEV toolchain
+        run: |
+          docker run --rm --platform linux/amd64 \
+            -v "$GITHUB_WORKSPACE:/workspace" \
+            -w /workspace \
+            ps2dev/ps2dev:latest \
+            sh -lc 'apk add --no-cache make && make -C src clean && make -C src'
+      - name: Upload NEXUS.ELF
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEXUS-ELF
+          path: src/NEXUS.ELF
+          if-no-files-found: error
+          retention-days: 30
