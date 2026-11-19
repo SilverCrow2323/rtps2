@@ -1,5 +1,13 @@
 # NEXUS — verified status snapshot
 
+## M6.19 user-confirmed FileXio activation
+- The System page now exposes the M6.18 adapter through a two-step controller action: Triangle opens the warning, Cross confirms, Circle cancels, and Start cancels/returns Home. Triangle is inert outside System.
+- The activation call occurs only after confirmation. The warning states that missing IOP RPC modules may be loaded and SBV hooks may be applied; there is no IOP reset, mount, scan or filesystem write. Once FileXio is ready, activation cannot be triggered again from Triangle.
+- The GS renderer and debug fallback show pending, ready and error states. A successful activation only initializes FileXio RPC; it does not start USB/MMCE/APA drivers or scan a device.
+- Host CI [#332](https://github.com/SilverCrow2323/rtps2/actions/runs/44586520529) passed the full suite including confirm/cancel/failure/retry and outside-System inertness tests. Native PS2DEV build [#84](https://github.com/SilverCrow2323/rtps2/actions/runs/44586493569) passed.
+- Artifact ZIP: 629,839 bytes; SHA-256 `37fc69a9385528621b17d181c795bb8a308b396e29fbd24b55b289bd2be93ba8`. Extracted ELF: 1,968,516 bytes; SHA-256 `436ba1b11ac241685d5e497ccf2e09492dd0b0edcc59310718d5e468671b1ca2` (ELF32 little-endian MIPS N32/R5900/MIPS III).
+- PCSX2 visual execution and physical PS2 validation remain pending. Instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md).
+- Details: [M6.19 System FileXio confirmation](M6.19-system-filexio-confirm.md).
 ## M6.18 explicit PS2SDK fileXio adapter
 - Added an opt-in EE adapter that embeds PS2SDK `iomanX.irx` and `fileXio.irx`, checks whether the two modules already exist, loads only missing modules and calls `fileXioInit()`.
 - It reuses the SIF RPC session initialized by NEXUS bootstrap. Activation is **not called automatically**; it never resets the IOP, starts USB/MMCE/APA block drivers, mounts/unmounts volumes or writes files.
@@ -14,7 +22,7 @@
 - Native regression uses an in-memory fake filesystem: extension filtering, PS1/PS2 entries, >4 GiB size, malformed names, optional missing directories, staged read failure and path traversal are covered.
 - Host CI [#289](https://github.com/SilverCrow2323/rtps2/actions/runs/44583873744) passed the full suite and scanner regression. Native EE build [#63](https://github.com/SilverCrow2323/rtps2/actions/runs/44583873664) passed and published `NEXUS-ELF`.
 - Artifact ZIP: 573,905 bytes; SHA-256 `a853fc06580d151ca53b73543196275b8736c38314fb9e717b7ed74bc4d77f27`. Extracted ELF: 1,774,060 bytes; SHA-256 `83ad74bdcb35714a52cbeb04db64971cf970793a9ea00b5f91e70752043b281f` (ELF32 little-endian MIPS N32, R5900/MIPS III).
-- The scanner core is now connected to an explicit PS2SDK FileXio adapter in M6.18, but activation is not wired into the UI/startup and no USB mass/MMCEMAN block driver is started. No real drive has been scanned. APA HDD games need a separate partition provider.
+- The scanner core is connected to the FileXio adapter and M6.19 adds a user-confirmed System action; activation is never automatic. No USB mass/MMCEMAN block driver is started and no real drive has been scanned. APA HDD games need a separate partition provider.
 - Details: [M6.17 read-only scanner](M6.17-read-only-scanner.md).
 ## M6.16 native game-library model
 - Added a fixed-capacity 96-entry in-memory catalog with a 64-bit key scoped by source, HDD/MMCE/USB source tags, PS1/PS2 platform tags, AUTO/OPL/Neutrino/POPS backend hints, title/title ID/path/size and favorites.
@@ -22,7 +30,7 @@
 - View state supports source, platform and favorites-only filters, Grid/Carousel/Coverflow/List modes, visible-entry lookup and circular selection. Games screen now reports whether the native catalog is empty or populated.
 - Host CI [#271](https://github.com/SilverCrow2323/rtps2/actions/runs/44582680857) passed the full suite including catalog behavior, cover-cache LRU, NXA1/SHA-256 and PCSX2 launcher tests. Native PS2DEV build [#56](https://github.com/SilverCrow2323/rtps2/actions/runs/44582409082) passed and linked the model into NEXUS.ELF.
 - Artifact ZIP: 565,321 bytes; SHA-256 `62c18dfda47556754415376a5f32d71a1488192b0a684bb27ea29e32cfdee4ed`. Extracted ELF: 1,754,284 bytes; SHA-256 `792f8abbd1d773598f0fbb429cc77c5276a82bcd6eee48772246a5aa8d235e53` (ELF32 little-endian MIPS N32, R5900/MIPS III).
-- M6.18 adds the FileXio adapter, but it is not automatically activated and no storage driver/mount is started. Live HDD/MMCE/USB scanning, APA/PFS partition discovery, persistent favorites, image decoding and OPL/Neutrino/POPS launch integration remain pending.
+- M6.18 adds the FileXio adapter and M6.19 exposes user-confirmed activation, but no storage driver/mount or scan is started. Live HDD/MMCE/USB scanning, APA/PFS partition discovery, persistent favorites, image decoding and OPL/Neutrino/POPS launch integration remain pending.
 - Details: [M6.16 library model](M6.16-library-model.md).
 ## M6.15 fixed GS cover-art cache
 - Added a four-slot LRU texture cache: 128×128 RGBA32 per slot, 256 KiB total. One contiguous 512×128 PSMCT32 allocation avoids arbitrary frees against PS2SDK's FIFO bump allocator.
@@ -36,7 +44,7 @@
 ## M6.14 native renderer diagnostics
 - The System module reports PAL 640×512 / NTSC 640×448, embedded NXA1 atlas readiness and controller status. Storage devices remain explicitly NOT PROBED. The PCSX2 launcher and mocked tests cover command dispatch, not emulation.
 - PS2DEV EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and published `NEXUS-ELF` (553,090-byte artifact ZIP; SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`). Extracted ELF: 1,724,512 bytes; SHA-256 `56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29`. Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed.
-- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md), now pointing to the M6.18 ELF. Actual PCSX2 boot and physical-console visual validation remain pending.
+- PCSX2 setup and ELF launch instructions: [MX Linux XFCE](PCSX2-MX-LINUX.md), now pointing to the M6.19 ELF. Actual PCSX2 boot and physical-console visual validation remain pending.
 
 ## M6.13 embedded boot-time atlas
 - Six source PNGs are versioned in `assets/icons/` and deterministically packed by CI into NXA1 before the native build.
