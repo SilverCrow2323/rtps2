@@ -44,7 +44,8 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 ## M6.14 verification
 - System page reports PAL/NTSC geometry, NXA1 atlas ready/fallback state and controller status.
 - Host CI [#208](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353818) passed; native EE build [#43](https://github.com/SilverCrow2323/rtps2/actions/runs/44580353828) passed and uploaded a 553,090-byte ELF artifact (ZIP SHA-256 `06bf3e31d1c593e422a9603c5b72cc3a297bd2e9596400cd5ab2a4928c666b81`).
-- The new MX Linux guide covers Flatpak install, artifact download and direct ELF launch: [PCSX2 on MX Linux](PCSX2-MX-LINUX.md).
+- The MX Linux guide covers Flatpak install, artifact download, SHA-256 verification and direct ELF launch: [PCSX2 on MX Linux](PCSX2-MX-LINUX.md).
+- Extracted ELF: 1,724,512 bytes, ELF32 little-endian MIPS N32 / R5900 MIPS III; SHA-256 `56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29`. Details: [M6.14 renderer diagnostics](M6.14-renderer-diagnostics.md).
 - No PCSX2 or physical-console visual validation has been performed from CI.
 
 ## M6.14 verification
