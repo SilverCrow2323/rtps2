@@ -86,8 +86,13 @@ class BridgeClient:
             requires = item.get("requires", [])
             if not isinstance(requires, list) or any(not isinstance(x, str) or not x for x in requires):
                 raise BridgeError(f"invalid dependency list: {pid}")
-            result.append({"id":pid,"version":item["version"],"name":item["name"],"size":size,
-                           "sha256":digest.lower(),"download_path":package_path,"requires":list(requires)})
+            installed_size = item.get("installed_size")
+            if installed_size is not None and (not isinstance(installed_size, int) or isinstance(installed_size, bool) or installed_size < 0):
+                raise BridgeError(f"invalid installed_size: {pid}")
+            record = {"id":pid,"version":item["version"],"name":item["name"],"size":size,
+                      "sha256":digest.lower(),"download_path":package_path,"requires":list(requires)}
+            if installed_size is not None: record["installed_size"] = installed_size
+            result.append(record)
         return {"packages":result, "count":len(result)}
 
     def store_catalog(self):
