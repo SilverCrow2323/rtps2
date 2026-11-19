@@ -66,6 +66,10 @@ class BridgeTests(unittest.TestCase):
         with self.assertRaises(BridgeError): self.client.download({**PACKAGE,"id":"../oops"},Path("/tmp/oops"))
     def test_reject_unsafe_download_path(self):
         with self.assertRaises(BridgeError): self.client.download({**PACKAGE,"download_path":"/../../secret"},Path("/tmp/oops"))
+    def test_reject_encoded_path_traversal(self):
+        with self.assertRaises(BridgeError): self.client.download({**PACKAGE,"download_path":"/%2e%2e/secret"},Path("/tmp/oops"))
+    def test_reject_query_in_download_path(self):
+        with self.assertRaises(BridgeError): self.client.download({**PACKAGE,"download_path":"/cache/pkg?redirect=evil"},Path("/tmp/oops"))
     def test_catalog_rejects_duplicate_ids(self):
         self.transport.__call__ = lambda *args: {"status":200,"body":{"packages":[PACKAGE,PACKAGE]}}
         class DuplicateTransport:
