@@ -6,7 +6,6 @@ from pathlib import Path, PurePosixPath
 
 PROTECTED = {"BOOT", "SYS-CONF", "SYSTEM", "OSDSYS", "FMCB", "FHDB", "PSBBN", "PS2BBL"}
 TERMINAL = {"COMMITTED", "ROLLED_BACK", "FAILED"}
-
 class TransactionError(RuntimeError): pass
 
 def sha256(path: Path) -> str:
@@ -16,7 +15,7 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 def safe_rel(value: str) -> Path:
-    if not isinstance(value, str) or not value or '\x00' in value or '\\\\' in value:
+    if not isinstance(value, str) or not value or '\x00' in value or '\\' in value:
         raise TransactionError(f"unsafe relative path: {value!r}")
     p = PurePosixPath(value)
     if p.is_absolute() or any(x in ('', '.', '..') for x in p.parts):
@@ -31,10 +30,8 @@ class Transaction:
         self.root, self.state_dir = root.resolve(), state_dir.resolve()
         if self.root == self.state_dir or self.root in self.state_dir.parents or self.state_dir in self.root.parents:
             raise TransactionError('sandbox root and transaction state must be separate trees')
-        self.root.mkdir(parents=True, exist_ok=True)
-        self.state_dir.mkdir(parents=True, exist_ok=True)
-        self.journal = self.state_dir / 'journal.json'
-        self.backups = self.state_dir / 'backups'
+        self.root.mkdir(parents=True, exist_ok=True); self.state_dir.mkdir(parents=True, exist_ok=True)
+        self.journal = self.state_dir / 'journal.json'; self.backups = self.state_dir / 'backups'
         self.lock = self.state_dir / 'transaction.lock'
 
     def _exclusive(self):
@@ -73,8 +70,7 @@ class Transaction:
             if not isinstance(item, dict): raise TransactionError('each file entry must be an object')
             rel = safe_rel(item.get('path')); source_rel = safe_rel(item.get('source'))
             if rel.as_posix() in seen: raise TransactionError('duplicate target path')
-            seen.add(rel.as_posix())
-            src = (payload / source_rel).resolve()
+            seen.add(rel.as_posix()); src = (payload / source_rel).resolve()
             if payload not in src.parents or not src.is_file(): raise TransactionError('payload source missing or escapes payload')
             digest = str(item.get('sha256', '')).lower()
             if len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest) or sha256(src) != digest:
@@ -103,8 +99,7 @@ class Transaction:
                 if entry['existed']:
                     backup = self.backups / f'{txid}-{index}.bak'; shutil.copy2(dst, backup)
                     entry['backup'] = str(backup); self._write(record)
-                temp = dst.with_name(dst.name + f'.nexus-{txid}.tmp')
-                shutil.copyfile(entry['source'], temp)
+                temp = dst.with_name(dst.name + f'.nexus-{txid}.tmp'); shutil.copyfile(entry['source'], temp)
                 with temp.open('rb') as f: os.fsync(f.fileno())
                 if sha256(temp) != entry['sha256']: raise TransactionError('temporary read-back hash mismatch')
                 os.replace(temp, dst); record['completed'] = index; self._write(record)
@@ -120,8 +115,7 @@ class Transaction:
     def _restore(self, record):
         if Path(record.get('root','')).resolve() != self.root: raise TransactionError('journal root mismatch; refusing recovery')
         for entry in reversed(record.get('entries', [])):
-            dst = self._target(entry['path'])
-            backup_value = entry.get('backup')
+            dst = self._target(entry['path']); backup_value = entry.get('backup')
             if backup_value:
                 backup = Path(backup_value).resolve()
                 if self.backups.resolve() not in backup.parents or not backup.is_file(): raise TransactionError('journal backup path invalid; refusing recovery')
