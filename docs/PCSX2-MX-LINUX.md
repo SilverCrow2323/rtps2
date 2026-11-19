@@ -35,6 +35,16 @@ The resulting file is:
 
     $HOME/PS2/NEXUS/NEXUS.ELF
 
+Verify that it matches the build tested by CI:
+
+    sha256sum "$HOME/PS2/NEXUS/NEXUS.ELF"
+
+Expected SHA-256:
+
+    56375605f8ef1116f3bf44b322085d94a043c076506dcbe192c30db5f7d74b29
+
+The ELF is 1,724,512 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III).
+
 ## 4. Boot NEXUS directly
 
 PCSX2's current command line supports `-elf <file>`:
