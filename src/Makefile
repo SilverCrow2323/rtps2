@@ -1,7 +1,7 @@
 EE_BIN = NEXUS.ELF
-EE_OBJS = nexus_main.o nexus_input.o nexus_ui.o nexus_devices.o nexus_navigation.o
+EE_OBJS = nexus_main.o nexus_input.o nexus_ui.o nexus_renderer.o nexus_devices.o nexus_navigation.o
 EE_INCS += -Iinclude
-EE_LIBS = -lpad -ldebug -lc
+EE_LIBS = -lfont -lpacket -ldma -lgraph -ldraw -lpad -ldebug -lc
 
 all: $(EE_BIN)
 
