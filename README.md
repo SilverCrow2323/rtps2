@@ -28,7 +28,7 @@ PYTHONPATH=. python3 -m unittest discover -s tests -v
 python3 -m compileall -q nexus_txn tools tests
 ~~~
 
-The M6.5 host snapshot passed 63 unit tests and compile check in GitHub Actions [run #44463407162](https://github.com/SilverCrow2323/rtps2/actions/runs/44463407162). M6.6 adds the ZIP inspection gate and format-specific Store tests; check the latest Actions run for the current result.
+The latest GitHub Actions run [#44484276661](https://github.com/SilverCrow2323/rtps2/actions/runs/44484276661) passed the full **85-test** host suite and Python compile check.
 
 ## Safety line
 NEXUS must not silently replace boot-critical assets or rewrite FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN/OSDSYS installations. The transaction engine is host-only and sandboxed. No PS2 storage is mounted or written by this code. Unknown free space is not treated as sufficient. Package metadata is not a substitute for a validated install recipe. ZIP inspection does not extract files; PSU/SAS remain unsupported.
