@@ -25,7 +25,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.9 | Native EE shell, libpad DualShock input, dashboard/pages | PS2DEV build passed |
 | M6.10 | PS2SDK GS renderer: double buffering, KROM font, dashboard cards and module panels | PS2DEV build and host checks passed; console visual validation pending |
 | M6.11 | Original section icon set, deterministic PNG-to-NXA1 PSMCT32 atlas packer, manifest and SHA-256 verifier | Source and eight unit tests committed |
-| M6.12 | Native EE NXA1 structural validation, GIF DMA upload, GS texture binding and six-cell icon sampling | Source committed; asset loading, native digest verification and console visual test pending |
+| M6.12 | Native EE NXA1 structural + SHA-256 validation, GIF DMA upload, GS texture binding and six-cell icon sampling | PS2DEV build and host regressions passed; runtime asset loading and console visual test pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -39,11 +39,18 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
 
+## M6.12 verification
+- EE SHA-256 implementation is allocation-free and verifies the 32-byte digest stored at NXA1 header offset 20 against the complete 131,072-byte pixel payload before VRAM allocation.
+- Native tests cover empty and `abc` vectors, SHA padding lengths 55/56/63/64/65, the full NXA payload size, and a one-million-byte message; NXA tests reject corrupt payload and digest bytes.
+- PS2DEV EE build [#33](https://github.com/SilverCrow2323/rtps2/actions/runs/44577115974) passed and uploaded artifact `NEXUS-ELF` (519,661 bytes).
+- Host CI [#178](https://github.com/SilverCrow2323/rtps2/actions/runs/44577288782) passed 120 Python tests plus native SHA/atlas/navigation tests and syntax checks.
+- No boot-time pack loader or physical-console visual validation is claimed.
+
 ## M6.10 design boundary
 The current GS renderer is a first functional graphical layer: navy and cyan palette, 3×2 home cards, device-status strip and separate section screens. It is not yet the final animated interface. The original icon artwork now has a host-side packing path, but no native GS texture upload, cover-art cache or animated page backgrounds are active yet.
 
 ## Next priorities
-1. Implement M6.13: read-only runtime asset loading, EE-side SHA-256 validation and a bounded VRAM cache; visually validate on a PS2 before claiming the artwork is displayed.
+1. Implement M6.13: safe read-only loading or ELF embedding of the verified NXA1 asset, then initialize the dashboard atlas; design a bounded VRAM cache only after measuring coexistence with the framebuffers.
 2. Build the final dashboard backgrounds and distinct animated section scenes only after the M6.12 frame pacing and memory budgets are measured.
 3. Add read-only device and mounted-volume providers incrementally.
 4. Add game discovery, metadata/artwork integration and documented OPL/Neutrino launch handoff.
