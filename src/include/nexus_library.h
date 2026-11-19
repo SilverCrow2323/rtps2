@@ -6,7 +6,7 @@
 #define NEXUS_LIBRARY_CAPACITY 96U
 #define NEXUS_LIBRARY_TITLE_CAPACITY 48U
 #define NEXUS_LIBRARY_TITLE_ID_CAPACITY 16U
-#define NEXUS_LIBRARY_PATH_CAPACITY 160U
+#define NEXUS_LIBRARY_PATH_CAPACITY 256U
 #define NEXUS_LIBRARY_FILTER_ANY 0xffU
 
 typedef enum {
@@ -40,7 +40,7 @@ typedef enum {
 
 typedef struct {
     uint64_t key;
-    uint32_t size_bytes;
+    uint64_t size_bytes;
     uint8_t source;
     uint8_t platform;
     uint8_t backend;
