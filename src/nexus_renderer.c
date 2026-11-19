@@ -205,24 +205,24 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
         "NEXUS STORE", "FILES", "SYSTEM"
     };
     static const char *const subtitles[6] = {
-        "PS2 COLLECTION", "POPS COLLECTION", "ELF APPLICATIONS",
-        "ONLINE CATALOG", "STORAGE BROWSER", "CONSOLE CONTROL"
+        "PS2 GAMES", "POPS / PS1", "ELF APPS",
+        "STORE", "STORAGE", "SYSTEM"
     };
     static const char *const descriptions[6] = {
-        "Your PlayStation 2 library, all in one place.",
-        "A dedicated home for PlayStation classics.",
-        "Launchers, utilities and homebrew tools.",
-        "Discover applications and updates for NEXUS.",
-        "Browse connected storage without changing it.",
-        "Hardware, video, input and system services."
+        "Your PS2 library in one place.",
+        "A home for PlayStation classics.",
+        "Launchers, tools and utilities.",
+        "Apps and updates for NEXUS.",
+        "Browse storage without changes.",
+        "Hardware, video and controller."
     };
     static const char *const details[6] = {
-        "GRID / CAROUSEL / COVERFLOW / LIST",
-        "POPS / VCD / TITLE INFORMATION",
-        "LOCAL ELFS / TOOLS / EMULATORS",
-        "PACKAGES / DEPENDENCIES / UPDATES",
-        "USB / MMCE / INTERNAL STORAGE",
-        "VIDEO MODE / CONTROLLER / FILEXIO"
+        "GRID / CAROUSEL / COVERFLOW",
+        "POPS / VCD / METADATA",
+        "LOCAL ELFS / TOOLS",
+        "PACKAGES / UPDATES",
+        "USB / MMCE / INTERNAL",
+        "VIDEO / INPUT / FILEXIO"
     };
     unsigned int i;
     int row_height;
@@ -276,7 +276,7 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
         (void)snprintf(count_line, sizeof(count_line), "%u TITLES INDEXED",
                        nexus_library_count());
         status_line = nexus_library_count() == 0U
-            ? "LIBRARY WAITING FOR ITS FIRST SCAN" : "LIBRARY READY";
+            ? "WAITING FOR FIRST SCAN" : "LIBRARY READY";
     } else if (selected == 1) {
         (void)snprintf(count_line, sizeof(count_line), "POPS COLLECTION");
         status_line = "PS1 DISCOVERY READY FOR INTEGRATION";
@@ -291,8 +291,8 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
                        actions != 0 && actions->filexio_ready
                            ? "FILEXIO RPC READY" : "FILEXIO NOT ACTIVE");
         status_line = actions != 0 && actions->filexio_ready
-            ? "SELECT A ROOT AND CONFIRM A READ-ONLY SCAN"
-            : "ACTIVATE FILEXIO FROM SYSTEM";
+            ? "READ-ONLY SCAN AVAILABLE"
+            : "ACTIVATE FILEXIO IN SYSTEM";
     } else {
         (void)snprintf(count_line, sizeof(count_line), "%s",
                        actions != 0 && actions->filexio_ready
@@ -387,7 +387,7 @@ static qword_t *draw_game_card(qword_t *q, const NexusLibraryEntry *entry,
         q = fill_rect(q, x, y, 1, h, C_LINE);
     }
 
-    cover_h = h - 38;
+    cover_h = h >= 175 ? h - 48 : h - 38;
     if (cover_h < 30)
         cover_h = 30;
     q = fill_rect(q, x + 5, y + 5, w - 10, cover_h, C_SOFT);
@@ -421,7 +421,11 @@ static qword_t *draw_game_card(qword_t *q, const NexusLibraryEntry *entry,
     q = print_text(q, "ARTWORK NOT CACHED",
                    x + 12, y + cover_h - 12, C_MUTED);
 
-    precision = w >= 180 ? 20 : (w >= 130 ? 14 : 9);
+    precision = (w - 24) / 9;
+    if (precision < 5)
+        precision = 5;
+    if (precision > 22)
+        precision = 22;
     (void)snprintf(title, sizeof(title), "%.*s", precision, entry->title);
     (void)snprintf(meta, sizeof(meta), "%s / %s",
                    games_platform_label(entry->platform),
@@ -774,8 +778,8 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
     q = fill_rect(q, 18, 116, 374, 3, C_ACCENT);
     q = fill_rect(q, 19, 119, 1, main_height - 3, C_LINE);
     q = print_text(q, "OVERVIEW", 38, 136, C_ACCENT);
-    q = draw_large_icon(q, icon_index, 302, 138, 66);
-    q = print_text_fit(q, body1, 38, 184, 330, C_TEXT);
+    q = draw_large_icon(q, icon_index, 312, 132, 58);
+    q = print_text_fit(q, body1, 38, 184, 246, C_TEXT);
     q = print_text_fit(q, body2, 38, 220, 330, C_MUTED);
     q = print_text_fit(q, body3, 38, 256, 330, C_MUTED);
     q = fill_rect(q, 38, 292, 330, 1, C_LINE);
