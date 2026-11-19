@@ -209,12 +209,12 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
         "STORE", "STORAGE", "SYSTEM"
     };
     static const char *const descriptions[6] = {
-        "Your PS2 library in one place.",
-        "A home for PlayStation classics.",
+        "Your PS2 library, all here.",
+        "A home for PS1 classics.",
         "Launchers, tools and utilities.",
         "Apps and updates for NEXUS.",
-        "Browse storage without changes.",
-        "Hardware, video and controller."
+        "Browse connected storage.",
+        "Hardware, video and input."
     };
     static const char *const details[6] = {
         "GRID / CAROUSEL / COVERFLOW",
@@ -279,13 +279,13 @@ static qword_t *render_home(qword_t *q, const NexusNavState *state,
             ? "WAITING FOR FIRST SCAN" : "LIBRARY READY";
     } else if (selected == 1) {
         (void)snprintf(count_line, sizeof(count_line), "POPS COLLECTION");
-        status_line = "PS1 DISCOVERY READY FOR INTEGRATION";
+        status_line = "PS1 INDEX PENDING";
     } else if (selected == 2) {
         (void)snprintf(count_line, sizeof(count_line), "LOCAL ELF INDEX");
-        status_line = "HOMEBREW DISCOVERY IN DEVELOPMENT";
+        status_line = "HOMEBREW INDEX PENDING";
     } else if (selected == 3) {
         (void)snprintf(count_line, sizeof(count_line), "STORE COMPANION");
-        status_line = "HOST PACKAGE PIPELINE AVAILABLE";
+        status_line = "HOST PACKAGE PIPELINE READY";
     } else if (selected == 4) {
         (void)snprintf(count_line, sizeof(count_line), "%s",
                        actions != 0 && actions->filexio_ready
@@ -488,7 +488,7 @@ static qword_t *render_games_page(qword_t *q, const NexusActionStatus *actions)
             q = print_text(q, detail, 40, 220, C_TEXT);
             q = print_text(q, entry->title_id[0] ? entry->title_id : "TITLE ID: NOT READ",
                            40, 247, C_MUTED);
-            (void)snprintf(detail, sizeof(detail), "%.68s", entry->path);
+            (void)snprintf(detail, sizeof(detail), "%.56s", entry->path);
             q = print_text(q, detail, 40, 274, C_MUTED);
             q = print_text(q, entry->favorite ? "FAVORITE: YES" : "FAVORITE: NO",
                            40, 302, C_WARN);
