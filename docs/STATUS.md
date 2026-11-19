@@ -15,8 +15,8 @@
 - Bridge route compatibility with original M5 remains unverified; route paths and transport are injectable.
 
 ## Verification boundary
-- GitHub Actions host test workflow previously passed **63/63 tests and compile check** on the M6.5 code snapshot (run [#44463407162](https://github.com/SilverCrow2323/rtps2/actions/runs/44463407162)).
-- M6.6 adds new test coverage; its workflow result is pending at the time of this snapshot.
+- Latest GitHub Actions workflow: **success** on commit dd9a493f3156202defed9094ad371499ea74fa88 ([run #44484276661](https://github.com/SilverCrow2323/rtps2/actions/runs/44484276661)).
+- Both **Unit tests** and **Compile check** passed. The current suite contains **85 tests**.
 - Host-side Python only. No PS2SDK build or console test is claimed.
 
 ## Not implemented
