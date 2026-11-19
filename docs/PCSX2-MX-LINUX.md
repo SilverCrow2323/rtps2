@@ -19,7 +19,7 @@ Complete the first-run wizard and select a BIOS dumped from your own PS2. PCSX2 
 
 ## 3. Download the NEXUS build
 
-The current known-good build is Native EE workflow #70. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
+The current known-good build is Native EE workflow #84. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
 
 Install GitHub CLI and authenticate:
 
@@ -29,7 +29,7 @@ Install GitHub CLI and authenticate:
 Download and extract the artifact:
 
     mkdir -p "$HOME/PS2/NEXUS"
-    gh run download 44585518347 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
+    gh run download 44586493569 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
 
 The resulting file is:
 
@@ -41,9 +41,9 @@ Verify that it matches the build tested by CI:
 
 Expected SHA-256:
 
-    6e55ea9628f680255ff796f8ab037df4eb4b8cb4c099329475424ef8ec1749d1
+    436ba1b11ac241685d5e497ccf2e09492dd0b0edcc59310718d5e468671b1ca2
 
-The ELF is 1,956,332 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache, native catalog, read-only scanner and explicit PS2SDK FileXio adapter. The adapter is not activated from the UI/startup, and no USB/MMCE/HDD drivers or mounts are started; the catalog remains empty until a user-approved provider activation and accessible root are connected.
+The ELF is 1,968,516 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache, native catalog, read-only scanner and explicit PS2SDK FileXio adapter. In System, Triangle opens the FileXio warning, Cross confirms and Circle cancels. This only loads missing RPC modules and initializes FileXio; it does not start USB/MMCE/HDD drivers, mount or scan any volume. PCSX2 boot/visual validation remains pending.
 
 ## 4. Boot NEXUS directly
 
