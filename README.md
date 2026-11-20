@@ -26,7 +26,7 @@ The native NEXUS.ELF is compiled using the PS2DEV Docker image and the PS2SDK EE
 
 Extracted ELF: **2,054,668 bytes**, ELF32 little-endian MIPS N32, R5900/MIPS III flags. SHA-256: ea72187dd6d0fbd960676fa3ad804fd49b61e52533013e0e2c8f5a767a0d40d3. The binary includes the NXA1 atlas, four-slot GS artwork cache, native catalog/scanner, FileXio adapter, Files scan flow, M6.22 dashboard/module/Games redesign and M6.23 read-only storage root probes. Artifact ZIP SHA-256: 95c45bf68081f7ed05509efacf46a805ad04cd23f858fa8ea25c1e075968ea88.
 
-Host CI [#374](https://github.com/SilverCrow2323/rtps2/actions/runs/44647291201) and native PS2DEV build [#102](https://github.com/SilverCrow2323/rtps2/actions/runs/44647291208) both passed. The preceding build's successful PCSX2 boot/run is user-confirmed; the M6.22 visual refresh still needs screenshot review. Physical PS2 rendering remains unverified.
+Host CI [#374](https://github.com/SilverCrow2323/rtps2/actions/runs/44647291201) and native PS2DEV build [#102](https://github.com/SilverCrow2323/rtps2/actions/runs/44647291208) both passed. The preceding build's PCSX2 boot/run is user-confirmed; M6.23 itself still needs a PCSX2 screenshot review. Physical PS2 rendering remains unverified.
 
 ## Host validation
 
