@@ -1,5 +1,14 @@
 # NEXUS — verified status snapshot
 
+## M6.23 explicit read-only storage root probes
+- Files maps Square to a probe of all three fixed roots: mass:/, mmce0:/ and mmce1:/. The renderer shows three status cards: ACCESSIBLE, NOT ACCESSIBLE or PROBE ERROR; before probing the state remains NOT PROBED.
+- The adapter accepts only those exact roots and performs FileXio Dopen/Dclose only. It does not call Dread, populate the game catalog, load drivers, mount volumes, reset the IOP or write to storage. NOT ACCESSIBLE means the root cannot currently be reached through registered IOP services; it is not proof that physical media is absent.
+- Triangle retains the separate confirmed read-only scan of the selected root. Square is ignored while FileXio is inactive or a scan confirmation is pending.
+- Host CI [#374](https://github.com/SilverCrow2323/rtps2/actions/runs/44647291201) passed all host and native C regressions. Native PS2DEV build [#102](https://github.com/SilverCrow2323/rtps2/actions/runs/44647291208) passed atlas generation, EE cross-compilation/link and ELF upload.
+- Artifact ZIP: 664,348 bytes; SHA-256 95c45bf68081f7ed05509efacf46a805ad04cd23f858fa8ea25c1e075968ea88. Extracted ELF: 2,054,668 bytes; SHA-256 ea72187dd6d0fbd960676fa3ad804fd49b61e52533013e0e2c8f5a767a0d40d3 (ELF32 little-endian MIPS N32/R5900/MIPS III).
+- The preceding build's PCSX2 boot/run is user-confirmed; M6.23 itself still needs PCSX2 visual review and screenshot feedback. No physical-PS2 validation is claimed.
+- Details: [M6.23 storage root probe](M6.23-storage-root-probe.md).
+
 ## M6.22 native GS visual redesign
 - Replaced the old 3×2 Home cards/device strip with a left navigation rail, contextual module hero and three lower metrics for catalog, GS atlas and controller state.
 - Reworked shared topbar and generic module pages into a consistent overview panel, right-side state cards and one context-aware controller footer. Geometry is derived from 640×448 NTSC or 640×512 PAL.

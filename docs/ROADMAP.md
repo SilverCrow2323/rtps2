@@ -36,6 +36,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.20 | Files root allowlist for mass:/, mmce0:/ and mmce1:/ plus two-step read-only scan dispatch and result panel | Host CI #344 and native PS2DEV build #88 passed |
 | M6.21 | Games catalog navigation, four view modes, favorites, source/platform filters and metadata-only detail | Host CI #367 and native PS2DEV build #101 passed |
 | M6.22 | Home navigation rail, contextual hero, status metrics, consistent module panels and cover-style Games placeholders | Host CI #367 and native PS2DEV build #101 passed; PCSX2 visual feedback and real artwork pending |
+| M6.23 | Square-triggered read-only availability probe for mass:/, mmce0:/ and mmce1:/ with three Files status cards | Host CI #374 and native PS2DEV build #102 passed; PCSX2 visual review pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.
@@ -48,6 +49,12 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - NXA1 format: 64-byte little-endian header, 256×128 PSMCT32 RGBA atlas, 131,072-byte pixel payload and SHA-256 validation.
 - Local generated pack SHA-256: `246d883d5e7086769ce1adc3630c1fea8aeb3e250cf80be270144475fee2eed9`; pixel payload SHA-256: `c3daf0ae6b208701c8374cd2adf5e98c21d341ab1ee6c57ab90334824543b526`.
 - No native ELF rebuild or physical-console test is claimed for M6.11.
+
+## M6.23 verification
+- Files Square probes the three fixed roots with FileXio Dopen/Dclose only; renderer displays ACCESSIBLE, NOT ACCESSIBLE or PROBE ERROR per root. The result describes namespace reachability, not physical-device presence.
+- Probe input is allowlisted; no Dread, driver loading, mount, IOP reset or filesystem write occurs. Triangle remains the separate confirmed read-only scan of the selected root.
+- Host CI [#374](https://github.com/SilverCrow2323/rtps2/actions/runs/44647291201) passed; native PS2DEV build [#102](https://github.com/SilverCrow2323/rtps2/actions/runs/44647291208) passed and uploaded a 664,348-byte artifact ZIP (SHA-256 95c45bf68081f7ed05509efacf46a805ad04cd23f858fa8ea25c1e075968ea88). Extracted ELF: 2,054,668 bytes; SHA-256 ea72187dd6d0fbd960676fa3ad804fd49b61e52533013e0e2c8f5a767a0d40d3.
+- The M6.23 binary has passed cross-compilation, but PCSX2 screenshot review and physical-console validation remain pending. Details: [M6.23 storage root probe](M6.23-storage-root-probe.md).
 
 ## M6.22 verification
 - Home was redesigned into a persistent six-module navigation rail, selected-module hero and three status metrics. PAL/NTSC geometry is calculated from the active region.
@@ -138,14 +145,13 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 The old 3×2 dashboard/device strip has been replaced by the navigation rail + module hero + status metrics. Module pages share a more structured two-column layout, and Games uses cover-style placeholders across all four views. This is a major first redesign, not the final animated skin: the real artwork decoder/cache feed, subtle transitions, screenshot review and physical PAL/NTSC calibration remain open.
 
 ## Next priorities
-1. Review M6.22 in PCSX2 using screenshots of Home, Games Grid/Carousel/Coverflow/List, Files and System; fix any observed clipping, scale or spacing issues.
+1. Review M6.23 in PCSX2 using screenshots of Home, Games Grid/Carousel/Coverflow/List, Files and System; fix any observed clipping, scale or spacing issues.
 2. Implement a bounded image decoder/resizer and source-to-title artwork mapping that populates the four-slot GS cache; replace ARTWORK NOT CACHED placeholders with actual covers.
-3. Add a read-only availability/status probe for mass:/, mmce0:/ and mmce1:/, while keeping device drivers and mounts explicit.
-4. Implement explicitly enabled USB mass and MMCEMAN adapters only after checking their installed IRX/version contracts; do not auto-load or mount them at boot.
-5. Add a separate read-only APA/PFS provider for traditional internal HDD partitions.
-6. Connect documented, version-aware OPL/Neutrino/POPS launch handoff; do not invent private commands.
-7. Add subtle animation only after PCSX2/console frame pacing is measured.
-8. Add native PS2 Store networking after transport/crypto architecture is proven; recover original M1–M5 source snapshots and genuine PSU/SAS readers.
+3. Implement explicitly enabled USB mass and MMCEMAN adapters only after checking their installed IRX/version contracts; do not auto-load or mount them at boot.
+4. Add a separate read-only APA/PFS provider for traditional internal HDD partitions.
+5. Connect documented, version-aware OPL/Neutrino/POPS launch handoff; do not invent private commands.
+6. Add subtle animation only after PCSX2/console frame pacing is measured.
+7. Add native PS2 Store networking after transport/crypto architecture is proven; recover original M1–M5 source snapshots and genuine PSU/SAS readers.
 
 ## Non-goals
 No automatic bootloader/OSDSYS/FMCB/FHDB/OpenTuna/FunTuna/PS2BBL/PSBBN replacement. No implicit mount, IOP reset, device formatting or filesystem repair. Bluetooth HID compatibility does not imply Wi-Fi support.

@@ -19,7 +19,7 @@ Complete the first-run wizard and select a BIOS dumped from your own PS2. PCSX2 
 
 ## 3. Download the NEXUS build
 
-The current M6.22 visual build is Native EE workflow #101. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 19 November 2026 (scheduled expiry: 19 December 2026).
+The current M6.23 build is Native EE workflow #102. Its `NEXUS-ELF` artifact is retained by GitHub Actions for 30 days from 20 November 2026 (scheduled expiry: 20 December 2026).
 
 Install GitHub CLI and authenticate:
 
@@ -29,7 +29,7 @@ Install GitHub CLI and authenticate:
 Download and extract the artifact:
 
     mkdir -p "$HOME/PS2/NEXUS"
-    gh run download 44598741740 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
+    gh run download 44647291208 --repo SilverCrow2323/rtps2 --name NEXUS-ELF --dir "$HOME/PS2/NEXUS"
 
 The resulting file is:
 
@@ -41,9 +41,9 @@ Verify that it matches the build tested by CI:
 
 Expected SHA-256:
 
-    a84f7acf833bc53536f3f081cd00020094fc10fdc6f37f7037c67a6a29653922
+    ea72187dd6d0fbd960676fa3ad804fd49b61e52533013e0e2c8f5a767a0d40d3
 
-The ELF is 2,047,340 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache, native catalog/scanner, FileXio adapter, Files scan flow and M6.22 visual redesign. Home now uses a left module rail and a contextual hero panel; module pages use a two-column layout; Games has cover-style placeholders in all four views. Artwork is not real box art yet. The previous build's PCSX2 boot/run is user-confirmed; review this M6.22 visual build and compare the layout.
+The ELF is 2,054,668 bytes (ELF32 little-endian MIPS, N32 ABI, R5900/MIPS III). It includes the embedded icon atlas, four-slot GS artwork cache, native catalog/scanner, FileXio adapter, Files scan flow and M6.22 visual redesign plus M6.23 read-only storage root probes. Home now uses a left module rail and a contextual hero panel; module pages use a two-column layout; Games has cover-style placeholders in all four views. Artwork is not real box art yet. The previous build's PCSX2 boot/run is user-confirmed; review this M6.23 build and compare the layout.
 
 ## 4. Boot NEXUS directly
 
