@@ -90,6 +90,41 @@ int nexus_filexio_ready(void)
     return filexio_ready;
 }
 
+NexusDeviceState nexus_filexio_probe_root(const char *path)
+{
+    int fd;
+    int close_result;
+
+    if (!filexio_ready)
+        return NEXUS_DEVICE_UNKNOWN;
+
+    /* Keep this API constrained to the same fixed roots exposed by Files. */
+    if (path == 0 ||
+        (strcmp(path, "mass:/") != 0 &&
+         strcmp(path, "mmce0:/") != 0 &&
+         strcmp(path, "mmce1:/") != 0))
+        return NEXUS_DEVICE_ERROR;
+
+    fd = fileXioDopen(path);
+    if (fd < 0) {
+        /*
+         * These errors mean that the root is not currently registered or
+         * reachable. They do not prove that physical media is absent.
+         */
+        if (fd == -ENOENT || fd == -ENOTDIR ||
+            fd == -ENODEV || fd == -ENXIO)
+            return NEXUS_DEVICE_ABSENT;
+        return NEXUS_DEVICE_ERROR;
+    }
+
+    /* Probe only opens and closes the root; it never enumerates entries. */
+    close_result = fileXioDclose(fd);
+    if (close_result < 0)
+        return NEXUS_DEVICE_ERROR;
+
+    return NEXUS_DEVICE_PRESENT;
+}
+
 static int map_filexio_error(int result)
 {
     if (result == -ENOENT || result == -ENOTDIR)

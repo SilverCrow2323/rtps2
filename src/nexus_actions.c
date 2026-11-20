@@ -76,6 +76,19 @@ static void execute_read_only_scan(NexusActionStatus *status)
     status->scan_attempted = 1U;
 }
 
+static void probe_all_scan_roots(NexusActionStatus *status)
+{
+    unsigned int i;
+    const unsigned int count =
+        (unsigned int)(sizeof(scan_roots) / sizeof(scan_roots[0]));
+
+    for (i = 0; i < count; ++i)
+        status->root_states[i] =
+            nexus_filexio_probe_root(scan_roots[i].path);
+
+    status->root_probe_attempted = 1U;
+}
+
 void nexus_actions_apply(NexusNavState *navigation,
                          NexusActionStatus *status,
                          NexusKey key)
@@ -202,6 +215,11 @@ void nexus_actions_apply(NexusNavState *navigation,
             return;
         }
 
+        if (key == NEXUS_KEY_FAVORITE) {
+            if (status->filexio_ready)
+                probe_all_scan_roots(status);
+            return;
+        }
         if (key == NEXUS_KEY_UP) {
             move_scan_root(status, -1);
             return;

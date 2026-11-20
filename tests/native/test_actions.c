@@ -9,6 +9,10 @@ static int activation_calls;
 static int activation_result;
 static int scan_calls;
 static int scan_result;
+static int probe_calls;
+static NexusDeviceState probe_results[3] = {
+    NEXUS_DEVICE_PRESENT, NEXUS_DEVICE_ABSENT, NEXUS_DEVICE_ERROR
+};
 static NexusScanConfig last_scan_config;
 
 int nexus_filexio_ready(void)
@@ -22,6 +26,18 @@ int nexus_filexio_activate(void)
     if (activation_result == 0)
         adapter_ready = 1;
     return activation_result;
+}
+
+NexusDeviceState nexus_filexio_probe_root(const char *path)
+{
+    ++probe_calls;
+    if (strcmp(path, "mass:/") == 0)
+        return probe_results[0];
+    if (strcmp(path, "mmce0:/") == 0)
+        return probe_results[1];
+    if (strcmp(path, "mmce1:/") == 0)
+        return probe_results[2];
+    return NEXUS_DEVICE_ERROR;
 }
 
 int nexus_filexio_scan_root(const NexusScanConfig *config,
@@ -151,6 +167,9 @@ int main(void)
     nexus_actions_apply(&navigation, &status, NEXUS_KEY_ACTION);
     assert(status.scan_confirm_pending == 0U);
     assert(scan_calls == 0);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FAVORITE);
+    assert(status.root_probe_attempted == 0U);
+    assert(probe_calls == 0);
 
     /* The root list is a hard-coded allowlist, never free-form text. */
     assert(strcmp(nexus_actions_scan_root_path(&status), "mass:/") == 0);
@@ -160,11 +179,22 @@ int main(void)
     assert(strcmp(nexus_actions_scan_root_path(&status), "mmce0:/") == 0);
     assert(strcmp(nexus_actions_scan_root_label(&status), "MMCE SLOT 0") == 0);
 
+    /* Square performs a read-only Dopen/Dclose check of every fixed root. */
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FAVORITE);
+    assert(probe_calls == 3);
+    assert(status.root_probe_attempted == 1U);
+    assert(status.root_states[0] == NEXUS_DEVICE_PRESENT);
+    assert(status.root_states[1] == NEXUS_DEVICE_ABSENT);
+    assert(status.root_states[2] == NEXUS_DEVICE_ERROR);
+    assert(scan_calls == 0);
+
     nexus_actions_apply(&navigation, &status, NEXUS_KEY_ACTION);
     assert(status.scan_confirm_pending == 1U);
     assert(scan_calls == 0);
     nexus_actions_apply(&navigation, &status, NEXUS_KEY_DOWN);
     assert(strcmp(nexus_actions_scan_root_path(&status), "mmce0:/") == 0);
+    nexus_actions_apply(&navigation, &status, NEXUS_KEY_FAVORITE);
+    assert(probe_calls == 3); /* Pending confirmation blocks other actions. */
     nexus_actions_apply(&navigation, &status, NEXUS_KEY_BACK);
     assert(status.scan_confirm_pending == 0U);
     assert(scan_calls == 0);

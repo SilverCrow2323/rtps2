@@ -632,6 +632,33 @@ static qword_t *draw_info_card(qword_t *q, int x, int y, int width,
     return q;
 }
 
+static const char *root_probe_state_name(NexusDeviceState state)
+{
+    switch (state) {
+        case NEXUS_DEVICE_PRESENT: return "ACCESSIBLE";
+        case NEXUS_DEVICE_ABSENT: return "NOT ACCESSIBLE";
+        case NEXUS_DEVICE_ERROR: return "PROBE ERROR";
+        case NEXUS_DEVICE_UNKNOWN:
+        default: return "NOT PROBED";
+    }
+}
+
+static qword_t *draw_root_probe_card(qword_t *q, int y,
+                                     const char *label,
+                                     NexusDeviceState state)
+{
+    u8 r = 133, g = 160, b = 178;
+
+    if (state == NEXUS_DEVICE_PRESENT) {
+        r = 91; g = 210; b = 153;
+    } else if (state == NEXUS_DEVICE_ERROR) {
+        r = 238; g = 181; b = 98;
+    }
+
+    return draw_info_card(q, 406, y, 216, label,
+                          root_probe_state_name(state), r, g, b);
+}
+
 static qword_t *render_page(qword_t *q, const NexusNavState *state,
                             int input_ready, int connected,
                             const NexusActionStatus *actions)
@@ -713,11 +740,25 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
                 (void)snprintf(scan_summary, sizeof(scan_summary),
                                "ROOT: %.40s",
                                nexus_actions_scan_root_label(actions));
-                body1 = "FILEXIO READY - ROOT NOT SCANNED.";
-                body2 = scan_summary;
-                body3 = "UP/DOWN select root; TRIANGLE requests scan.";
-                tag2 = "READY - NOT SCANNED";
-                next = "Choose a root and request a scan";
+                if (actions->root_probe_attempted) {
+                    const unsigned int selected =
+                        (unsigned int)actions->scan_root_index % 3U;
+                    body1 = "LAST ROOT CHECK WAS READ-ONLY.";
+                    (void)snprintf(scan_detail, sizeof(scan_detail),
+                                   "SELECTED: %.22s / %s",
+                                   nexus_actions_scan_root_label(actions),
+                                   root_probe_state_name(actions->root_states[selected]));
+                    body2 = scan_detail;
+                    body3 = "SQUARE RECHECKS ALL THREE ROOTS.";
+                    tag2 = "ROOTS PROBED";
+                    next = "Triangle scans the selected root";
+                } else {
+                    body1 = "FILEXIO READY - ROOTS NOT PROBED.";
+                    body2 = scan_summary;
+                    body3 = "SQUARE checks access; TRIANGLE scans.";
+                    tag2 = "NOT PROBED";
+                    next = "Square checks all three existing roots";
+                }
             } else {
                 body1 = "FILEXIO IS NOT ACTIVE.";
                 body2 = "System: Triangle warning, Cross confirmation.";
@@ -786,30 +827,37 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
     q = print_text(q, "NEXT ACTION", 38, 311, C_MUTED);
     q = print_text_fit(q, next, 38, 336, 330, C_TEXT);
 
-    q = draw_info_card(q, 406, 116, 216, "CURRENT STATUS",
-                       tag2,
-                       state->page == NEXUS_PAGE_FILES &&
-                       actions != 0 && actions->scan_attempted &&
-                       actions->last_scan_result != 0
-                           ? 238 : 60,
-                       state->page == NEXUS_PAGE_FILES &&
-                       actions != 0 && actions->scan_attempted &&
-                       actions->last_scan_result != 0
-                           ? 181 : 218,
-                       state->page == NEXUS_PAGE_FILES &&
-                       actions != 0 && actions->scan_attempted &&
-                       actions->last_scan_result != 0
-                           ? 98 : 235);
-    q = draw_info_card(q, 406, 198, 216, "SESSION INPUT",
-                       connected ? "CONTROLLER CONNECTED" : "CONTROLLER WAITING",
-                       input_ready && connected ? 91 : 238,
-                       input_ready && connected ? 210 : 181,
-                       input_ready && connected ? 153 : 98);
-    (void)snprintf(session, sizeof(session), "%s / %s",
-                   screen_height == NEXUS_PAL_HEIGHT ? "PAL" : "NTSC",
-                   nexus_cover_cache_ready() ? "GS CACHE READY" : "GS CACHE LIMITED");
-    q = draw_info_card(q, 406, 280, 216, "VIDEO / GRAPHICS",
-                       session, 232, 243, 249);
+    if (state->page == NEXUS_PAGE_FILES && actions != 0 &&
+        actions->root_probe_attempted) {
+        q = draw_root_probe_card(q, 116, "USB MASS / mass:/",
+                                 actions->root_states[0]);
+        q = draw_root_probe_card(q, 198, "MMCE SLOT 0 / mmce0:/",
+                                 actions->root_states[1]);
+        q = draw_root_probe_card(q, 280, "MMCE SLOT 1 / mmce1:/",
+                                 actions->root_states[2]);
+    } else {
+        q = draw_info_card(q, 406, 116, 216, "CURRENT STATUS",
+                           tag2,
+                           state->page == NEXUS_PAGE_FILES &&
+                           actions != 0 && actions->scan_attempted &&
+                           actions->last_scan_result != 0 ? 238 : 60,
+                           state->page == NEXUS_PAGE_FILES &&
+                           actions != 0 && actions->scan_attempted &&
+                           actions->last_scan_result != 0 ? 181 : 218,
+                           state->page == NEXUS_PAGE_FILES &&
+                           actions != 0 && actions->scan_attempted &&
+                           actions->last_scan_result != 0 ? 98 : 235);
+        q = draw_info_card(q, 406, 198, 216, "SESSION INPUT",
+                           connected ? "CONTROLLER CONNECTED" : "CONTROLLER WAITING",
+                           input_ready && connected ? 91 : 238,
+                           input_ready && connected ? 210 : 181,
+                           input_ready && connected ? 153 : 98);
+        (void)snprintf(session, sizeof(session), "%s / %s",
+                       screen_height == NEXUS_PAL_HEIGHT ? "PAL" : "NTSC",
+                       nexus_cover_cache_ready() ? "GS CACHE READY" : "GS CACHE LIMITED");
+        q = draw_info_card(q, 406, 280, 216, "VIDEO / GRAPHICS",
+                           session, 232, 243, 249);
+    }
 
     q = fill_rect(q, 18, footer_y, 604, 27, C_HEADER);
     q = fill_rect(q, 18, footer_y, 604, 1, C_LINE);
@@ -821,8 +869,9 @@ static qword_t *render_page(qword_t *q, const NexusNavState *state,
     } else if (state->page == NEXUS_PAGE_FILES && state->in_section &&
                actions != 0 && actions->filexio_ready) {
         q = print_text(q, "UP/DOWN  ROOT", 28, footer_y + 7, C_TEXT);
-        q = print_text(q, "TRIANGLE  SCAN", 250, footer_y + 7, C_ACCENT);
-        q = print_text(q, "CIRCLE  BACK", 490, footer_y + 7, C_MUTED);
+        q = print_text(q, "SQUARE  CHECK ALL", 168, footer_y + 7, C_ACCENT);
+        q = print_text(q, "TRIANGLE  SCAN", 356, footer_y + 7, C_TEXT);
+        q = print_text(q, "CIRCLE  BACK", 510, footer_y + 7, C_MUTED);
     } else if (state->page == NEXUS_PAGE_FILES && state->in_section) {
         q = print_text(q, "GO TO SYSTEM FIRST", 28, footer_y + 7, C_AMBER);
         q = print_text(q, "CIRCLE  BACK", 490, footer_y + 7, C_MUTED);

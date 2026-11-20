@@ -22,6 +22,7 @@ static int patch_prefix_calls;
 static int filexio_init_calls;
 static int dopen_calls;
 static int dclose_calls;
+static int dclose_result;
 static int cd_entry_position;
 
 void sceSifInitRpc(int mode)
@@ -109,7 +110,7 @@ int fileXioDclose(int fd)
 {
     assert(fd == 1 || fd == 2);
     ++dclose_calls;
-    return 0;
+    return dclose_result;
 }
 
 int main(void)
@@ -126,6 +127,7 @@ int main(void)
     nexus_library_clear();
     assert(nexus_filexio_ready() == 0);
     assert(nexus_filexio_scan_root(&config, &report) == -ENODEV);
+    assert(nexus_filexio_probe_root("mass:/") == NEXUS_DEVICE_UNKNOWN);
     assert(dopen_calls == 0);
 
     /* The IOP-facing services start only after this explicit activation. */
@@ -136,6 +138,18 @@ int main(void)
     assert(patch_lmb_calls == 1);
     assert(patch_prefix_calls == 1);
     assert(filexio_init_calls == 1);
+
+    /* Root probes are allowlisted, read-only, and do not enumerate entries. */
+    assert(nexus_filexio_probe_root("mass:/") == NEXUS_DEVICE_PRESENT);
+    assert(nexus_filexio_probe_root("mmce0:/") == NEXUS_DEVICE_ABSENT);
+    assert(nexus_filexio_probe_root("../SYS-CONF") == NEXUS_DEVICE_ERROR);
+    assert(dopen_calls == 2);
+    assert(dclose_calls == 1);
+    dclose_result = -EIO;
+    assert(nexus_filexio_probe_root("mass:/") == NEXUS_DEVICE_ERROR);
+    dclose_result = 0;
+    assert(dopen_calls == 3);
+    assert(dclose_calls == 2);
 
     /* Activation is idempotent; it does not patch or reload a second time. */
     assert(nexus_filexio_activate() == 0);
@@ -151,8 +165,8 @@ int main(void)
     assert(report.indexed == 1U);
     assert(report.entries_seen == 2U);
     assert(nexus_library_count() == 1U);
-    assert(dopen_calls == 3);
-    assert(dclose_calls == 2);
+    assert(dopen_calls == 6);
+    assert(dclose_calls == 4);
 
     entry = nexus_library_find(
         nexus_library_visible_at(&(NexusLibraryView){

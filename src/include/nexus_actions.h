@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "nexus_navigation.h"
 #include "nexus_library_scan.h"
+#include "nexus_devices.h"
 
 typedef struct {
     uint8_t filexio_confirm_pending;
@@ -12,6 +13,8 @@ typedef struct {
     int last_filexio_result;
     uint8_t scan_confirm_pending;
     uint8_t scan_attempted;
+    uint8_t root_probe_attempted;
+    NexusDeviceState root_states[3];
     uint8_t scan_root_index;
     int last_scan_result;
     NexusScanReport last_scan_report;
