@@ -10,9 +10,11 @@ from pathlib import Path
 from typing import Dict
 
 ELF_HEADER = struct.Struct("<16sHHIIIIIHHHHHH")
+PROGRAM_HEADER = struct.Struct("<IIIIIIII")
 ELF_MAGIC = b"\x7fELF"
 EM_MIPS = 8
 ET_EXEC = 2
+PT_LOAD = 1
 
 
 class ElfValidationError(ValueError):
@@ -39,8 +41,32 @@ def validate_elf(data: bytes) -> Dict[str, int]:
         raise ElfValidationError("expected EM_MIPS for the PlayStation 2 EE")
     if ehsize < ELF_HEADER.size or ehsize > len(data):
         raise ElfValidationError("invalid ELF header size")
-    if phnum and (phentsize < 32 or phoff + phentsize * phnum > len(data)):
+    if phnum == 0:
+        raise ElfValidationError("ELF has no program header table")
+    if (
+        phoff < ehsize
+        or phentsize < PROGRAM_HEADER.size
+        or phoff + phentsize * phnum > len(data)
+    ):
         raise ElfValidationError("program header table is outside the file")
+
+    load_segments = 0
+    for index in range(phnum):
+        offset = phoff + index * phentsize
+        p_type, p_offset, _p_vaddr, _p_paddr, p_filesz, p_memsz, _p_flags, _p_align = (
+            PROGRAM_HEADER.unpack_from(data, offset)
+        )
+        if p_type != PT_LOAD:
+            continue
+        load_segments += 1
+        if p_filesz > p_memsz:
+            raise ElfValidationError("PT_LOAD file size exceeds its memory size")
+        if p_offset > len(data) or p_filesz > len(data) - p_offset:
+            raise ElfValidationError("PT_LOAD segment extends beyond the ELF file")
+
+    if load_segments == 0:
+        raise ElfValidationError("ELF has no loadable PT_LOAD segment")
+
     if shnum and (shentsize < 40 or shoff + shentsize * shnum > len(data)):
         raise ElfValidationError("section header table is outside the file")
     if shnum and shstrndx >= shnum and shstrndx != 0xFFFF:
@@ -53,6 +79,7 @@ def validate_elf(data: bytes) -> Dict[str, int]:
         "entry": entry,
         "flags": flags,
         "program_headers": phnum,
+        "load_segments": load_segments,
         "section_headers": shnum,
     }
 
@@ -68,8 +95,8 @@ def main() -> int:
         print("PS2 ELF verification: ERROR: %s" % exc, file=sys.stderr)
         return 1
     print(
-        "PS2 ELF verification: OK (ELF32 little-endian MIPS, ET_EXEC; %d bytes; entry 0x%08x; flags 0x%08x)"
-        % (result["file_bytes"], result["entry"], result["flags"])
+        "PS2 ELF verification: OK (ELF32 little-endian MIPS, ET_EXEC; %d bytes; entry 0x%08x; %d PT_LOAD segment(s); flags 0x%08x)"
+        % (result["file_bytes"], result["entry"], result["load_segments"], result["flags"])
     )
     return 0
 
