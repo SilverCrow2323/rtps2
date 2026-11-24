@@ -13,6 +13,8 @@ ELF_HEADER = struct.Struct("<16sHHIIIIIHHHHHH")
 PROGRAM_HEADER = struct.Struct("<IIIIIIII")
 ELF_MAGIC = b"\x7fELF"
 EM_MIPS = 8
+MIPS_ARCH_MASK = 0xF0000000
+EF_MIPS_ARCH_3 = 0x20000000
 ET_EXEC = 2
 PT_LOAD = 1
 PF_X = 1
@@ -41,6 +43,10 @@ def validate_elf(data: bytes) -> Dict[str, int]:
         raise ElfValidationError("expected an executable ELF (ET_EXEC)")
     if machine != EM_MIPS:
         raise ElfValidationError("expected EM_MIPS for the PlayStation 2 EE")
+    if flags & MIPS_ARCH_MASK != EF_MIPS_ARCH_3:
+        raise ElfValidationError(
+            "expected MIPS III architecture flags for the PS2 EE; got e_flags 0x%08x" % flags
+        )
     if ehsize < ELF_HEADER.size or ehsize > len(data):
         raise ElfValidationError("invalid ELF header size")
     if phnum == 0:
@@ -109,7 +115,7 @@ def main() -> int:
         print("PS2 ELF verification: ERROR: %s" % exc, file=sys.stderr)
         return 1
     print(
-        "PS2 ELF verification: OK (ELF32 little-endian MIPS, ET_EXEC; %d bytes; entry 0x%08x; %d PT_LOAD segment(s); flags 0x%08x)"
+        "PS2 ELF verification: OK (ELF32 little-endian MIPS III, ET_EXEC; %d bytes; entry 0x%08x; %d PT_LOAD segment(s); flags 0x%08x)"
         % (result["file_bytes"], result["entry"], result["load_segments"], result["flags"])
     )
     return 0
