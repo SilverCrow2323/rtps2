@@ -15,6 +15,8 @@ ELF_MAGIC = b"\x7fELF"
 EM_MIPS = 8
 ET_EXEC = 2
 PT_LOAD = 1
+PF_X = 1
+ELF32_MAX = (1 << 32) - 1
 
 
 class ElfValidationError(ValueError):
@@ -51,9 +53,10 @@ def validate_elf(data: bytes) -> Dict[str, int]:
         raise ElfValidationError("program header table is outside the file")
 
     load_segments = 0
+    entry_in_executable_segment = False
     for index in range(phnum):
         offset = phoff + index * phentsize
-        p_type, p_offset, _p_vaddr, _p_paddr, p_filesz, p_memsz, _p_flags, _p_align = (
+        p_type, p_offset, p_vaddr, _p_paddr, p_filesz, p_memsz, p_flags, p_align = (
             PROGRAM_HEADER.unpack_from(data, offset)
         )
         if p_type != PT_LOAD:
@@ -63,9 +66,20 @@ def validate_elf(data: bytes) -> Dict[str, int]:
             raise ElfValidationError("PT_LOAD file size exceeds its memory size")
         if p_offset > len(data) or p_filesz > len(data) - p_offset:
             raise ElfValidationError("PT_LOAD segment extends beyond the ELF file")
+        if p_vaddr > ELF32_MAX - p_memsz:
+            raise ElfValidationError("PT_LOAD memory range overflows the ELF32 address space")
+        if p_align > 1:
+            if p_align & (p_align - 1):
+                raise ElfValidationError("PT_LOAD alignment is not a power of two")
+            if p_offset % p_align != p_vaddr % p_align:
+                raise ElfValidationError("PT_LOAD offset and virtual address violate alignment")
+        if p_flags & PF_X and p_vaddr <= entry < p_vaddr + p_memsz:
+            entry_in_executable_segment = True
 
     if load_segments == 0:
         raise ElfValidationError("ELF has no loadable PT_LOAD segment")
+    if not entry_in_executable_segment:
+        raise ElfValidationError("ELF entry point is not inside an executable PT_LOAD segment")
 
     if shnum and (shentsize < 40 or shoff + shentsize * shnum > len(data)):
         raise ElfValidationError("section header table is outside the file")
