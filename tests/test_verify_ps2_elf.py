@@ -96,7 +96,7 @@ class Ps2ElfValidationTests(unittest.TestCase):
 
     def test_rejects_incongruent_load_alignment(self):
         with self.assertRaisesRegex(ElfValidationError, "violate alignment"):
-            validate_elf(make_elf(segment_offset=1))
+            validate_elf(make_elf(segment_offset=1, segment_file_size=1))
 
 
 if __name__ == "__main__":
