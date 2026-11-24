@@ -22,6 +22,7 @@ def make_elf(
     segment_vaddr=0x00100000,
     segment_flags=5,
     segment_align=16,
+    flags=0x20920025,
 ):
     ident = b"\x7fELF" + bytes([elf_class, endian, 1, 0, 0]) + bytes(7)
     payload_size = ELF_HEADER.size + PROGRAM_HEADER.size
@@ -31,7 +32,7 @@ def make_elf(
         segment_memory_size = segment_file_size
     header = ELF_HEADER.pack(
         ident, elf_type, machine, 1, entry,
-        ELF_HEADER.size, 0, 0x20000001,
+        ELF_HEADER.size, 0, flags,
         ELF_HEADER.size, PROGRAM_HEADER.size, phnum, 40, 0, 0,
     )
     if not phnum:
@@ -49,6 +50,16 @@ class Ps2ElfValidationTests(unittest.TestCase):
         self.assertEqual(result["file_bytes"], ELF_HEADER.size + PROGRAM_HEADER.size)
         self.assertEqual(result["program_headers"], 1)
         self.assertEqual(result["load_segments"], 1)
+
+    def test_accepts_ps2_r5900_mips_iii_architecture_flags(self):
+        result = validate_elf(make_elf(flags=0x20920025))
+        self.assertEqual(result["flags"], 0x20920025)
+
+    def test_rejects_non_mips_iii_architecture_flags(self):
+        for flags in (0x00000025, 0x30920025, 0x50920025):
+            with self.subTest(flags=hex(flags)):
+                with self.assertRaisesRegex(ElfValidationError, "MIPS III"):
+                    validate_elf(make_elf(flags=flags))
 
     def test_rejects_wrong_machine(self):
         with self.assertRaises(ElfValidationError):
