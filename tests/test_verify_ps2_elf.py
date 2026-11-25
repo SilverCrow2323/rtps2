@@ -93,6 +93,10 @@ class Ps2ElfValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(ElfValidationError, "file size exceeds"):
             validate_elf(make_elf(segment_file_size=32, segment_memory_size=16))
 
+    def test_rejects_unaligned_mips_instruction_entrypoint(self):
+        with self.assertRaisesRegex(ElfValidationError, "not 4-byte aligned"):
+            validate_elf(make_elf(entry=0x00100002))
+
     def test_rejects_entrypoint_outside_executable_segment(self):
         with self.assertRaisesRegex(ElfValidationError, "entry point is not inside"):
             validate_elf(make_elf(entry=0x00200000))
