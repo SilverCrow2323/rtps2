@@ -93,6 +93,8 @@ def validate_elf(data: bytes) -> Dict[str, int]:
         raise ElfValidationError("section-name string table index is out of range")
     if entry == 0:
         raise ElfValidationError("ELF entry point is zero")
+    if entry % 4 != 0:
+        raise ElfValidationError("ELF entry point is not 4-byte aligned for the PS2 EE")
 
     return {
         "file_bytes": len(data),
