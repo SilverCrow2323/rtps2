@@ -51,12 +51,58 @@ class CoverPackTests(unittest.TestCase):
             with self.assertRaisesRegex(CoverPackError, "Duplicate output"):
                 build_pack(source, root / "out")
 
-    def test_rejects_invalid_png(self):
+    def test_rejects_invalid_png_without_publishing_partial_payloads(self):
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp); source = root / "in"; source.mkdir()
-            (source / "bad.png").write_bytes(b"not png")
+            root = Path(tmp); source = root / "in"; output = root / "out"; source.mkdir()
+            write_png(source / "a-valid.png", 8, 8, (1, 2, 3, 255))
+            (source / "z-invalid.png").write_bytes(b"not png")
             with self.assertRaisesRegex(CoverPackError, "Cannot decode"):
-                build_pack(source, root / "out")
+                build_pack(source, output)
+            self.assertFalse((output / "a-valid.rgba").exists())
+
+    def test_build_rejects_symlinked_output_payload(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); source = root / "in"; output = root / "out"; source.mkdir(); output.mkdir()
+            write_png(source / "one.png", 8, 8, (1, 2, 3, 255))
+            outside = root / "outside.rgba"
+            outside.write_bytes(b"do not overwrite")
+            (output / "one.rgba").symlink_to(outside)
+            with self.assertRaisesRegex(CoverPackError, "must not be a symlink"):
+                build_pack(source, output)
+            self.assertEqual(outside.read_bytes(), b"do not overwrite")
+
+    def test_build_rejects_symlinked_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); source = root / "in"; output = root / "out"; source.mkdir(); output.mkdir()
+            write_png(source / "one.png", 8, 8, (1, 2, 3, 255))
+            outside = root / "manifest.json"
+            outside.write_text("keep", encoding="utf-8")
+            (output / "covers.json").symlink_to(outside)
+            with self.assertRaisesRegex(CoverPackError, "Manifest path must not be a symlink"):
+                build_pack(source, output)
+            self.assertEqual(outside.read_text(encoding="utf-8"), "keep")
+
+    def test_verifier_rejects_symlinked_payload_and_malformed_entries(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); source = root / "in"; output = root / "out"; source.mkdir()
+            write_png(source / "one.png", 8, 8, (1, 2, 3, 255))
+            build_pack(source, output)
+            payload = output / "one.rgba"
+            data = payload.read_bytes()
+            payload.unlink()
+            outside = root / "outside.rgba"
+            outside.write_bytes(data)
+            payload.symlink_to(outside)
+            with self.assertRaisesRegex(CoverPackError, "must not be a symlink"):
+                verify_pack(output)
+            payload.unlink()
+            payload.write_bytes(data)
+            manifest_path = output / "covers.json"
+            manifest = json.loads(manifest_path.read_text())
+            manifest["entries"] = [None]
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(CoverPackError, "entry must be an object"):
+                verify_pack(output)
 
 if __name__ == "__main__":
     unittest.main()
