@@ -3,13 +3,13 @@
 **The PS2, rebuilt as a navigable console experience.**  
 A native PlayStation 2 frontend and system shell inspired by PSBBN, developed under SPDW Factory.
 
-> This repository is the canonical home for NEXUS. Recoverable source includes host-side transactions, dependency planning, Store, recipes, Bridge trust, ZIP inspection/staging and a native EE shell with a PS2SDK GS renderer. Earlier M1–M5 history is documented where original source snapshots are not available; missing code is not fabricated or represented as merged.
+> This is the main source repository for NEXUS. Recoverable source includes host-side transactions, dependency planning, Store, recipes, Bridge trust, ZIP inspection/staging and a native EE shell with a PS2SDK GS renderer. Earlier M1–M5 history is documented where original source snapshots are not available; missing code is not fabricated or represented as merged.
 
 ## Project map
 | Area | Purpose | Current status |
 |---|---|---|
 | Native shell | EE entry point, DualShock input, navigation and GS dashboard | PS2DEV cross-build passed; NEXUS.ELF artifact published |
-| Graphics | Redesigned GS dashboard, navigation rail, module hero, status metrics, Games card views, NXA1 atlas, four-slot cover cache and deterministic 128×128 cover-art packer | Host CI #374/native build #102 passed; M6.24 host packer tests added; native cache ingestion and visual review pending |
+| Graphics | Redesigned GS dashboard, navigation rail, module hero, status metrics, Games card views, NXA1 atlas, four-slot cover cache and deterministic 128×128 cover-art packer | Host CI #374/native build #102 passed; M6.24 packer, symlink-safety and malformed-manifest tests added; native cache ingestion and visual review pending |
 | Devices & library | 96-entry catalog, Files root selector, read-only scan core, explicit FileXio activation and Square-triggered root checks | Host CI #374 and native build #102 passed; USB/MMCEMAN/APA drivers and mounts remain pending |
 | Store & packages | Signed host catalog, dependency planning, recipes, ZIP inspection and host staging | Host-side code present; no PS2 installer |
 | Transactions | Journal, backup, verification, rollback and recovery | Host-side sandbox reference |
