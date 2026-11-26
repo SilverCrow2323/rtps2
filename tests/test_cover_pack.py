@@ -1,6 +1,7 @@
 import json
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 from tools.nexus_asset_pack import encode_png_rgba
 from tools.nexus_cover_pack import CoverPackError, SIZE, build_pack, fit_cover, verify_pack
@@ -59,6 +60,29 @@ class CoverPackTests(unittest.TestCase):
             with self.assertRaisesRegex(CoverPackError, "Cannot decode"):
                 build_pack(source, output)
             self.assertFalse((output / "a-valid.rgba").exists())
+
+    def test_failed_publish_restores_previous_complete_pack(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); source = root / "in"; output = root / "out"; source.mkdir()
+            write_png(source / "game-a.png", 32, 32, (1, 2, 3, 255))
+            write_png(source / "game-b.png", 32, 32, (4, 5, 6, 255))
+            build_pack(source, output)
+            old_manifest = (output / "covers.json").read_bytes()
+            old_a = (output / "game-a.rgba").read_bytes()
+            old_b = (output / "game-b.rgba").read_bytes()
+            write_png(source / "game-a.png", 32, 32, (9, 8, 7, 255))
+            real_replace = __import__("os").replace
+            def fail_second_payload(src, dst):
+                if Path(dst).name == "game-b.rgba" and Path(src).parent.name == "payload":
+                    raise OSError("simulated commit failure")
+                return real_replace(src, dst)
+            with mock.patch("tools.nexus_cover_pack.os.replace", side_effect=fail_second_payload):
+                with self.assertRaisesRegex(CoverPackError, "previous pack restored"):
+                    build_pack(source, output)
+            self.assertEqual((output / "covers.json").read_bytes(), old_manifest)
+            self.assertEqual((output / "game-a.rgba").read_bytes(), old_a)
+            self.assertEqual((output / "game-b.rgba").read_bytes(), old_b)
+            self.assertEqual(verify_pack(output)["count"], 2)
 
     def test_build_rejects_symlinked_output_payload(self):
         with tempfile.TemporaryDirectory() as tmp:

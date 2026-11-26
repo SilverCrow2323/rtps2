@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build a deterministic, bounded 128x128 RGBA32 cover-art cache pack for NEXUS."""
 from __future__ import annotations
-import argparse, hashlib, json, re, sys
+import argparse, hashlib, json, re, sys, os, shutil, tempfile
 from pathlib import Path, PurePosixPath
 from tools.nexus_asset_pack import AssetError, decode_png_rgba
 
@@ -64,6 +64,64 @@ def collect_sources(source_dir: Path) -> list[Path]:
         names.add(name)
     return sources
 
+def publish_pack(output_dir: Path, prepared: list[tuple[str, bytes]], manifest: dict) -> None:
+    """Publish payloads and manifest as one rollback-capable filesystem transaction."""
+    stage = Path(tempfile.mkdtemp(prefix=".nxc-stage-", dir=str(output_dir)))
+    payload_dir = stage / "payload"
+    backup_dir = stage / "backup"
+    payload_dir.mkdir()
+    backup_dir.mkdir()
+    staged = []
+    for filename, pixels in prepared:
+        source = payload_dir / filename
+        with source.open("wb") as stream:
+            stream.write(pixels)
+            stream.flush()
+            os.fsync(stream.fileno())
+        staged.append((source, output_dir / filename))
+    manifest_source = payload_dir / "covers.json"
+    with manifest_source.open("wb") as stream:
+        stream.write((json.dumps(manifest, indent=2) + "\\n").encode("utf-8"))
+        stream.flush()
+        os.fsync(stream.fileno())
+    staged.append((manifest_source, output_dir / "covers.json"))
+    backups = []
+    committed = []
+    try:
+        for _source, target in staged:
+            if target.is_symlink():
+                raise CoverPackError(f"Refusing to replace symlink: {target.name}")
+            if target.exists():
+                if not target.is_file():
+                    raise CoverPackError(f"Refusing to replace non-file: {target.name}")
+                backup = backup_dir / target.name
+                os.replace(target, backup)
+                backups.append((target, backup))
+        for source, target in staged:
+            os.replace(source, target)
+            committed.append(target)
+    except Exception as exc:
+        rollback_error = None
+        for target in reversed(committed):
+            try:
+                if target.exists() or target.is_symlink():
+                    target.unlink()
+            except OSError as rollback_exc:
+                rollback_error = rollback_exc
+        for target, backup in reversed(backups):
+            try:
+                if backup.exists():
+                    os.replace(backup, target)
+            except OSError as rollback_exc:
+                rollback_error = rollback_exc
+        if rollback_error is not None:
+            raise CoverPackError(
+                f"Cover pack publish failed and rollback is incomplete; recovery files remain in {stage}: {rollback_error}"
+            ) from exc
+        raise CoverPackError(f"Cover pack publish failed; previous pack restored: {exc}") from exc
+    shutil.rmtree(stage, ignore_errors=True)
+
+
 def build_pack(source_dir: Path, output_dir: Path) -> dict:
     sources = collect_sources(source_dir)
     if output_dir.is_symlink():
@@ -105,10 +163,7 @@ def build_pack(source_dir: Path, output_dir: Path) -> dict:
         prepared.append((filename, pixels))
         records.append(record)
 
-    # Decode and validate the complete input set before replacing any payload.
-    for filename, pixels in prepared:
-        (output_dir / filename).write_bytes(pixels)
-
+    # Decode and validate the complete input set before publishing anything.
     manifest = {
         "format": MAGIC,
         "version": 1,
@@ -119,7 +174,7 @@ def build_pack(source_dir: Path, output_dir: Path) -> dict:
         "count": len(records),
         "entries": records,
     }
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    publish_pack(output_dir, prepared, manifest)
     verify_pack(output_dir)
     return manifest
 
