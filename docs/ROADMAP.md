@@ -37,6 +37,7 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 | M6.21 | Games catalog navigation, four view modes, favorites, source/platform filters and metadata-only detail | Host CI #367 and native PS2DEV build #101 passed |
 | M6.22 | Home navigation rail, contextual hero, status metrics, consistent module panels and cover-style Games placeholders | Host CI #367 and native PS2DEV build #101 passed; PCSX2 visual feedback and real artwork pending |
 | M6.23 | Square-triggered read-only availability probe for mass:/, mmce0:/ and mmce1:/ with three Files status cards | Host CI #374 and native PS2DEV build #102 passed; PCSX2 visual review pending |
+| M6.24 | Deterministic user-supplied PNG cover ingestion: bounded decode, aspect-preserving 128×128 RGBA32 pack, source/pixel SHA-256 manifest and verifier | Host implementation and regression tests added; native pack loading, game-ID mapping and GS visual validation pending |
 
 ## M6.10 verification
 - Native EE workflow [#44488236616](https://github.com/SilverCrow2323/rtps2/actions/runs/44488236616), successful build and uploaded ELF artifact.

@@ -9,7 +9,7 @@ A native PlayStation 2 frontend and system shell inspired by PSBBN, developed un
 | Area | Purpose | Current status |
 |---|---|---|
 | Native shell | EE entry point, DualShock input, navigation and GS dashboard | PS2DEV cross-build passed; NEXUS.ELF artifact published |
-| Graphics | Redesigned GS dashboard, navigation rail, module hero, status metrics, Games card views, NXA1 atlas and four-slot cover cache | Host CI #374 and native PS2DEV build #102 passed; real cover ingestion and visual screenshot review pending |
+| Graphics | Redesigned GS dashboard, navigation rail, module hero, status metrics, Games card views, NXA1 atlas, four-slot cover cache and deterministic 128×128 cover-art packer | Host CI #374/native build #102 passed; M6.24 host packer tests added; native cache ingestion and visual review pending |
 | Devices & library | 96-entry catalog, Files root selector, read-only scan core, explicit FileXio activation and Square-triggered root checks | Host CI #374 and native build #102 passed; USB/MMCEMAN/APA drivers and mounts remain pending |
 | Store & packages | Signed host catalog, dependency planning, recipes, ZIP inspection and host staging | Host-side code present; no PS2 installer |
 | Transactions | Journal, backup, verification, rollback and recovery | Host-side sandbox reference |
