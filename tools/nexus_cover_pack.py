@@ -119,7 +119,7 @@ def build_pack(source_dir: Path, output_dir: Path) -> dict:
         "count": len(records),
         "entries": records,
     }
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     verify_pack(output_dir)
     return manifest
 
@@ -149,7 +149,7 @@ def verify_pack(output_dir: Path) -> dict:
         if not isinstance(entry, dict):
             raise CoverPackError("Cover entry must be an object")
         name = entry.get("output")
-        if not isinstance(name, str) or "\\\\" in name or "\\x00" in name:
+        if not isinstance(name, str) or "\\" in name or "\x00" in name:
             raise CoverPackError(f"Unsafe cover output path: {name!r}")
         path = PurePosixPath(name)
         if path.is_absolute() or len(path.parts) != 1 or path.name in ("", ".", "..") or path.suffix != ".rgba":
