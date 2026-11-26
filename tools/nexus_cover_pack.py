@@ -81,7 +81,7 @@ def publish_pack(output_dir: Path, prepared: list[tuple[str, bytes]], manifest: 
         staged.append((source, output_dir / filename))
     manifest_source = payload_dir / "covers.json"
     with manifest_source.open("wb") as stream:
-        stream.write((json.dumps(manifest, indent=2) + "\\n").encode("utf-8"))
+        stream.write((json.dumps(manifest, indent=2) + "\n").encode("utf-8"))
         stream.flush()
         os.fsync(stream.fileno())
     staged.append((manifest_source, output_dir / "covers.json"))
@@ -100,6 +100,7 @@ def publish_pack(output_dir: Path, prepared: list[tuple[str, bytes]], manifest: 
         for source, target in staged:
             os.replace(source, target)
             committed.append(target)
+        verify_pack(output_dir)
     except Exception as exc:
         rollback_error = None
         for target in reversed(committed):
