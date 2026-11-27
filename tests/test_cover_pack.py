@@ -128,5 +128,54 @@ class CoverPackTests(unittest.TestCase):
             with self.assertRaisesRegex(CoverPackError, "entry must be an object"):
                 verify_pack(output)
 
+    def test_verifier_rejects_duplicate_json_keys_at_root_and_nested_levels(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); source = root / "in"; output = root / "out"; source.mkdir()
+            write_png(source / "one.png", 8, 8, (1, 2, 3, 255))
+            build_pack(source, output)
+            manifest_path = output / "covers.json"
+            for payload in (
+                '{"format":"NXC1","format":"NXC1"}',
+                '{"format":"NXC1","entries":[{"output":"one.rgba","output":"other.rgba"}]}',
+            ):
+                with self.subTest(payload=payload):
+                    manifest_path.write_text(payload, encoding="utf-8")
+                    with self.assertRaisesRegex(CoverPackError, "duplicate JSON key"):
+                        verify_pack(output)
+
+    def test_verifier_rejects_boolean_version_and_count(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); source = root / "in"; output = root / "out"; source.mkdir()
+            write_png(source / "one.png", 8, 8, (1, 2, 3, 255))
+            build_pack(source, output)
+            manifest_path = output / "covers.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["version"] = True
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(CoverPackError, "inconsistent cover pack format"):
+                verify_pack(output)
+            manifest["version"] = 1
+            manifest["count"] = True
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(CoverPackError, "entry count"):
+                verify_pack(output)
+
+    def test_verifier_rejects_case_insensitive_duplicate_output_names(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); source = root / "in"; output = root / "out"; source.mkdir()
+            write_png(source / "one.png", 8, 8, (1, 2, 3, 255))
+            build_pack(source, output)
+            payload = (output / "one.rgba").read_bytes()
+            (output / "ONE.rgba").write_bytes(payload)
+            manifest_path = output / "covers.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            duplicate = dict(manifest["entries"][0])
+            duplicate["output"] = "ONE.rgba"
+            manifest["entries"].append(duplicate)
+            manifest["count"] = 2
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(CoverPackError, "Duplicate cover output"):
+                verify_pack(output)
+
 if __name__ == "__main__":
     unittest.main()
