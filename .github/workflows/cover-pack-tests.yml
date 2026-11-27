@@ -1,0 +1,28 @@
+name: Cover pack safety tests
+on:
+  push:
+    branches: [main, "feat/**", "fix/**"]
+    paths:
+      - "tools/nexus_cover_pack.py"
+      - "tools/nexus_asset_pack.py"
+      - "tests/test_cover_pack.py"
+      - ".github/workflows/cover-pack-tests.yml"
+  pull_request:
+    paths:
+      - "tools/nexus_cover_pack.py"
+      - "tools/nexus_asset_pack.py"
+      - "tests/test_cover_pack.py"
+      - ".github/workflows/cover-pack-tests.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cover-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run deterministic cover-pack and safety tests
+        run: PYTHONPATH=. python3 -m unittest tests/test_cover_pack.py -v
