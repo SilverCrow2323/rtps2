@@ -13,6 +13,24 @@ MAGIC = "NXC1"
 class CoverPackError(ValueError):
     pass
 
+
+class DuplicateJSONKeyError(ValueError):
+    """A cover manifest contains an ambiguous duplicate object key."""
+
+
+def _unique_json_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateJSONKeyError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def _strict_json_loads(text):
+    return json.loads(text, object_pairs_hook=_unique_json_object)
+
+
 def slug(stem: str) -> str:
     value = re.sub(r"[^A-Za-z0-9._-]+", "_", stem).strip("._-")
     if not value:
@@ -187,18 +205,21 @@ def verify_pack(output_dir: Path) -> dict:
     if manifest_path.is_symlink():
         raise CoverPackError("Cover manifest must not be a symlink")
     try:
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as exc:
+        manifest = _strict_json_loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, DuplicateJSONKeyError) as exc:
         raise CoverPackError(f"Cannot read covers.json: {exc}") from exc
     if not isinstance(manifest, dict):
         raise CoverPackError("Cover manifest must be an object")
-    if (manifest.get("format") != MAGIC or manifest.get("version") != 1 or
+    version = manifest.get("version")
+    if (manifest.get("format") != MAGIC or isinstance(version, bool) or not isinstance(version, int) or version != 1 or
             manifest.get("width") != SIZE or manifest.get("height") != SIZE or
             manifest.get("pixel_format") != "PSMCT32_RGBA32" or
             manifest.get("max_entries") != MAX_COVERS):
         raise CoverPackError("Unsupported or inconsistent cover pack format")
     entries = manifest.get("entries")
-    if not isinstance(entries, list) or not 1 <= len(entries) <= MAX_COVERS or manifest.get("count") != len(entries):
+    count = manifest.get("count")
+    if (not isinstance(entries, list) or not 1 <= len(entries) <= MAX_COVERS or
+            isinstance(count, bool) or not isinstance(count, int) or count != len(entries)):
         raise CoverPackError("Invalid cover entry count")
     seen = set()
     for entry in entries:
@@ -210,9 +231,10 @@ def verify_pack(output_dir: Path) -> dict:
         path = PurePosixPath(name)
         if path.is_absolute() or len(path.parts) != 1 or path.name in ("", ".", "..") or path.suffix != ".rgba":
             raise CoverPackError(f"Unsafe cover output path: {name!r}")
-        if name in seen:
+        normalized_name = name.casefold()
+        if normalized_name in seen:
             raise CoverPackError(f"Duplicate cover output: {name}")
-        seen.add(name)
+        seen.add(normalized_name)
         if not re.fullmatch(r"[a-f0-9]{64}", str(entry.get("pixel_sha256", ""))):
             raise CoverPackError(f"Invalid pixel SHA-256: {name}")
         if not re.fullmatch(r"[a-f0-9]{64}", str(entry.get("source_sha256", ""))):
