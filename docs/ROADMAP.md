@@ -142,6 +142,17 @@ The Store should provide an online catalog and a dedicated full-screen terminal/
 - Extracted NEXUS.ELF: 1,724,400 bytes; SHA-256 `51ad1a8c2799aee05452369b8b73fe1141ffcf187737227086c66882b4908d1b`.
 - No real-console boot or visual output is claimed.
 
+## M6.23 — Transactional NEXUS cover-pack publication
+
+- Stage all generated RGBA payloads and the pack manifest before changing published outputs.
+- Preserve the previous output set before commit; publish the manifest last so readers never treat a partial pack as current.
+- Roll back newly committed files and restore the previous pack after an injected rename failure.
+- Retain recovery staging data when rollback itself cannot complete; do not silently discard the only recoverable copy.
+- Add deterministic failure-injection coverage proving the previously published pack remains verifiable after a mid-commit failure.
+- Host verification: [cover-pack safety run #45972370970](https://github.com/SilverCrow2323/rtps2/actions/runs/45972370970) passed the deterministic cover-pack and safety tests.
+
+This milestone establishes transactional host-side publication. It does not validate native PS2 artwork ingestion, PCSX2 rendering, physical-console display or the still-pending real cover decoder/cache feed.
+
 ## M6.22 visual boundary
 The old 3×2 dashboard/device strip has been replaced by the navigation rail + module hero + status metrics. Module pages share a more structured two-column layout, and Games uses cover-style placeholders across all four views. This is a major first redesign, not the final animated skin: the real artwork decoder/cache feed, subtle transitions, screenshot review and physical PAL/NTSC calibration remain open.
 
