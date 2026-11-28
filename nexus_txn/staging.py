@@ -21,6 +21,17 @@ class StagingError(RuntimeError):
     pass
 
 
+def _reject_symlink_components(path: str | Path, label: str) -> Path:
+    """Return an absolute lexical path after rejecting symlinks in every component."""
+    absolute = Path(os.path.abspath(os.fspath(path)))
+    current = Path(absolute.anchor)
+    for component in absolute.parts[1:]:
+        current = current / component
+        if current.is_symlink():
+            raise StagingError(f"{label} path contains a symbolic link: {current}")
+    return absolute
+
+
 def stage_zip_package(
     archive_path: str | Path,
     recipe: dict[str, Any],
@@ -32,15 +43,20 @@ def stage_zip_package(
         normalized = validate_recipe(recipe)
         if normalized["archive_format"] != "zip":
             raise StagingError("only ZIP packages can be staged; PSU/SAS parsers are not implemented")
-        inspection = inspect_archive(archive_path, "zip")
+
+        # A caller-selected package path must not silently redirect through a
+        # symlink (including a symlinked parent directory) before inspection.
+        requested_archive = _reject_symlink_components(archive_path, "archive")
+        if not requested_archive.is_file():
+            raise StagingError("archive must be an existing regular file")
+        inspection = inspect_archive(requested_archive, "zip")
         comparison = match_recipe(inspection, normalized)
         if not comparison["matched"]:
             raise StagingError(f"archive does not match recipe: {comparison}")
 
-        requested_root = Path(staging_root)
-        if requested_root.is_symlink():
-            raise StagingError("staging root must not be a symbolic link")
+        requested_root = _reject_symlink_components(staging_root, "staging root")
         requested_root.mkdir(parents=True, exist_ok=True)
+        requested_root = _reject_symlink_components(requested_root, "staging root")
         root = requested_root.resolve()
         if not root.is_dir():
             raise StagingError("staging root is not a directory")
@@ -51,7 +67,7 @@ def stage_zip_package(
         manifest_files = []
         total_written = 0
 
-        with zipfile.ZipFile(archive_path, "r") as zf:
+        with zipfile.ZipFile(requested_archive, "r") as zf:
             archive_entries = {
                 info.filename.rstrip("/").casefold(): info
                 for info in zf.infolist()
@@ -121,15 +137,19 @@ def stage_zip_package(
 
 
 def remove_staged_package(stage_dir: str | Path, staging_root: str | Path) -> None:
-    """Remove a staging directory only when it is a direct child of staging_root."""
-    root = Path(staging_root).resolve()
-    candidate_path = Path(stage_dir)
-    if candidate_path.is_symlink():
-        raise StagingError("refusing to remove a staging symlink")
+    """Remove a staging directory only when it is a direct child of a real staging root."""
+    requested_root = _reject_symlink_components(staging_root, "staging root")
+    if not requested_root.is_dir():
+        raise StagingError("staging root must be an existing directory")
+    root = requested_root.resolve()
+
+    candidate_path = _reject_symlink_components(stage_dir, "staging directory")
     candidate = candidate_path.resolve()
     if candidate == root or root not in candidate.parents or candidate.parent != root:
         raise StagingError("staging directory must be a direct child of staging_root")
     if not candidate.name.startswith("nexus-stage-"):
         raise StagingError("staging directory does not have the NEXUS staging prefix")
     if candidate.exists():
+        if not candidate.is_dir():
+            raise StagingError("staging target must be a directory")
         shutil.rmtree(candidate)
