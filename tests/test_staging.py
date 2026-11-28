@@ -92,6 +92,32 @@ class StagingTests(unittest.TestCase):
             with self.assertRaises(StagingError):
                 stage_zip_package(archive, RECIPE, link)
 
+    def test_refuses_symlink_archive_file(self):
+        with tempfile.TemporaryDirectory() as td:
+            archive = self.make_zip(td, [("APP/main.elf", PAYLOAD)])
+            link = Path(td) / "linked.zip"
+            root = Path(td) / "cache"
+            try:
+                link.symlink_to(archive)
+            except (OSError, NotImplementedError):
+                self.skipTest("symlinks are unavailable on this platform")
+            with self.assertRaisesRegex(StagingError, "archive path contains a symbolic link"):
+                stage_zip_package(link, RECIPE, root)
+            self.assertFalse(root.exists())
+
+    def test_refuses_archive_beneath_symlinked_parent(self):
+        with tempfile.TemporaryDirectory() as td:
+            real = Path(td) / "real"
+            real.mkdir()
+            archive = self.make_zip(real, [("APP/main.elf", PAYLOAD)])
+            link = Path(td) / "alias"
+            try:
+                link.symlink_to(real, target_is_directory=True)
+            except (OSError, NotImplementedError):
+                self.skipTest("symlinks are unavailable on this platform")
+            with self.assertRaisesRegex(StagingError, "archive path contains a symbolic link"):
+                stage_zip_package(link / archive.name, RECIPE, Path(td) / "cache")
+
     def test_removes_only_direct_child_staging_directory(self):
         with tempfile.TemporaryDirectory() as td:
             root = Path(td) / "cache"
