@@ -147,9 +147,24 @@ int main(void)
     assert(nexus_library_scan_root(&ops, &fs, &config, &report) == -9);
     assert(nexus_library_count() == 0U);
 
-    /* Never accept unsafe roots. */
-    strcpy(config.root, "mass:/../SYS-CONF");
-    assert(nexus_library_scan_root(&ops, &fs, &config, &report) < 0);
+    /* Reject unsafe roots before the filesystem adapter is called. */
+    {
+        static const char *unsafe_roots[] = {
+            "mass:/../SYS-CONF",
+            "mass:/.",
+            "mass:/CD/..",
+            "mass:/folder\\\\escape",
+            "mass:/folder:other",
+            "mass:"
+        };
+        unsigned int i;
+        unsigned int opens_before = fs.open_calls;
+        for (i = 0; i < sizeof(unsafe_roots) / sizeof(unsafe_roots[0]); ++i) {
+            strcpy(config.root, unsafe_roots[i]);
+            assert(nexus_library_scan_root(&ops, &fs, &config, &report) < 0);
+            assert(fs.open_calls == opens_before);
+        }
+    }
 
     reset_positions();
     nexus_library_clear();
