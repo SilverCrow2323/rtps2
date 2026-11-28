@@ -43,7 +43,13 @@ def stage_zip_package(
         normalized = validate_recipe(recipe)
         if normalized["archive_format"] != "zip":
             raise StagingError("only ZIP packages can be staged; PSU/SAS parsers are not implemented")
-        inspection = inspect_archive(archive_path, "zip")
+
+        # A caller-selected package path must not silently redirect through a
+        # symlink (including a symlinked parent directory) before inspection.
+        requested_archive = _reject_symlink_components(archive_path, "archive")
+        if not requested_archive.is_file():
+            raise StagingError("archive must be an existing regular file")
+        inspection = inspect_archive(requested_archive, "zip")
         comparison = match_recipe(inspection, normalized)
         if not comparison["matched"]:
             raise StagingError(f"archive does not match recipe: {comparison}")
@@ -61,7 +67,7 @@ def stage_zip_package(
         manifest_files = []
         total_written = 0
 
-        with zipfile.ZipFile(archive_path, "r") as zf:
+        with zipfile.ZipFile(requested_archive, "r") as zf:
             archive_entries = {
                 info.filename.rstrip("/").casefold(): info
                 for info in zf.infolist()
