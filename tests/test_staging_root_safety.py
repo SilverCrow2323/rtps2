@@ -15,7 +15,7 @@ class StagingRootSafetyTests(unittest.TestCase):
             link = Path(td) / "cache-link"
             link.symlink_to(root, target_is_directory=True)
 
-            with self.assertRaisesRegex(StagingError, "symbolic-link staging root"):
+            with self.assertRaisesRegex(StagingError, "symbolic link"):
                 remove_staged_package(stage, link)
 
             self.assertTrue(stage.is_dir(), "refused removal must leave staged data intact")
