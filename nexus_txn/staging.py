@@ -122,7 +122,12 @@ def stage_zip_package(
 
 def remove_staged_package(stage_dir: str | Path, staging_root: str | Path) -> None:
     """Remove a staging directory only when it is a direct child of staging_root."""
-    root = Path(staging_root).resolve()
+    requested_root = Path(staging_root)
+    if requested_root.is_symlink():
+        raise StagingError("refusing to use a symbolic-link staging root")
+    if not requested_root.is_dir():
+        raise StagingError("staging root must be an existing directory")
+    root = requested_root.resolve()
     candidate_path = Path(stage_dir)
     if candidate_path.is_symlink():
         raise StagingError("refusing to remove a staging symlink")
